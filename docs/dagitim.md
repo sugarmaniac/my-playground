@@ -33,7 +33,7 @@ Değerler repoya yazılmaz; Railway'in servis ayarlarına girilir. Adımları `.
 | `IGDB_ISTEMCI_SIRRI` | Backend servisi → Variables | Twitch uygulamasının Client Secret'ı. |
 | `IGDB_WEBHOOK_SIRRI` | Backend servisi → Variables | IGDB webhook'larının `X-Secret` başlığında gönderdiği değer; webhook kaydında aynısı verilir. |
 | `APPLE_KIMLIK_KITLELERI` | Backend servisi → Variables | İsteğe bağlı; Apple token'larının kabul edilen kitleleri (virgülle). Varsayılan `com.sosyaloyun.app`. |
-| `GOOGLE_KIMLIK_KITLELERI` | Backend servisi → Variables | Google web (server) OAuth istemci kimliği; birden fazlaysa virgülle. Boşsa Google ile giriş reddedilir. |
+| `GOOGLE_KIMLIK_KITLELERI` | Backend servisi → Variables | Google OAuth istemci kimlikleri, virgülle: web (server) istemcisi (Android token'larının kitlesi) ve iOS istemcisi (iOS token'larının kitlesi). Boşsa Google ile giriş reddedilir. |
 | `MODERASYON_SIFRESI` | Backend servisi → Variables | `/moderasyon` sayfasının şifresi (HTTP Basic). Boşsa sayfa kapalı. |
 | `RESEND_API_KEY` | Backend servisi → Variables | Resend API anahtarı. Boşsa ekibe e-posta gitmez. |
 | `MODERASYON_EPOSTASI` | Backend servisi → Variables | Ekibin e-posta adresi: yeni şikayetler ve pazartesi sabahı haftalık doğrulama metrikleri buraya gider. |
@@ -47,7 +47,7 @@ Backend'in okuduğu bütün ortam değişkenleri `server/src/main/kotlin/com/sos
 Uygulama, derlemede verilen `sosyaloyunSunucuAdresi` Gradle ayarındaki server'a bağlanır:
 
 - Boşsa (varsayılan) yerel geliştirme server'ı: Android emülatörde `http://10.0.2.2:8080`, iOS simülatörde `http://localhost:8080`. Yerel server: `./gradlew :server:run` (yerelde bir PostgreSQL ve `PG*` değişkenleri gerekir).
-- Google ile giriş: `sosyaloyunGoogleSunucuIstemciKimligi` ayarı (web OAuth istemci kimliği, gizli değil); boşsa Android'de Google ile giriş düğmesi gösterilmez.
+- Google ile giriş: `sosyaloyunGoogleSunucuIstemciKimligi` ayarı (web OAuth istemci kimliği, gizli değil); boşsa Android'de Google ile giriş düğmesi gösterilmez. iOS'ta Google ile giriş GoogleSignIn SDK'sıyla (Swift Package Manager) yapılır; iOS OAuth istemci kimliği ve ters URL şeması `iosApp/Configuration/Config.xcconfig`'teki `GOOGLE_IOS_ISTEMCI_KIMLIGI` ve `GOOGLE_IOS_URL_SEMASI`'ndan gelir (gizli değil); boşsa iOS'ta Google düğmesi gösterilmez.
 - Test yapılandırması: Railway'in public adresi `gradle.properties`'teki `sosyaloyunSunucuAdresi`'ne yazılır ya da derlemede verilir: `./gradlew :androidApp:assembleDebug -PsosyaloyunSunucuAdresi=https://<servis>.up.railway.app`.
 
 ## Yerelde imaj
