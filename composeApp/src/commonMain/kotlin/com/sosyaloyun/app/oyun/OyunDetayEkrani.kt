@@ -39,7 +39,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.sosyaloyun.app.api.ApiIstemcisi
+import com.sosyaloyun.app.gunluk.Inceleme
 import com.sosyaloyun.app.gunluk.dakikadanSaate
+import com.sosyaloyun.app.hesap.AvatarGorunumu
 import com.sosyaloyun.app.gunluk.gorunurlukAdi
 import com.sosyaloyun.app.gunluk.tarihMetni
 import com.sosyaloyun.app.kutuphane.HizliKayitSayfasi
@@ -48,7 +50,14 @@ import com.sosyaloyun.app.kutuphane.YildizPuani
 import com.sosyaloyun.app.kutuphane.durumAdi
 import coil3.compose.AsyncImage
 import com.sosyaloyun.app.resources.Res
+import com.sosyaloyun.app.resources.arama_daha_fazla
 import com.sosyaloyun.app.resources.geri
+import com.sosyaloyun.app.resources.oyun_arkadas_ortalamasi
+import com.sosyaloyun.app.resources.oyun_arkadasin
+import com.sosyaloyun.app.resources.oyun_incelemeler
+import com.sosyaloyun.app.resources.oyun_oynayan_arkadas
+import com.sosyaloyun.app.resources.oyun_topluluk_puani
+import com.sosyaloyun.app.resources.oyun_yeterli_puan_yok
 import com.sosyaloyun.app.resources.gunluk_ekle
 import com.sosyaloyun.app.resources.gunluk_saat
 import com.sosyaloyun.app.resources.gunluk_toplam_sure
@@ -76,7 +85,9 @@ import com.sosyaloyun.app.resources.tekrar_dene
 import com.sosyaloyun.shared.KutuphaneGirisi
 import com.sosyaloyun.shared.Magaza
 import com.sosyaloyun.shared.OyunDetayi
+import com.sosyaloyun.shared.OyunPuanlari
 import com.sosyaloyun.shared.OyunOzeti
+import kotlin.math.roundToInt
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -89,6 +100,8 @@ fun OyunDetayEkrani(
     oyunaGit: (String) -> Unit,
     /** Detaylı kayıt ekranı: yeni kayıt için null, düzenleme için kaydın kimliği. */
     gunlugeYaz: (String?) -> Unit,
+    kullaniciyaGit: (String) -> Unit,
+    gunlukKaydinaGit: (String) -> Unit,
     /** Ortadaki kaydet butonundan gelindiyse hızlı kayıt alt sayfası hemen açılır. */
     hizliKayitAcik: Boolean = false,
 ) {
@@ -104,7 +117,13 @@ fun OyunDetayEkrani(
             }
             is OyunDetayEkrani.Hazir -> {
                 var kayitAcik by remember { mutableStateOf(hizliKayitAcik) }
-                Detay(durum.detay, oyunaGit, kaydet = { kayitAcik = true }, gunlugeYaz = gunlugeYaz)
+                Detay(
+                    durum,
+                    oyunaGit,
+                    kaydet = { kayitAcik = true },
+                    gunlugeYaz = gunlugeYaz,
+                    topluluk = { Topluluk(durum, viewModel::dahaFazlaInceleme, kullaniciyaGit, gunlukKaydinaGit) },
+                )
                 if (kayitAcik) {
                     val detay = durum.detay
                     ModalBottomSheet(onDismissRequest = { kayitAcik = false }) {
@@ -126,7 +145,14 @@ fun OyunDetayEkrani(
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun Detay(detay: OyunDetayi, oyunaGit: (String) -> Unit, kaydet: () -> Unit, gunlugeYaz: (String?) -> Unit) {
+private fun Detay(
+    durum: OyunDetayEkrani.Hazir,
+    oyunaGit: (String) -> Unit,
+    kaydet: () -> Unit,
+    gunlugeYaz: (String?) -> Unit,
+    topluluk: @Composable () -> Unit,
+) {
+    val detay = durum.detay
     val uri = LocalUriHandler.current
     val oyun = detay.oyun
     Column(
@@ -157,6 +183,7 @@ private fun Detay(detay: OyunDetayi, oyunaGit: (String) -> Unit, kaydet: () -> U
                 }
             }
         }
+        Puanlar(detay.puanlar)
         KutuphaneOzeti(detay.kutuphaneGirisi, kaydet)
         Gunlugum(detay, gunlugeYaz)
         Text(
@@ -191,6 +218,53 @@ private fun Detay(detay: OyunDetayi, oyunaGit: (String) -> Unit, kaydet: () -> U
             Text(stringResource(Res.string.oyun_eklentiler), style = MaterialTheme.typography.titleSmall)
             detay.eklentiler.forEach { EklentiSatiri(it) { oyunaGit(it.id) } }
         }
+        topluluk()
+    }
+}
+
+/** Topluluk puanı, arkadaş ortalaması ve oynayan arkadaş sayısı. */
+@Composable
+private fun Puanlar(puanlar: OyunPuanlari) {
+    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Text(
+            puanlar.toplulukPuani?.let { stringResource(Res.string.oyun_topluluk_puani, puanMetni(it)) }
+                ?: stringResource(Res.string.oyun_yeterli_puan_yok),
+            style = MaterialTheme.typography.titleSmall,
+        )
+        val arkadaslar = listOfNotNull(
+            puanlar.arkadasOrtalamasi?.let { stringResource(Res.string.oyun_arkadas_ortalamasi, puanMetni(it)) },
+            if (puanlar.oynayanArkadasSayisi > 0) stringResource(Res.string.oyun_oynayan_arkadas, puanlar.oynayanArkadasSayisi) else null,
+        )
+        if (arkadaslar.isNotEmpty()) Text(arkadaslar.joinToString(" · "), style = MaterialTheme.typography.bodySmall)
+    }
+}
+
+/** Yarım yıldız cinsinden puanı beş üzerinden, tek ondalıkla gösterir: 7.6 → "★ 3,8". */
+internal fun puanMetni(puan: Double): String {
+    val onda = (puan / 2 * 10).roundToInt()
+    return "★ ${onda / 10},${onda % 10}"
+}
+
+/** Önce arkadaşların, sonra herkesin incelemeleri. */
+@Composable
+private fun Topluluk(durum: OyunDetayEkrani.Hazir, dahaFazla: () -> Unit, kullaniciyaGit: (String) -> Unit, gunlukKaydinaGit: (String) -> Unit) {
+    if (durum.incelemeler.isEmpty()) return
+    HorizontalDivider()
+    Text(stringResource(Res.string.oyun_incelemeler), style = MaterialTheme.typography.titleSmall)
+    durum.incelemeler.forEach { (kayit, sahip, arkadas) ->
+        Column(Modifier.fillMaxWidth().clickable { gunlukKaydinaGit(kayit.id) }.padding(vertical = 4.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Row(Modifier.clickable { kullaniciyaGit(sahip.kullaniciAdi) }, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                AvatarGorunumu(sahip.avatar, boyut = 28.dp)
+                Text(sahip.gorunenAd, style = MaterialTheme.typography.labelLarge)
+                if (arkadas) Text(stringResource(Res.string.oyun_arkadasin), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+            }
+            kayit.puan?.let { YildizPuani(it, sec = {}, boyut = 16) }
+            kayit.inceleme?.let { Inceleme(it, kayit.spoiler) }
+            if (kayit.begeniSayisi > 0) Text("♥ ${kayit.begeniSayisi}", style = MaterialTheme.typography.labelSmall)
+        }
+    }
+    if (durum.incelemeImleci != null) {
+        TextButton(onClick = dahaFazla, modifier = Modifier.fillMaxWidth()) { Text(stringResource(Res.string.arama_daha_fazla)) }
     }
 }
 

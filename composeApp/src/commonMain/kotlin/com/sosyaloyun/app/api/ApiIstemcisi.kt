@@ -18,6 +18,7 @@ import com.sosyaloyun.shared.KutuphaneGirisi
 import com.sosyaloyun.shared.KutuphaneSayfasi
 import com.sosyaloyun.shared.OrtakOyunlar
 import com.sosyaloyun.shared.OyunAramaYaniti
+import com.sosyaloyun.shared.IncelemeListesi
 import com.sosyaloyun.shared.OyunDetayi
 import com.sosyaloyun.shared.ProfilIstegi
 import com.sosyaloyun.shared.ProfilSayfasi
@@ -44,6 +45,8 @@ interface ApiIstemcisi {
     suspend fun oyunAra(sorgu: String, imlec: String? = null): OyunAramaYaniti
 
     suspend fun oyunDetayi(oyunId: String): OyunDetayi
+
+    suspend fun oyunIncelemeleri(oyunId: String, imlec: String? = null): IncelemeListesi
 
     /** Boş giriş kütüphaneden kaldırır. */
     suspend fun kutuphaneGirisiKaydet(oyunId: String, giris: KutuphaneGirisi): KutuphaneGirisi

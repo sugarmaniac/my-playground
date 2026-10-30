@@ -20,6 +20,9 @@ sealed class Ayar<T>(
 
     /** Betaya katılan her kullanıcının dağıtabileceği davet kodu sayısı. */
     data object KisiBasiDavetKoduSayisi : Ayar<Int>("kisi_basi_davet_kodu_sayisi", 5, Int::toString, String::toInt)
+
+    /** Topluluk puanının gösterilmesi için gereken en az puan veren kullanıcı sayısı. */
+    data object ToplulukPuaniEsigi : Ayar<Int>("topluluk_puani_esigi", 5, Int::toString, String::toInt)
 }
 
 class Ayarlar(private val veritabani: Database) {

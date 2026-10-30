@@ -148,4 +148,10 @@
     <string name="akis_spoiler_goster">Göster</string>
     <string name="begenenler">Beğenenler</string>
     <string name="gunluk_kaydi_bulunamadi">Bu günlük kaydı bulunamadı.</string>
+    <string name="oyun_topluluk_puani">Topluluk puanı: %1$s</string>
+    <string name="oyun_yeterli_puan_yok">Henüz yeterli puan yok</string>
+    <string name="oyun_arkadas_ortalamasi">Arkadaşlar: %1$s</string>
+    <string name="oyun_oynayan_arkadas">Oynayan arkadaş: %1$d</string>
+    <string name="oyun_incelemeler">İncelemeler</string>
+    <string name="oyun_arkadasin">Arkadaşın</string>
 </resources>

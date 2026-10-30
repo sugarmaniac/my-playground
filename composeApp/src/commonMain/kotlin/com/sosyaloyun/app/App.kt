@@ -337,6 +337,8 @@ private fun UygulamaGezintisi(api: ApiIstemcisi, profil: KullaniciOzeti, cikisYa
                     geri = { gezinti.popBackStack() },
                     oyunaGit = { gezinti.navigate(OyunRota(it)) },
                     gunlugeYaz = { kayitId -> gezinti.navigate(DetayliKayitRota(rota.oyunId, kayitId)) },
+                    kullaniciyaGit = { gezinti.navigate(KullaniciRota(it)) },
+                    gunlukKaydinaGit = { gezinti.navigate(GunlukDetayRota(it)) },
                     hizliKayitAcik = rota.hizliKayitAc,
                 )
             }

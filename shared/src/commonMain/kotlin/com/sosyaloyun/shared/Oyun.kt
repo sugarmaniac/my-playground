@@ -70,7 +70,29 @@ data class OyunDetayi(
     val toplamOyunSuresiDakika: Int? = null,
     /** Kullanıcının son günlük kaydında seçtiği platform; detaylı kayıt ekranı bunu önerir. */
     val sonPlatform: String? = null,
+    val puanlar: OyunPuanlari = OyunPuanlari(),
 )
+
+/**
+ * Oyun detayındaki puanlar, yarım yıldız cinsinden (1–10). Kütüphane girişlerindeki güncel puanlardan hesaplanır;
+ * her kullanıcı tek oy verir ve görünürlük puanları etkilemez.
+ */
+@Serializable
+data class OyunPuanlari(
+    /** Topluluk puanı; puan veren sayısı eşiğin altındaysa null ("Henüz yeterli puan yok"). */
+    val toplulukPuani: Double? = null,
+    /** Puan veren arkadaşların ortalaması; hiç arkadaş puanlamamışsa null. */
+    val arkadasOrtalamasi: Double? = null,
+    /** Oyunu oynayan (durumu olan ya da günlük kaydı giren) arkadaş sayısı. */
+    val oynayanArkadasSayisi: Int = 0,
+)
+
+/** Oyun detayındaki bir inceleme: metni olan bir günlük kaydı ve sahibi. */
+@Serializable
+data class OyunIncelemesi(val kayit: GunlukKaydi, val sahip: KullaniciOzeti, val arkadas: Boolean)
+
+@Serializable
+data class IncelemeListesi(val incelemeler: List<OyunIncelemesi>, val sonrakiImlec: String? = null)
 
 object AramaKurallari {
     const val EN_AZ_KARAKTER = 2

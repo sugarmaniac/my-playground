@@ -24,6 +24,7 @@ import com.sosyaloyun.shared.GunlukKaydiIstegi
 import com.sosyaloyun.shared.GunlukOgesi
 import com.sosyaloyun.shared.GunlukSayfasi
 import com.sosyaloyun.shared.HataKodu
+import com.sosyaloyun.shared.IncelemeListesi
 import com.sosyaloyun.shared.OrtakOyunlar
 import com.sosyaloyun.shared.OyunAramaYaniti
 import com.sosyaloyun.shared.OyunDetayi
@@ -118,6 +119,18 @@ class SahteApiIstemcisi : ApiIstemcisi {
     override suspend fun oyunDetayi(oyunId: String): OyunDetayi {
         hata?.let { throw it }
         return oyunDetaylari[oyunId] ?: throw ApiHatasiIstisnasi(HataKodu.OYUN_BULUNAMADI)
+    }
+
+    /** İmleçe göre inceleme sayfaları; ilk sayfanın imleci null. */
+    var incelemeSayfalari = emptyMap<String?, IncelemeListesi>()
+    var incelemeHatasi: Exception? = null
+    val incelemeSorgulari = mutableListOf<String?>()
+
+    override suspend fun oyunIncelemeleri(oyunId: String, imlec: String?): IncelemeListesi {
+        incelemeHatasi?.let { throw it }
+        hata?.let { throw it }
+        incelemeSorgulari += imlec
+        return incelemeSayfalari[imlec] ?: IncelemeListesi(emptyList())
     }
 
     val kutuphaneKayitlari = mutableListOf<Pair<String, KutuphaneGirisi>>()

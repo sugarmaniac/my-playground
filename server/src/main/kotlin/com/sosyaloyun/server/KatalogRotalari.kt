@@ -20,7 +20,15 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.long
 
-fun Route.katalogRotalari(katalog: Katalog, kutuphane: Kutuphane, gunluk: Gunluk, begeniler: Begeniler, iceAktarici: KatalogIceAktarici?, webhookSirri: String?) {
+fun Route.katalogRotalari(
+    katalog: Katalog,
+    kutuphane: Kutuphane,
+    gunluk: Gunluk,
+    begeniler: Begeniler,
+    topluluk: Topluluk,
+    iceAktarici: KatalogIceAktarici?,
+    webhookSirri: String?,
+) {
     oturumGerekli {
         get(ApiYollari.OYUN_ARA) {
             call.respond(katalog.ara(call.request.queryParameters["q"].orEmpty(), call.request.queryParameters["imlec"]))
@@ -40,8 +48,20 @@ fun Route.katalogRotalari(katalog: Katalog, kutuphane: Kutuphane, gunluk: Gunluk
                     gunlukKayitlarim = begeniler.ekle(kullaniciId, oyunGunlugu.kayitlar),
                     toplamOyunSuresiDakika = oyunGunlugu.toplamSureDakika,
                     sonPlatform = oyunGunlugu.sonPlatform,
+                    puanlar = topluluk.puanlar(kullaniciId, id),
                 ),
             )
+        }
+        get(ApiYollari.oyunIncelemeleri("{id}")) {
+            val id = call.oyunId()
+            if (id == null || !katalog.varMi(id)) {
+                call.hata(HttpStatusCode.NotFound, HataKodu.OYUN_BULUNAMADI)
+                return@get
+            }
+            val izleyen = call.oturumSahibi.kullaniciId
+            val liste = topluluk.incelemeler(izleyen, id, call.request.queryParameters["imlec"])
+            val kayitlar = begeniler.ekle(izleyen, liste.incelemeler.map { it.kayit })
+            call.respond(liste.copy(incelemeler = liste.incelemeler.zip(kayitlar) { inceleme, kayit -> inceleme.copy(kayit = kayit) }))
         }
         put(ApiYollari.kutuphaneGirisi("{id}")) {
             val id = call.oyunId()
