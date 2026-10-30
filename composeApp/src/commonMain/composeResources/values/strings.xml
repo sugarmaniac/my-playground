@@ -266,4 +266,10 @@
     <string name="sebep_isaretsiz_spoiler">Unmarked spoiler</string>
     <string name="sebep_sahte_hesap">Fake account</string>
     <string name="sebep_diger">Other</string>
+    <string name="hesap_sil">Delete account</string>
+    <string name="hesap_sil_baslik">Delete your account?</string>
+    <string name="hesap_sil_aciklama">This cannot be undone. Your profile, library, diary entries, likes, follows, friendships, invite codes, Steam connection and notifications are deleted immediately and permanently.</string>
+    <string name="hesap_sil_onay_etiketi">Type %1$s to confirm</string>
+    <string name="hesap_sil_onay">Delete permanently</string>
+    <string name="hesap_sil_hata">Couldn't delete your account. Try again.</string>
 </resources>

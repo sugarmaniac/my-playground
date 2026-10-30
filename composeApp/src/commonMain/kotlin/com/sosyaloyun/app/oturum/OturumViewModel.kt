@@ -49,6 +49,12 @@ class OturumViewModel(private val api: ApiIstemcisi, private val depo: OturumDep
         }
     }
 
+    /** Hesap silinince backend'deki oturum da silindi; yalnızca cihazdaki token kalkar. */
+    fun hesapSilindi() {
+        depo.yaz(null)
+        _ekran.value = OturumEkrani.Giris()
+    }
+
     /** Oturum cihazdan hemen silinir; backend'e ulaşılamasa da kullanıcı çıkmış olur. */
     fun cikisYap() {
         viewModelScope.launch {

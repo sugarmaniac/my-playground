@@ -137,4 +137,16 @@ class OturumViewModelTest {
         assertEquals(OturumEkrani.Giris(), viewModel.ekran.value)
         assertNull(depo.token)
     }
+
+    @Test
+    fun hesapSilininceOturumCihazdanSilinirBackendeCikisGitmez() = runTest(dispatcher) {
+        depo.token = "oturum-1"
+        val viewModel = OturumViewModel(api, depo)
+
+        viewModel.hesapSilindi()
+
+        assertEquals(OturumEkrani.Giris(), viewModel.ekran.value)
+        assertNull(depo.token)
+        assertEquals(0, api.cikisSayisi)
+    }
 }

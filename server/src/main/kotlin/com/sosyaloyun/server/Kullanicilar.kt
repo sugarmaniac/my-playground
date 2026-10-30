@@ -3,6 +3,7 @@ package com.sosyaloyun.server
 import com.sosyaloyun.shared.AramaKurallari
 import com.sosyaloyun.shared.Avatar
 import com.sosyaloyun.shared.BenYaniti
+import com.sosyaloyun.shared.HesapSilme
 import com.sosyaloyun.shared.KimlikSaglayici
 import com.sosyaloyun.shared.KullaniciAdiDurumu
 import com.sosyaloyun.shared.KullaniciListesi
@@ -66,6 +67,19 @@ class Kullanicilar(private val veritabani: Database) {
                 profil = satir.kullaniciOzeti(),
                 onboardingTamamlandi = satir[KullaniciTablosu.onboardingTamamlandi],
             )
+        }
+    }
+
+    /**
+     * Hesabı anında ve kalıcı olarak siler (ADR 0008). Kullanıcıya bağlı her tablo `ON DELETE CASCADE` ile birlikte
+     * silinir; topluluk puanı her istekte hesaplandığından silinenin puanı kendiliğinden düşer. Onay tutmazsa false.
+     */
+    suspend fun sil(kullaniciId: UUID, onay: String): Boolean = withContext(Dispatchers.IO) {
+        transaction(veritabani) {
+            val satir = KullaniciTablosu.selectAll().where { KullaniciTablosu.id eq kullaniciId }.forUpdate().single()
+            if (!HesapSilme.onaylandiMi(onay, satir[KullaniciTablosu.kullaniciAdi])) return@transaction false
+            KullaniciTablosu.deleteWhere { id eq kullaniciId }
+            true
         }
     }
 

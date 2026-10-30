@@ -30,6 +30,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import kotlinx.serialization.KSerializer
+import org.jetbrains.exposed.v1.jdbc.Database
 import io.ktor.server.testing.testApplication
 
 /** Bir API testinin eriştiği her şey: gerçek HTTP istemcisi, sahte saat, sahte adaptörler ve testte değiştirilebilen ayarlar. */
@@ -49,6 +50,8 @@ class ApiTestOrtami(
     /** Push'lar gerçekte arka planda gönderilir; testte [PushDagitici.bekleyenleriGonder] elle çağrılır. */
     val pushDagitici: PushDagitici,
     val eposta: SahteEpostaGonderici,
+    /** Yalnızca API'nin gösteremediğini doğrulamak için (ör. silinen hesaptan hiçbir satır kalmadığı). */
+    val veritabani: Database,
 ) {
     private var kurucuKoduSayaci = 0
 
@@ -142,5 +145,6 @@ fun apiTesti(blok: suspend ApiTestOrtami.() -> Unit) = testApplication {
         pushGonderici = pushGonderici,
         pushDagitici = PushDagitici(veritabani, Ayarlar(veritabani), pushGonderici, saat),
         eposta = eposta,
+        veritabani = veritabani,
     ).blok()
 }

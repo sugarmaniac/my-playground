@@ -23,6 +23,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -30,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sosyaloyun.app.resources.Res
 import com.sosyaloyun.app.resources.cikis_yap
+import com.sosyaloyun.app.resources.hesap_sil
 import com.sosyaloyun.app.resources.davet_kodlarim_baslik
 import com.sosyaloyun.app.resources.davet_kodlarim_aciklama
 import com.sosyaloyun.app.resources.davet_kodu_bekliyor
@@ -202,8 +206,11 @@ fun AnaEkran(
     bildirimTercihleri: BildirimTercihleriViewModel,
     engelListesi: (EngelListesiTuru) -> Unit,
     cikisYap: () -> Unit,
+    hesapSilme: @Composable () -> HesapSilmeViewModel,
 ) {
     val ekran by davetKodlari.ekran.collectAsStateWithLifecycle()
+    var silmeAcik by remember { mutableStateOf(false) }
+    if (silmeAcik) HesapSilmePenceresi(hesapSilme(), profil.kullaniciAdi, kapat = { silmeAcik = false })
     val paylas = paylasici()
     Column(Modifier.fillMaxSize().padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         TextButton(onClick = geri) { Text(stringResource(Res.string.geri)) }
@@ -238,6 +245,9 @@ fun AnaEkran(
         }
         TextButton(onClick = cikisYap, modifier = Modifier.align(Alignment.CenterHorizontally)) {
             Text(stringResource(Res.string.cikis_yap))
+        }
+        TextButton(onClick = { silmeAcik = true }, modifier = Modifier.align(Alignment.CenterHorizontally)) {
+            Text(stringResource(Res.string.hesap_sil), color = MaterialTheme.colorScheme.error)
         }
     }
 }

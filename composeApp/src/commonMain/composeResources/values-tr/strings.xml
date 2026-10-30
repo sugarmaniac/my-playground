@@ -266,4 +266,10 @@
     <string name="sebep_isaretsiz_spoiler">İşaretsiz spoiler</string>
     <string name="sebep_sahte_hesap">Sahte hesap</string>
     <string name="sebep_diger">Diğer</string>
+    <string name="hesap_sil">Hesabı sil</string>
+    <string name="hesap_sil_baslik">Hesabın silinsin mi?</string>
+    <string name="hesap_sil_aciklama">Bu işlem geri alınamaz. Profilin, kütüphanen, günlük kayıtların, beğenilerin, takiplerin, arkadaşlıkların, davet kodların, Steam bağlantın ve bildirimlerin anında ve kalıcı olarak silinir.</string>
+    <string name="hesap_sil_onay_etiketi">Onaylamak için %1$s yaz</string>
+    <string name="hesap_sil_onay">Kalıcı olarak sil</string>
+    <string name="hesap_sil_hata">Hesabın silinemedi. Tekrar dene.</string>
 </resources>

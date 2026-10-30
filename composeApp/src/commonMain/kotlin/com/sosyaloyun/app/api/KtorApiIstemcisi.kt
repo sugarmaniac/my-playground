@@ -25,6 +25,7 @@ import com.sosyaloyun.shared.OrtakOyunlar
 import com.sosyaloyun.shared.OyunAramaYaniti
 import com.sosyaloyun.shared.IncelemeListesi
 import com.sosyaloyun.shared.OyunDetayi
+import com.sosyaloyun.shared.HesapSilmeIstegi
 import com.sosyaloyun.shared.SikayetIstegi
 import com.sosyaloyun.shared.OkunmamisBildirimSayisi
 import com.sosyaloyun.shared.BildirimTercihleri
@@ -92,6 +93,15 @@ class KtorApiIstemcisi(
     }
 
     override suspend fun ben(): BenYaniti = istek { http.get(ApiYollari.BEN).body() }
+
+    override suspend fun hesabiSil(onay: String) {
+        istek {
+            http.delete(ApiYollari.BEN) {
+                contentType(ContentType.Application.Json)
+                setBody(HesapSilmeIstegi(onay))
+            }
+        }
+    }
 
     override suspend fun steamBaglantisi(): SteamBaglantisi? = try {
         istek { http.get(ApiYollari.STEAM).body<SteamBaglantisi>() }

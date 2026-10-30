@@ -43,6 +43,9 @@ interface ApiIstemcisi {
 
     suspend fun ben(): BenYaniti
 
+    /** Hesabı kalıcı olarak siler; [onay] kullanıcının elle yazdığı kullanıcı adı. */
+    suspend fun hesabiSil(onay: String)
+
     /** Bağlı değilse null. */
     suspend fun steamBaglantisi(): SteamBaglantisi?
 

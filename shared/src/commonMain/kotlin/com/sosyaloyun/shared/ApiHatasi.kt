@@ -112,6 +112,10 @@ enum class HataKodu {
     @SerialName("hesap_banli")
     HESAP_BANLI,
 
+    /** Hesap silme isteğindeki onay metni kullanıcı adıyla eşleşmiyor. */
+    @SerialName("hesap_silme_onayi_gecersiz")
+    HESAP_SILME_ONAYI_GECERSIZ,
+
     @SerialName("kendini_engelleyemezsin")
     KENDINI_ENGELLEYEMEZSIN,
 
