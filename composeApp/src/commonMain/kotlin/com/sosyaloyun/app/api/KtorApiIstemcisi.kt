@@ -23,6 +23,7 @@ import com.sosyaloyun.shared.KutuphaneGirisi
 import com.sosyaloyun.shared.KutuphaneSayfasi
 import com.sosyaloyun.shared.OrtakOyunlar
 import com.sosyaloyun.shared.OyunAramaYaniti
+import com.sosyaloyun.shared.IncelemeListesi
 import com.sosyaloyun.shared.OyunDetayi
 import com.sosyaloyun.shared.ProfilIstegi
 import com.sosyaloyun.shared.ProfilSayfasi
@@ -106,6 +107,9 @@ class KtorApiIstemcisi(
     }
 
     override suspend fun oyunDetayi(oyunId: String): OyunDetayi = istek { http.get("${ApiYollari.OYUNLAR}/$oyunId").body() }
+
+    override suspend fun oyunIncelemeleri(oyunId: String, imlec: String?): IncelemeListesi =
+        istek { http.get(ApiYollari.oyunIncelemeleri(oyunId)) { imlec?.let { parameter("imlec", it) } }.body() }
 
     override suspend fun kutuphaneGirisiKaydet(oyunId: String, giris: KutuphaneGirisi): KutuphaneGirisi = istek {
         http.put(ApiYollari.kutuphaneGirisi(oyunId)) {

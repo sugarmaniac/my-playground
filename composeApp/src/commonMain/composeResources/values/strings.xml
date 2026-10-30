@@ -148,4 +148,10 @@
     <string name="akis_spoiler_goster">Show</string>
     <string name="begenenler">Liked by</string>
     <string name="gunluk_kaydi_bulunamadi">This journal entry could not be found.</string>
+    <string name="oyun_topluluk_puani">Community score: %1$s</string>
+    <string name="oyun_yeterli_puan_yok">Not enough ratings yet</string>
+    <string name="oyun_arkadas_ortalamasi">Friends: %1$s</string>
+    <string name="oyun_oynayan_arkadas">Friends who played: %1$d</string>
+    <string name="oyun_incelemeler">Reviews</string>
+    <string name="oyun_arkadasin">Friend</string>
 </resources>

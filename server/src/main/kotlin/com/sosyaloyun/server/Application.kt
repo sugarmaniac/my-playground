@@ -45,7 +45,7 @@ fun Application.modul(bagimliliklar: Bagimliliklar) {
         val kutuphane = Kutuphane(veritabani, bagimliliklar.saat)
         val begeniler = Begeniler(veritabani, bagimliliklar.saat)
         val sosyalGraf = SosyalGraf(veritabani, bagimliliklar.saat)
-        katalogRotalari(katalog, kutuphane, gunluk, begeniler, katalogIceAktarici, bagimliliklar.igdbWebhookSirri)
+        katalogRotalari(katalog, kutuphane, gunluk, begeniler, Topluluk(veritabani, ayarlar), katalogIceAktarici, bagimliliklar.igdbWebhookSirri)
         akisRotalari(Akis(veritabani, katalog, begeniler), kutuphane, katalog)
         gunlukRotalari(gunluk, katalog, begeniler, sosyalGraf, kullanicilar)
         profilSayfasiRotalari(Profiller(veritabani, katalog, kullanicilar, sosyalGraf, begeniler, bagimliliklar.saat), kullanicilar, sosyalGraf)

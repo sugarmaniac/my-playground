@@ -64,6 +64,9 @@ object ApiYollari {
     /** `POST /oyunlar/{id}/gunluk`: yeni günlük kaydı. */
     fun oyunGunlugu(oyunId: String) = "$OYUNLAR/$oyunId/gunluk"
 
+    /** `GET`: oyunun incelemeleri, önce arkadaşlarınki; `?imlec=` ile sayfalı. */
+    fun oyunIncelemeleri(oyunId: String) = "$OYUNLAR/$oyunId/incelemeler"
+
     /** `GET` / `PUT` / `DELETE /gunluk/{id}`: günlük kaydı detayı, düzenleme ve silme. */
     const val GUNLUK = "/gunluk"
 

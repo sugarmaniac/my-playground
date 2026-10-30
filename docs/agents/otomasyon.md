@@ -9,11 +9,11 @@ Bu repo, zamanlanmış cloud oturumları tarafından ticket ticket ve insan müd
 - **Eşitleme:** private reponun `main`'i Railway dağıtımını besler. my-playground'da her merge'ten sonra aynı ağacı private `main`'e yeni bir commit olarak ekle (geçmişler ayrı olduğu için doğrudan push edilmez):
 
   ```bash
-  git fetch my-playground main && git fetch ozel main
-  git push ozel "$(git commit-tree 'my-playground/main^{tree}' -p ozel/main -m '<merge edilen PR başlığı> (my-playground)')":main
+  git fetch origin +main:refs/remotes/origin/main && git fetch ozel +main:refs/remotes/ozel/main
+  git push ozel "$(git commit-tree 'origin/main^{tree}' -p ozel/main -m '<merge edilen PR başlığı> (my-playground#<n>)')":refs/heads/main
   ```
 
-  (`my-playground` ve `ozel` iki reponun remote adlarıdır.)
+  (`origin` my-playground, `ozel` private repodur: `git remote add ozel https://github.com/sugarmaniac/Sosyal-Oyun-Platformu`. Refspec'ler açık yazılır; sığ klonda `git fetch origin main` uzak dalı güncellemez.)
 
 ## Ticket seçimi
 
