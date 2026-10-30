@@ -9,3 +9,5 @@ Statik HTML + JavaScript sitesi (ADR 0004). Gradle projesinin dışındadır (AD
 - `ayarlar.js`: API adresi ve mağaza linkleri. Mağaza linkleri boşken düğmelerde "Yakında" yazar.
 
 Server bu dizini kök adreste sunar (imajda `/uygulama/web`, `WEB_DIZINI`). Böylece sayfalar API'ye aynı adresten ulaşır. Uygulamadaki paylaş butonu linkleri `PaylasimLinkleri` ile üretir.
+
+Paylaşım sayfaları statik halleriyle `noindex`'tir. Faz 2 açıkken server bu üç sayfayı içeriğe özel `<title>`, açıklama ve Open Graph/Twitter etiketleriyle (oyun kapağı görseli) sunar; `noindex` kalkar. Yalnızca paylaşım uç noktalarının döndürdüğü içerik etiketlenir; ayrıca `robots.txt` ve `sitemap.xml` sunulur (#54). Faz 1'de `robots.txt` her şeyi kapatır, sitemap yoktur.
