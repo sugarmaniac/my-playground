@@ -1,5 +1,6 @@
 package com.sosyaloyun.app.oturum
 
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
@@ -40,7 +41,7 @@ fun GirisEkraniGorunumu(
 ) {
     Column(
         // İtiraz formu klavyeyle birlikte ekrana sığmayabilir; kaydırılır, kısa içerik yine ortada durur.
-        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp),
+        modifier = Modifier.fillMaxSize().safeDrawingPadding().verticalScroll(rememberScrollState()).padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {

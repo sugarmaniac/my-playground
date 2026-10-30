@@ -167,7 +167,7 @@
     <string name="onboarding_hata">Could not save. Try again.</string>
     <string name="steam_girdi">Steam profile link or name</string>
     <string name="steam_bagla">Connect</string>
-    <string name="steam_gizli">Your Steam profile or game details are private. On Steam open Profile → Edit Profile → Privacy Settings, set \"My profile\" and \"Game details\" to Public, then try again.</string>
+    <string name="steam_gizli">Your Steam profile or game details are private. On Steam open Profile → Edit Profile → Privacy Settings, set "My profile" and "Game details" to Public, then try again.</string>
     <string name="steam_bulunamadi">No Steam account found. Paste your profile link (steamcommunity.com/id/… or /profiles/…).</string>
     <string name="steam_baska_kullanicida">This Steam account is connected to another user.</string>
     <string name="steam_ulasilamiyor">Steam cannot be reached right now. Try again later.</string>
@@ -200,7 +200,7 @@
     <string name="tur_dovus">Fighting</string>
     <string name="tur_platform">Platform</string>
     <string name="tur_bulmaca">Puzzle</string>
-    <string name="tur_kes_bicle">Hack and slash / Beat \'em up</string>
+    <string name="tur_kes_bicle">Hack and slash / Beat 'em up</string>
     <string name="tur_arcade">Arcade</string>
     <string name="tur_bagimsiz">Indie</string>
     <string name="tur_gorsel_roman">Visual novel</string>
@@ -390,4 +390,5 @@
     <string name="oyun_oynayan">Played</string>
     <string name="oyun_puan_yok">Not enough</string>
     <string name="oyun_senin_puanin">Your rating</string>
+    <string name="onboarding_davet_paylas">Share your invite code</string>
 </resources>

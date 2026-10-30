@@ -158,6 +158,37 @@ class EkranGoruntuleri {
         }
     }
 
+    /** Hesap kurulumu adımları (#64): davet kodu, profil, Steam, oyun durumları, arkadaşlar, bildirim izni. */
+    @Test
+    fun kurulum() {
+        val oncekiYerel = java.util.Locale.getDefault()
+        java.util.Locale.setDefault(java.util.Locale.forLanguageTag("tr-TR"))
+        Dispatchers.setMain(UnconfinedTestDispatcher())
+        try {
+            val api = sahteApi().apply {
+                populerler = listOf("Elden Ring", "Celeste", "Hades", "Hollow Knight", "Baldur's Gate 3").mapIndexed { i, ad ->
+                    OyunOzeti("p$i", ad, OyunTuru.ANA_OYUN, 2020, null, emptyList(), null)
+                }
+            }
+            ciz("k1-davet-kodu") { com.sosyaloyun.app.hesap.DavetKoduEkrani(com.sosyaloyun.app.hesap.DavetKoduViewModel(api) {}) }
+            ciz("k2-profil") { com.sosyaloyun.app.hesap.ProfilEkrani(com.sosyaloyun.app.hesap.ProfilViewModel(api) {}) }
+            val onboarding = com.sosyaloyun.app.onboarding.OnboardingViewModel(api) {}
+            ciz("k3-steam") { com.sosyaloyun.app.onboarding.OnboardingEkrani(onboarding) }
+            onboarding.steamiAtla()
+            onboarding.durumSec("p0", com.sosyaloyun.shared.Durum.BITIRDIM)
+            onboarding.durumSec("p2", com.sosyaloyun.shared.Durum.OYNUYORUM)
+            onboarding.durumSec("p3", com.sosyaloyun.shared.Durum.BIRAKTIM)
+            ciz("k4-durumlar") { com.sosyaloyun.app.onboarding.OnboardingEkrani(onboarding) }
+            onboarding.durumlariBitir()
+            ciz("k5-arkadaslar") { com.sosyaloyun.app.onboarding.OnboardingEkrani(onboarding) }
+            onboarding.arkadaslariBitir()
+            ciz("k6-bildirim") { com.sosyaloyun.app.onboarding.OnboardingEkrani(onboarding) }
+        } finally {
+            Dispatchers.resetMain()
+            java.util.Locale.setDefault(oncekiYerel)
+        }
+    }
+
     private fun ciz(ad: String, yukseklik: Int = 844, yaziOlcegi: Float = 1f, icerik: @Composable () -> Unit) {
         val sahip = object : ViewModelStoreOwner, LifecycleOwner {
             override val viewModelStore = ViewModelStore()
