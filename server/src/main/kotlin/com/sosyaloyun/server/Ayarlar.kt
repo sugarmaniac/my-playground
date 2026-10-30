@@ -31,6 +31,11 @@ sealed class Ayar<T>(
     data object SessizSaatBaslangici : Ayar<Int>("sessiz_saat_baslangici", 23, Int::toString, String::toInt)
     data object SessizSaatBitisi : Ayar<Int>("sessiz_saat_bitisi", 9, Int::toString, String::toInt)
 
+    /** Faz 2 push pencereleri (#52): acil olmayan push'lar yerel saatle bu saatlerde başlayan pencerelerde gider. */
+    data object OglePushPenceresi : Ayar<Int>("ogle_push_penceresi", 12, Int::toString, String::toInt)
+    data object AksamPushPenceresi : Ayar<Int>("aksam_push_penceresi", 19, Int::toString, String::toInt)
+    data object PushPenceresiSuresi : Ayar<Int>("push_penceresi_suresi_saat", 2, Int::toString, String::toInt)
+
     /** Moderatörün "askıya al" kararının süresi (gün). */
     data object AskiSuresiGun : Ayar<Int>("aski_suresi_gun", 7, Int::toString, String::toInt)
 

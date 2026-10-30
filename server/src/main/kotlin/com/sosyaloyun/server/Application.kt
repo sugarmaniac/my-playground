@@ -53,7 +53,7 @@ fun Application.modul(bagimliliklar: Bagimliliklar) {
         if (bagimliliklar.steamZamanlayici) steamZamanlayicisiniBaslat(steam)
         steamRotalari(steam, katalog, kutuphane, kullanicilar)
         bildirimRotalari(Bildirimler(veritabani, bagimliliklar.saat, fazlar))
-        if (bagimliliklar.pushZamanlayici) pushZamanlayicisiniBaslat(PushDagitici(veritabani, ayarlar, bagimliliklar.pushGonderici, bagimliliklar.saat))
+        if (bagimliliklar.pushZamanlayici) pushZamanlayicisiniBaslat(PushDagitici(veritabani, ayarlar, bagimliliklar.pushGonderici, bagimliliklar.saat, fazlar))
         kesifRotalari(KesifServisi(veritabani, katalog, bagimliliklar.saat), katalog)
         arkadasBulmaRotalari(ArkadasBulma(veritabani, bagimliliklar.steamKaynagi), kullanicilar, sosyalGraf)
         val puanGecmisleri = PuanGecmisleri(veritabani, ayarlar, katalog, bagimliliklar.saat)
