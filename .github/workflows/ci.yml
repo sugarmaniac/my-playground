@@ -13,6 +13,8 @@ concurrency:
 jobs:
   linux:
     name: Android ve server
+    # Kod ve CI public my-playground'da; issue reposuna senkronlanan kopyada işler atlanır (docs/agents/otomasyon.md → Repolar).
+    if: github.repository == 'sugarmaniac/my-playground'
     runs-on: ubuntu-latest
     steps:
       - name: Kodu al
@@ -29,6 +31,7 @@ jobs:
 
   imaj:
     name: Backend imajı
+    if: github.repository == 'sugarmaniac/my-playground'
     runs-on: ubuntu-latest
     steps:
       - name: Kodu al
@@ -38,6 +41,7 @@ jobs:
 
   ios:
     name: iOS
+    if: github.repository == 'sugarmaniac/my-playground'
     runs-on: macos-latest
     steps:
       - name: Kodu al

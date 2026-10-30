@@ -15,6 +15,8 @@ Bu repo, zamanlanmış cloud oturumları tarafından ticket ticket ve insan müd
 
   (`origin` my-playground, `ozel` private repodur: `git remote add ozel https://github.com/sugarmaniac/Sosyal-Oyun-Platformu`. Refspec'ler açık yazılır; sığ klonda `git fetch origin main` uzak dalı güncellemez.)
 
+  Railway, private `main`'deki her commit'i CI'ın sonucunu bekleyerek dağıtır. CI işleri yalnızca my-playground'da çalışır (`if: github.repository == …`); private kopyada atlanan işler başarılı sayılır, dağıtım bloklanmaz. Eşitlemeden birkaç dakika sonra `/saglik` ve değişen uç nokta Railway adresinde kontrol edilir; dağıtım başlamadıysa ve oturumda `RAILWAY_TOKEN` (proje token'ı) varsa dağıtım Railway GraphQL API'sindeki `serviceInstanceDeployV2(environmentId, serviceId, commitSha)` ile tetiklenir.
+
 ## Ticket seçimi
 
 1. GitHub Issues'tan açık, `ready-for-agent` etiketli ticket'ları listele (`docs/agents/issue-tracker.md`; GraphQL kapalıysa REST).
