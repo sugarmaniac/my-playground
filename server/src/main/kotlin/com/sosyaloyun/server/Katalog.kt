@@ -184,6 +184,22 @@ class Katalog(private val veritabani: Database) {
         transaction(veritabani) { ozetler(idler.distinct()) }
     }
 
+    /**
+     * Adı (aramaya göre düzenlenmiş haliyle) birebir eşleşen, kaynakta silinmemiş ana oyunlar; aynı adda birden çok
+     * oyun varsa en popüleri. Konsol içe aktarma için (#57). Anahtar `AramaMetni.duzenle(ad)`.
+     */
+    suspend fun adlaEslesmeler(adlar: Collection<String>): Map<String, UUID> = withContext(Dispatchers.IO) {
+        val metinler = adlar.map(AramaMetni::duzenle).filter { it.isNotEmpty() }.distinct()
+        if (metinler.isEmpty()) return@withContext emptyMap()
+        transaction(veritabani) {
+            OyunTablosu.select(OyunTablosu.id, OyunTablosu.aramaMetni)
+                .where { (OyunTablosu.aramaMetni inList metinler) and (OyunTablosu.kaldirildi eq false) and (OyunTablosu.tur eq OyunTuru.ANA_OYUN.name) }
+                .orderBy(OyunTablosu.populerlik to SortOrder.DESC)
+                .groupBy({ it[OyunTablosu.aramaMetni] }, { it[OyunTablosu.id] })
+                .mapValues { it.value.first() }
+        }
+    }
+
     /** Oyunların türleri (IGDB adlarıyla); istatistikler için (#55). */
     suspend fun turleri(idler: Collection<UUID>): Map<UUID, List<String>> = withContext(Dispatchers.IO) {
         if (idler.isEmpty()) return@withContext emptyMap()

@@ -335,6 +335,30 @@ step "Backend servisi → Variables → STEAM_WEB_API_KEY ekle (değer .env'de) 
 note "Anahtar yokken uygulama Steam'siz çalışır; Steam bağlama 'şu an ulaşılamıyor' der."
 pause "Değişken eklenince Enter'a bas"
 
+# ── Xbox ve PlayStation (#57, Faz 3) ───────────────────────────────────────
+stage "Xbox: OpenXBL API anahtarı (Faz 3)"
+say "Faz 3 açıkken kullanıcılar Xbox hesaplarını bağlar; oyun geçmişi OpenXBL üzerinden okunur. Anahtar yoksa Xbox ayarlarda görünmez."
+open_url "https://xbl.io/"
+step "Bir Microsoft/Xbox hesabıyla giriş yap → profil → 'API Keys' → 'Create +' ile bir anahtar oluştur ve kopyala."
+ask_secret OPENXBL_ANAHTARI "OpenXBL API anahtarını yapıştır (görünmez):"
+write_env OPENXBL_ANAHTARI "$OPENXBL_ANAHTARI"
+open_url "$RAILWAY_PROJE"
+step "Backend servisi → Variables → OPENXBL_ANAHTARI ekle (değer .env'de) ve Deploy'a bas."
+note "Ücretsiz plan saatlik istek sınırı koyar; kullanıcı sayısı artınca ücretli plana geçmek gerekebilir."
+pause "Değişken eklenince Enter'a bas"
+
+stage "PlayStation: PSN NPSSO token'ı (Faz 3)"
+say "Kullanıcıların PSN oyun geçmişi ekibin bir PSN hesabının NPSSO token'ıyla okunur. Anahtar yoksa PlayStation ayarlarda görünmez."
+step "Bu iş için ayrı bir PSN hesabı aç (kişisel hesabını kullanma) ve tarayıcıda o hesapla playstation.com'a giriş yap."
+open_url "https://ca.account.sony.com/api/v1/ssocookie"
+step "Açılan sayfadaki JSON'da \"npsso\" değerini (64 karakter) kopyala."
+ask_secret PSN_NPSSO "NPSSO değerini yapıştır (görünmez):"
+write_env PSN_NPSSO "$PSN_NPSSO"
+open_url "$RAILWAY_PROJE"
+step "Backend servisi → Variables → PSN_NPSSO ekle (değer .env'de) ve Deploy'a bas."
+note "NPSSO yaklaşık iki ayda bir yenilenmelidir; süresi dolunca PlayStation bağlama 'şu an ulaşılamıyor' der."
+pause "Değişken eklenince Enter'a bas"
+
 # ── Push bildirimleri (#21) ────────────────────────────────────────────────
 stage "Firebase: push bildirimleri"
 say "Push bildirimleri Firebase Cloud Messaging ile gider; iOS'a Firebase üzerinden APNs ile ulaşır."

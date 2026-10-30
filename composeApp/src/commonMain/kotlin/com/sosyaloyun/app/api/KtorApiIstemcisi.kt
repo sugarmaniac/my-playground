@@ -9,6 +9,10 @@ import com.sosyaloyun.shared.ItirazDurumu
 import com.sosyaloyun.shared.Istatistikler
 import com.sosyaloyun.shared.YillikOzet
 import com.sosyaloyun.shared.OneriListesi
+import com.sosyaloyun.shared.KonsolAgi
+import com.sosyaloyun.shared.KonsolBaglaIstegi
+import com.sosyaloyun.shared.KonsolBaglantilari
+import com.sosyaloyun.shared.KonsolIceAktarmaSonucu
 import com.sosyaloyun.shared.ItirazIstegi
 import com.sosyaloyun.shared.GirisItirazIstegi
 import com.sosyaloyun.shared.ListeIstegi
@@ -494,6 +498,19 @@ class KtorApiIstemcisi(
     }
 
     override suspend fun oneriler(): OneriListesi = istek { http.get(ApiYollari.ONERILER).body() }
+
+    override suspend fun konsollar(): KonsolBaglantilari = istek { http.get(ApiYollari.KONSOLLAR).body() }
+
+    override suspend fun konsolBagla(ag: KonsolAgi, hesap: String): KonsolIceAktarmaSonucu = istek {
+        http.put(ApiYollari.konsol(ag.yol)) {
+            contentType(ContentType.Application.Json)
+            setBody(KonsolBaglaIstegi(hesap))
+        }.body()
+    }
+
+    override suspend fun konsolKaldir(ag: KonsolAgi) {
+        istek { http.delete(ApiYollari.konsol(ag.yol)) }
+    }
 
     override suspend fun ilgilenmiyorum(oyunId: String) {
         istek { http.put(ApiYollari.ilgilenmiyorum(oyunId)) }

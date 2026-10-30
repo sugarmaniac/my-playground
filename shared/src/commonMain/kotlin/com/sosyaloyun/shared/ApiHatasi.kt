@@ -140,6 +140,21 @@ enum class HataKodu {
     @SerialName("kurator_basvurusu_gecersiz")
     KURATOR_BASVURUSU_GECERSIZ,
 
+    /** Konsol hesabı (gamertag / PSN kimliği) bulunamadı (#57). */
+    @SerialName("konsol_hesabi_bulunamadi")
+    KONSOL_HESABI_BULUNAMADI,
+
+    /** Konsol profilinin oyun geçmişi gizli; kullanıcı gizlilik ayarından açmalı (#57). */
+    @SerialName("konsol_profili_gizli")
+    KONSOL_PROFILI_GIZLI,
+
+    @SerialName("konsol_hesabi_baska_kullanicida")
+    KONSOL_HESABI_BASKA_KULLANICIDA,
+
+    /** Sunucuda bu ağın anahtarı yok ya da servise şu an ulaşılamıyor (#57). */
+    @SerialName("konsol_kullanilamiyor")
+    KONSOL_KULLANILAMIYOR,
+
     /** Yorum yasağı süresince yorum yazılamaz (#53); [ApiHatasi.ayrinti] yasağın bittiği an. */
     @SerialName("yorum_yasagi")
     YORUM_YASAGI,

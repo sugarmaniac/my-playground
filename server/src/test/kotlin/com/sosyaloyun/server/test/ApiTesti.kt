@@ -50,6 +50,8 @@ class ApiTestOrtami(
     /** Kataloğu sahte kaynaktan içeri alır; gerçekte açılışta ve zamanlanmış olarak çalışır. */
     val katalogIceAktarici: KatalogIceAktarici,
     val steamKaynagi: SahteSteamKaynagi,
+    /** Testte yalnızca Xbox'ın anahtarı varmış gibi; PlayStation ayarlarda görünmez. */
+    val xbox: SahteKonsolKaynagi,
     /** Steam sürelerinin günlük güncellemesi gerçekte zamanlanmış çalışır; testte [Steam.hepsiniGuncelle] elle çağrılır. */
     val steam: Steam,
     val pushGonderici: SahtePushGonderici,
@@ -129,6 +131,7 @@ fun apiTesti(ekRotalar: Route.() -> Unit = {}, blok: suspend ApiTestOrtami.() ->
     val kimlikDogrulayici = SahteKimlikDogrulayici()
     val katalogKaynagi = SahteKatalogKaynagi()
     val steamKaynagi = SahteSteamKaynagi()
+    val xbox = SahteKonsolKaynagi(com.sosyaloyun.shared.KonsolAgi.XBOX)
     val pushGonderici = SahtePushGonderici()
     val eposta = SahteEpostaGonderici()
     val bagimliliklar = Bagimliliklar(
@@ -138,6 +141,7 @@ fun apiTesti(ekRotalar: Route.() -> Unit = {}, blok: suspend ApiTestOrtami.() ->
         katalogKaynagi = katalogKaynagi,
         igdbWebhookSirri = TEST_WEBHOOK_SIRRI,
         steamKaynagi = steamKaynagi,
+        konsolKaynaklari = listOf(xbox),
         epostaGonderici = eposta,
         moderasyonSifresi = TEST_MODERASYON_SIFRESI,
         // Testler server/ dizininde çalışır; web sitesi kökteki web/ dizininde.
@@ -157,6 +161,7 @@ fun apiTesti(ekRotalar: Route.() -> Unit = {}, blok: suspend ApiTestOrtami.() ->
         katalogKaynagi = katalogKaynagi,
         katalogIceAktarici = KatalogIceAktarici(katalogKaynagi, Katalog(veritabani)),
         steamKaynagi = steamKaynagi,
+        xbox = xbox,
         steam = Steam(veritabani, Katalog(veritabani), Kutuphane(veritabani, saat), steamKaynagi, saat),
         pushGonderici = pushGonderici,
         pushDagitici = PushDagitici(veritabani, Ayarlar(veritabani), pushGonderici, saat, Fazlar(Ayarlar(veritabani))),

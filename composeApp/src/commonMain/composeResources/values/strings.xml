@@ -370,4 +370,17 @@
     <string name="oneri_neden_tur">Like the %1$s games you love</string>
     <string name="oneri_neden_platform">Popular on %1$s</string>
     <string name="oneri_neden_populer">Popular right now</string>
+    <string name="konsol_baslik">Xbox and PlayStation</string>
+    <string name="konsol_xbox">Xbox</string>
+    <string name="konsol_playstation">PlayStation</string>
+    <string name="konsol_hesap_xbox">Gamertag</string>
+    <string name="konsol_hesap_playstation">PSN online ID</string>
+    <string name="konsol_bagla">Connect %1$s</string>
+    <string name="konsol_bagli">%1$s: %2$s</string>
+    <string name="konsol_kaldir">Disconnect</string>
+    <string name="konsol_sonuc">%1$d games added to your library, %2$d couldn't be matched.</string>
+    <string name="konsol_hata_bulunamadi">No account with that name.</string>
+    <string name="konsol_hata_gizli">This account's game history is private. Make it public in the console's privacy settings and try again.</string>
+    <string name="konsol_hata_baska">This account is connected to another user.</string>
+    <string name="konsol_hata_kullanilamiyor">Can't reach the service right now. Try again later.</string>
 </resources>

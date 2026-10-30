@@ -26,6 +26,8 @@ class Bagimliliklar(
     val steamKaynagi: SteamKaynagi? = null,
     /** Günde bir bağlı Steam hesaplarının süreleri güncellenir; testlerde kapalı. */
     val steamZamanlayici: Boolean = false,
+    /** Faz 3 konsol içe aktarma (#57); anahtarı olmayan ağın adaptörü yoktur ve ayarlarda gösterilmez. */
+    val konsolKaynaklari: List<KonsolKaynagi> = emptyList(),
     /** Push bildirimleri (FCM); null ise bildirimler yalnızca uygulama içinde kalır. */
     val pushGonderici: PushGonderici? = null,
     /** Bekleyen push'lar arka planda düzenli gönderilir; testlerde kapalı, test dağıtıcıyı kendisi çağırır. */
@@ -62,6 +64,7 @@ class Bagimliliklar(
                 igdbWebhookSirri = System.getenv("IGDB_WEBHOOK_SIRRI")?.takeIf { it.isNotBlank() },
                 steamKaynagi = SteamWebApiKaynagi.ortamdan(),
                 steamZamanlayici = true,
+                konsolKaynaklari = listOfNotNull(OpenXblKaynagi.ortamdan(), PsnKaynagi.ortamdan()),
                 pushGonderici = FcmPushGonderici.ortamdan(),
                 pushZamanlayici = true,
                 epostaGonderici = ResendEpostaGonderici.ortamdan(),

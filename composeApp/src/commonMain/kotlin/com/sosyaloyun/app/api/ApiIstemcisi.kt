@@ -8,6 +8,9 @@ import com.sosyaloyun.shared.ItirazDurumu
 import com.sosyaloyun.shared.Istatistikler
 import com.sosyaloyun.shared.YillikOzet
 import com.sosyaloyun.shared.OneriListesi
+import com.sosyaloyun.shared.KonsolAgi
+import com.sosyaloyun.shared.KonsolBaglantilari
+import com.sosyaloyun.shared.KonsolIceAktarmaSonucu
 import com.sosyaloyun.shared.ListeIstegi
 import com.sosyaloyun.shared.Liste
 import com.sosyaloyun.shared.YorumListesi
@@ -231,6 +234,13 @@ interface ApiIstemcisi {
 
     /** Faz 3 (#56): kişisel öneriler ve kalıcı "ilgilenmiyorum". */
     suspend fun oneriler(): OneriListesi
+
+    /** Faz 3 (#57): Xbox ve PlayStation; yalnızca sunucuda anahtarı olan ağlar döner. */
+    suspend fun konsollar(): KonsolBaglantilari
+
+    suspend fun konsolBagla(ag: KonsolAgi, hesap: String): KonsolIceAktarmaSonucu
+
+    suspend fun konsolKaldir(ag: KonsolAgi)
 
     suspend fun ilgilenmiyorum(oyunId: String)
 

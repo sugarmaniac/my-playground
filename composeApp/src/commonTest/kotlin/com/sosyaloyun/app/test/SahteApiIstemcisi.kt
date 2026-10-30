@@ -14,6 +14,10 @@ import com.sosyaloyun.shared.ItirazDurumu
 import com.sosyaloyun.shared.Istatistikler
 import com.sosyaloyun.shared.YillikOzet
 import com.sosyaloyun.shared.OneriListesi
+import com.sosyaloyun.shared.KonsolAgi
+import com.sosyaloyun.shared.KonsolBaglantilari
+import com.sosyaloyun.shared.KonsolBaglantisi
+import com.sosyaloyun.shared.KonsolIceAktarmaSonucu
 import com.sosyaloyun.shared.ItirazSonucu
 import com.sosyaloyun.shared.ListeIstegi
 import com.sosyaloyun.shared.Liste
@@ -622,6 +626,26 @@ class SahteApiIstemcisi : ApiIstemcisi {
         hata?.let { throw it }
         istatistikIstekleri += "yillik:$kullaniciAdi:$yil"
         return yillikOzetler.getValue(yil)
+    }
+
+    var konsolBaglantilari = KonsolBaglantilari(emptyList())
+    var konsolHatasi: Exception? = null
+    val konsolIstekleri = mutableListOf<String>()
+
+    override suspend fun konsollar(): KonsolBaglantilari {
+        hata?.let { throw it }
+        return konsolBaglantilari
+    }
+
+    override suspend fun konsolBagla(ag: KonsolAgi, hesap: String): KonsolIceAktarmaSonucu {
+        konsolHatasi?.let { throw it }
+        konsolIstekleri += "bagla:$ag:$hesap"
+        return KonsolIceAktarmaSonucu(KonsolBaglantisi(ag, hesap), 3, 1)
+    }
+
+    override suspend fun konsolKaldir(ag: KonsolAgi) {
+        konsolHatasi?.let { throw it }
+        konsolIstekleri += "kaldir:$ag"
     }
 
     var oneriListesi = OneriListesi(emptyList())

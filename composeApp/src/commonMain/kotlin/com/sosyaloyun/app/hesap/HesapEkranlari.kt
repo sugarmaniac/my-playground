@@ -73,6 +73,8 @@ import com.sosyaloyun.app.bildirim.BildirimTercihleriBolumu
 import com.sosyaloyun.app.gizlilik.GizlilikBolumu
 import com.sosyaloyun.app.gizlilik.GizlilikViewModel
 import com.sosyaloyun.app.itiraz.ItirazBolumu
+import com.sosyaloyun.app.konsol.KonsolBolumu
+import com.sosyaloyun.app.konsol.KonsolViewModel
 import com.sosyaloyun.app.itiraz.ItirazViewModel
 import com.sosyaloyun.app.kurator.KuratorBolumu
 import com.sosyaloyun.app.kurator.KuratorViewModel
@@ -219,6 +221,8 @@ fun AnaEkran(
     kurator: (@Composable () -> KuratorViewModel)? = null,
     /** Faz 2 açıksa itiraz bölümü (#53); kapalıyken null. */
     itiraz: (@Composable () -> ItirazViewModel)? = null,
+    /** Faz 3 açıksa Xbox/PlayStation bölümü (#57); kapalıyken null. */
+    konsol: (@Composable () -> KonsolViewModel)? = null,
 ) {
     val ekran by davetKodlari.ekran.collectAsStateWithLifecycle()
     var silmeAcik by remember { mutableStateOf(false) }
@@ -249,6 +253,10 @@ fun AnaEkran(
         HorizontalDivider()
         SteamBolumu(steamAyari)
         HorizontalDivider()
+        konsol?.let {
+            KonsolBolumu(it())
+            HorizontalDivider()
+        }
         BildirimTercihleriBolumu(bildirimTercihleri)
         HorizontalDivider()
         gizlilik?.let {

@@ -156,6 +156,10 @@ object ApiYollari {
     const val ITIRAZ = "/itiraz"
     const val ITIRAZ_GIRIS = "/itiraz/giris"
 
+    /** Faz 3 (#57): Xbox ve PlayStation bağlantıları; `PUT`/`DELETE /konsollar/{ag}`. */
+    const val KONSOLLAR = "/konsollar"
+    fun konsol(ag: String) = "$KONSOLLAR/$ag"
+
     /** Faz 3 (#56): kişisel öneriler; `PUT /oneriler/{oyunId}/ilgilenmiyorum` kalıcıdır. */
     const val ONERILER = "/oneriler"
     fun ilgilenmiyorum(oyunId: String) = "$ONERILER/$oyunId/ilgilenmiyorum"
