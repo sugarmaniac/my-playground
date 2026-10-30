@@ -22,7 +22,7 @@ import org.jetbrains.exposed.v1.core.isNotNull
 import org.jetbrains.exposed.v1.core.java.javaUUID
 import org.jetbrains.exposed.v1.javatime.timestampWithTimeZone
 import org.jetbrains.exposed.v1.jdbc.Database
-import org.jetbrains.exposed.v1.jdbc.insert
+import org.jetbrains.exposed.v1.jdbc.insertIgnore
 import org.jetbrains.exposed.v1.jdbc.select
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
@@ -58,20 +58,19 @@ class Kuratorler(
         }
     }
 
-    /** Şartlar sağlanmıyorsa, zaten küratörse ya da bekleyen başvurusu varsa false. */
+    /** Şartlar sağlanmıyorsa, zaten küratörse ya da bekleyen başvurusu varsa (eşzamanlı istekler dahil) false. */
     suspend fun basvur(kullanici: UUID): Boolean {
         if (!durum(kullanici).basvurabilir) return false
-        withContext(Dispatchers.IO) {
+        return withContext(Dispatchers.IO) {
             transaction(veritabani) {
-                KuratorBasvurusuTablosu.insert {
+                KuratorBasvurusuTablosu.insertIgnore {
                     it[id] = UUID.randomUUID()
                     it[kullaniciId] = kullanici
                     it[durum] = BEKLIYOR
                     it[olusturulma] = simdi()
-                }
+                }.insertedCount > 0
             }
         }
-        return true
     }
 
     suspend fun bekleyenler(): List<BekleyenKuratorBasvurusu> {
@@ -86,7 +85,7 @@ class Kuratorler(
         return satirlar.map { (id, ad, zamanVeKisi) -> BekleyenKuratorBasvurusu(id, ad, zamanVeKisi.first, sartlar(zamanVeKisi.second)) }
     }
 
-    /** Bekleyen başvuruya karar verir; onayda kullanıcı küratör olur. Başvuru yoksa false. */
+    /** Bekleyen başvuruya karar verir; onayda kullanıcı küratör olur. Şartlar yeniden denetlenmez: ekip panelde güncel şartları görerek karar verir. Başvuru yoksa false. */
     suspend fun karar(basvuruId: UUID, onay: Boolean): Boolean = withContext(Dispatchers.IO) {
         transaction(veritabani) {
             val satir = KuratorBasvurusuTablosu.selectAll()
@@ -101,12 +100,6 @@ class Kuratorler(
             if (onay) KullaniciTablosu.update({ KullaniciTablosu.id eq kullanici }) { it[kurator] = true }
             with(BildirimOlaylari) { kalipMesaj(kullanici, if (onay) BildirimTuru.KURATOR_ONAYLANDI else BildirimTuru.KURATOR_REDDEDILDI, simdi) }
             true
-        }
-    }
-
-    suspend fun kuratorMu(kullanici: UUID): Boolean = withContext(Dispatchers.IO) {
-        transaction(veritabani) {
-            KullaniciTablosu.select(KullaniciTablosu.kurator).where { KullaniciTablosu.id eq kullanici }.singleOrNull()?.get(KullaniciTablosu.kurator) ?: false
         }
     }
 

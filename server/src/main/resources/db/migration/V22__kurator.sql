@@ -11,3 +11,5 @@ CREATE TABLE kurator_basvurusu (
 );
 
 CREATE INDEX kurator_basvurusu_bekleyen ON kurator_basvurusu (olusturulma) WHERE durum = 'BEKLIYOR';
+-- Aynı anda gelen iki başvurudan yalnızca biri bekler.
+CREATE UNIQUE INDEX kurator_basvurusu_tek_bekleyen ON kurator_basvurusu (kullanici_id) WHERE durum = 'BEKLIYOR';
