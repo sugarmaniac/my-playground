@@ -6,6 +6,8 @@ import com.zaxxer.hikari.HikariDataSource
 import java.io.File
 import javax.sql.DataSource
 import kotlin.time.Clock
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
 
 /**
  * Backend'in dışarıya dokunan her şeyi. Uygulama gerçeklerini [ortamdan] alır; testler
@@ -46,6 +48,8 @@ class Bagimliliklar(
     val metrikZamanlayici: Boolean = false,
     /** Statik web sitesinin dizini (`web/`); null ise server web sitesini sunmaz. */
     val webDizini: File? = null,
+    /** Katalog yanıtlarının (detay, trend, tür/platform sayfaları) bellekte tutulma süresi (#62); testlerde kapalı. */
+    val katalogOnbellekSuresi: Duration = Duration.ZERO,
 ) {
     companion object {
         /** PostgreSQL bağlantısı standart `PG*` ortam değişkenlerinden okunur (Railway ve VDS aynı imajı kullanır, ADR 0009). */
@@ -73,6 +77,7 @@ class Bagimliliklar(
                     appleServisKimligi = System.getenv("WEB_APPLE_SERVIS_KIMLIGI")?.takeIf { it.isNotBlank() },
                 ).takeIf { it.googleIstemciKimligi != null || it.appleServisKimligi != null },
                 pushGonderici = FcmPushGonderici.ortamdan(),
+                katalogOnbellekSuresi = 15.minutes,
                 pushZamanlayici = true,
                 epostaGonderici = ResendEpostaGonderici.ortamdan(),
                 moderasyonSifresi = System.getenv("MODERASYON_SIFRESI")?.takeIf { it.isNotBlank() },
