@@ -7,20 +7,21 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.sosyaloyun.app.api.ApiIstemcisi
+import com.sosyaloyun.app.kesif.BolumBasligi
 import com.sosyaloyun.app.kesif.turAdi
 import com.sosyaloyun.app.onbellek.BosOnbellek
 import com.sosyaloyun.app.onbellek.OyunOzetiBellegi
@@ -97,34 +98,36 @@ class OnerilerViewModel(private val api: ApiIstemcisi, private val onbellek: Yer
     }
 }
 
+/**
+ * Keşif'teki "Sana önerilenler"; her satır ayrı lazy öğe (#63). [oneriler] null iken yükleniyor: sabit yükseklikte
+ * iskelet, veri gelince liste kaymaz. Boşsa bölüm hiç gösterilmez.
+ */
+fun LazyListScope.onerilerBolumu(oneriler: List<Oneri>?, ilgilenmiyorum: (String) -> Unit, oyunaGit: (String) -> Unit) {
+    if (oneriler != null && oneriler.isEmpty()) return
+    item(key = "oneriler-baslik", contentType = "bolum-basligi") { BolumBasligi(stringResource(Res.string.oneri_baslik)) }
+    if (oneriler == null) {
+        items(ISKELET_SATIRI, contentType = { "iskelet" }) { Iskelet(Modifier.padding(horizontal = 16.dp).fillMaxWidth().height(58.dp)) }
+        return
+    }
+    items(oneriler, key = { "oneri-${it.oyun.id}" }, contentType = { "oneri" }) { oneri -> OneriSatiri(oneri, ilgilenmiyorum, oyunaGit) }
+}
+
 @Composable
-fun OnerilerBolumu(viewModel: OnerilerViewModel, oyunaGit: (String) -> Unit) {
-    val oneriler by viewModel.oneriler.collectAsStateWithLifecycle()
-    val liste = oneriler
-    if (liste != null && liste.isEmpty()) return
-    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        Text(stringResource(Res.string.oneri_baslik), style = MaterialTheme.typography.titleMedium)
-        if (liste == null) {
-            repeat(ISKELET_SATIRI) { Iskelet(Modifier.fillMaxWidth().height(58.dp)) }
-        } else {
-            liste.forEach { oneri ->
-                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Row(
-                        Modifier.weight(1f).clickable { oyunaGit(oneri.oyun.id) },
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    ) {
-                        Kapak(oneri.oyun, Modifier.size(width = 44.dp, height = 58.dp), kucuk = true)
-                        Column(Modifier.weight(1f)) {
-                            Text(oneri.oyun.ad, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                            Text(nedenMetni(oneri), style = MaterialTheme.typography.bodySmall, color = Renk.Soluk, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                        }
-                    }
-                    TextButton(onClick = { viewModel.ilgilenmiyorum(oneri.oyun.id) }) {
-                        Text(stringResource(Res.string.oneri_ilgilenmiyorum), color = Renk.Soluk, style = MaterialTheme.typography.labelMedium)
-                    }
-                }
+private fun OneriSatiri(oneri: Oneri, ilgilenmiyorum: (String) -> Unit, oyunaGit: (String) -> Unit) {
+    Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        Row(
+            Modifier.weight(1f).clickable { oyunaGit(oneri.oyun.id) },
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Kapak(oneri.oyun, Modifier.size(width = 44.dp, height = 58.dp), kucuk = true)
+            Column(Modifier.weight(1f)) {
+                Text(oneri.oyun.ad, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(nedenMetni(oneri), style = MaterialTheme.typography.bodySmall, color = Renk.Soluk, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
+        }
+        TextButton(onClick = { ilgilenmiyorum(oneri.oyun.id) }) {
+            Text(stringResource(Res.string.oneri_ilgilenmiyorum), color = Renk.Soluk, style = MaterialTheme.typography.labelMedium)
         }
     }
 }

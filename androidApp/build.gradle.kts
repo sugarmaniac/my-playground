@@ -30,7 +30,10 @@ android {
     }
     buildTypes {
         getByName("release") {
-            isMinifyEnabled = false
+            // R8: Compose'un akıcılığı için önerilen küçültme ve optimizasyon (#63).
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             // Mağaza imzası gelene kadar cihazda denemek için debug anahtarıyla imzalanır; debug derlemesi Compose'da belirgin yavaştır (#60).
             signingConfig = signingConfigs.getByName("debug")
         }
