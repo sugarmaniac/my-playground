@@ -12,6 +12,7 @@ import org.jetbrains.exposed.v1.core.ResultRow
 import org.jetbrains.exposed.v1.core.Table
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.isNotNull
 import org.jetbrains.exposed.v1.core.java.javaUUID
 import org.jetbrains.exposed.v1.javatime.timestampWithTimeZone
 import org.jetbrains.exposed.v1.jdbc.Database
@@ -28,7 +29,7 @@ class Kutuphane(private val veritabani: Database, private val saat: Clock) {
         transaction(veritabani) { satir(kullaniciId, oyunId)?.girisi() }
     }
 
-    /** Boş giriş, günlük kaydı yoksa silinir (null döner); aksi halde tek giriş oluşturulur ya da güncellenir. */
+    /** Boş giriş, günlük kaydı ya da Steam süresi yoksa silinir (null döner); aksi halde tek giriş oluşturulur ya da güncellenir. */
     suspend fun kaydet(kullaniciId: UUID, oyunId: UUID, giris: KutuphaneGirisi): KutuphaneGirisi? = withContext(Dispatchers.IO) {
         val simdi = saat.now().toJavaInstant().atOffset(ZoneOffset.UTC)
         transaction(veritabani) {
@@ -37,11 +38,13 @@ class Kutuphane(private val veritabani: Database, private val saat: Clock) {
             val gunlukVar = GunlukKaydiTablosu.selectAll()
                 .where { (GunlukKaydiTablosu.kullaniciId eq kullaniciId) and (GunlukKaydiTablosu.oyunId eq oyunId) }
                 .any()
-            if (giris.bos && !gunlukVar) {
+            val onceki = satir(kullaniciId, oyunId)
+            // Steam'den gelen giriş de durumsuz kalır: Steam süresi kütüphaneden düşmez.
+            val kalici = gunlukVar || onceki?.get(KutuphaneGirisiTablosu.steamSureDakika) != null
+            if (giris.bos && !kalici) {
                 KutuphaneGirisiTablosu.deleteWhere { kosul }
                 return@transaction null
             }
-            val onceki = satir(kullaniciId, oyunId)
             val durumDegisti = onceki?.get(KutuphaneGirisiTablosu.durum) != giris.durum?.name
             KutuphaneGirisiTablosu.upsert {
                 it[KutuphaneGirisiTablosu.kullaniciId] = kullaniciId
@@ -56,7 +59,7 @@ class Kutuphane(private val veritabani: Database, private val saat: Clock) {
             }
             // Akışa yalnızca durumun Oynuyorum olması düşer; puan, istek listesi ve diğer durumlar düşmez.
             if (durumDegisti && giris.durum == Durum.OYNUYORUM) with(AkisOlaylari) { oynamayaBasladi(kullaniciId, oyunId, simdi) }
-            giris.takeUnless { it.bos && !gunlukVar }
+            giris
         }
     }
 
@@ -75,6 +78,15 @@ class Kutuphane(private val veritabani: Database, private val saat: Clock) {
                     it[guncellenme] = simdi
                 }
             }
+        }
+    }
+
+    /** Durumu seçilmiş kütüphane girişi sayısı. */
+    suspend fun durumluSayisi(kullaniciId: UUID): Long = withContext(Dispatchers.IO) {
+        transaction(veritabani) {
+            KutuphaneGirisiTablosu.selectAll()
+                .where { (KutuphaneGirisiTablosu.kullaniciId eq kullaniciId) and KutuphaneGirisiTablosu.durum.isNotNull() }
+                .count()
         }
     }
 
@@ -102,5 +114,8 @@ internal object KutuphaneGirisiTablosu : Table("kutuphane_girisi") {
     val yuzdeYuz = bool("yuzde_yuz")
     val durumDegisme = timestampWithTimeZone("durum_degisme").nullable()
     val guncellenme = timestampWithTimeZone("guncellenme")
+
+    /** Steam'den gelen toplam süre; Steam bağlıysa günde bir güncellenir. */
+    val steamSureDakika = integer("steam_sure_dakika").nullable()
     override val primaryKey = PrimaryKey(kullaniciId, oyunId)
 }

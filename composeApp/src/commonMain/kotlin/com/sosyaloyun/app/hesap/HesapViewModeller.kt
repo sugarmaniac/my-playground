@@ -36,6 +36,9 @@ sealed interface HesapEkrani {
     data object Yukleniyor : HesapEkrani
     data object DavetKodu : HesapEkrani
     data object Profil : HesapEkrani
+
+    /** Steam bağlama (atlanabilir) ve ilk durumlar. */
+    data object Onboarding : HesapEkrani
     data class Hazir(val profil: KullaniciOzeti) : HesapEkrani
 
     /** Oturum sunucuda kapanmış (ör. başka cihazdan çıkış); uygulama giriş ekranına döner. */
@@ -61,6 +64,7 @@ class HesapViewModel(private val api: ApiIstemcisi) : ViewModel() {
                     when {
                         !ben.davetKabulEdildi -> HesapEkrani.DavetKodu
                         ben.profil == null -> HesapEkrani.Profil
+                        !ben.onboardingTamamlandi -> HesapEkrani.Onboarding
                         else -> HesapEkrani.Hazir(ben.profil!!)
                     }
                 }

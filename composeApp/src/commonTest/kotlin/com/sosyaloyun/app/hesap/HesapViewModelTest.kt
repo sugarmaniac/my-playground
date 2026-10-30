@@ -35,8 +35,16 @@ class HesapViewModelTest {
     }
 
     @Test
-    fun profilSecilmisseUygulamaHazirdir() = viewModelTesti {
+    fun profilSecilmisAmaOnboardingBitmemisseOnboardingGosterilir() = viewModelTesti {
         api.benYaniti = api.benYaniti.copy(davetKabulEdildi = true, profil = profil)
+        val viewModel = HesapViewModel(api)
+        advanceUntilIdle()
+        assertEquals(HesapEkrani.Onboarding, viewModel.ekran.value)
+    }
+
+    @Test
+    fun onboardingBittiyseUygulamaHazirdir() = viewModelTesti {
+        api.benYaniti = api.benYaniti.copy(davetKabulEdildi = true, profil = profil, onboardingTamamlandi = true)
         val viewModel = HesapViewModel(api)
         advanceUntilIdle()
         assertEquals(HesapEkrani.Hazir(profil), viewModel.ekran.value)

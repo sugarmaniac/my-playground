@@ -76,6 +76,28 @@ enum class HataKodu {
     @SerialName("kendine_istek_gonderemezsin")
     KENDINE_ISTEK_GONDEREMEZSIN,
 
+    /** Steam profili ya da oyun ayrıntıları gizli; kullanıcıya nasıl açacağı anlatılır. */
+    @SerialName("steam_profili_gizli")
+    STEAM_PROFILI_GIZLI,
+
+    @SerialName("steam_hesabi_bulunamadi")
+    STEAM_HESABI_BULUNAMADI,
+
+    /** Bu Steam hesabı başka bir kullanıcıya bağlı. */
+    @SerialName("steam_hesabi_baska_kullanicida")
+    STEAM_HESABI_BASKA_KULLANICIDA,
+
+    @SerialName("steam_bagli_degil")
+    STEAM_BAGLI_DEGIL,
+
+    /** Sunucuda Steam Web API anahtarı yok ya da Steam yanıt vermiyor. */
+    @SerialName("steam_kullanilamiyor")
+    STEAM_KULLANILAMIYOR,
+
+    /** Steam bağlamadan onboarding'i bitirmek için en az [OnboardingKurallari.EN_AZ_OYUN] oyunun durumu seçilmeli. */
+    @SerialName("onboarding_eksik")
+    ONBOARDING_EKSIK,
+
     @SerialName("kendini_engelleyemezsin")
     KENDINI_ENGELLEYEMEZSIN,
 

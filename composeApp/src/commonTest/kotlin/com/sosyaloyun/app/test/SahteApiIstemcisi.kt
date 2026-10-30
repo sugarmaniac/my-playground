@@ -33,6 +33,8 @@ import com.sosyaloyun.shared.OyunOzeti
 import com.sosyaloyun.shared.ProfilIstegi
 import com.sosyaloyun.shared.ProfilSayfasi
 import com.sosyaloyun.shared.SaglikYaniti
+import com.sosyaloyun.shared.SteamBaglantisi
+import com.sosyaloyun.shared.SteamIceAktarmaSonucu
 import com.sosyaloyun.shared.SunucuDurumu
 import kotlin.time.Instant
 
@@ -279,6 +281,40 @@ class SahteApiIstemcisi : ApiIstemcisi {
     override suspend fun gunlukKaydiDetayi(kayitId: String): GunlukKaydiDetayi {
         hata?.let { throw it }
         return gunlukDetaylari[kayitId] ?: throw ApiHatasiIstisnasi(HataKodu.GUNLUK_KAYDI_BULUNAMADI)
+    }
+
+    var steamBaglantisi: SteamBaglantisi? = null
+    var steamSonucu: SteamIceAktarmaSonucu? = null
+    var steamHatasi: Exception? = null
+    var populerler = emptyList<OyunOzeti>()
+    var onboardingHatasi: Exception? = null
+    val onboardingIstekleri = mutableListOf<String>()
+
+    override suspend fun steamBaglantisi(): SteamBaglantisi? {
+        hata?.let { throw it }
+        return steamBaglantisi
+    }
+
+    override suspend fun steamBagla(girdi: String): SteamIceAktarmaSonucu {
+        steamHatasi?.let { throw it }
+        onboardingIstekleri += "steam:$girdi"
+        return steamSonucu!!.also { steamBaglantisi = it.baglanti }
+    }
+
+    override suspend fun steamBaglantisiniKaldir() {
+        steamHatasi?.let { throw it }
+        onboardingIstekleri += "steamKaldir"
+        steamBaglantisi = null
+    }
+
+    override suspend fun populerOyunlar(): List<OyunOzeti> {
+        hata?.let { throw it }
+        return populerler
+    }
+
+    override suspend fun onboardingiTamamla() {
+        onboardingHatasi?.let { throw it }
+        onboardingIstekleri += "tamamla"
     }
 
     /** Engel ve sessiz işlemleri sırayla: "engelle:ad", "sessiz:ad" gibi. */

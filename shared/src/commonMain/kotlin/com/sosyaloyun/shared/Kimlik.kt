@@ -37,4 +37,6 @@ data class BenYaniti(
     val kullaniciId: String,
     val davetKabulEdildi: Boolean,
     val profil: KullaniciOzeti?,
+    /** Steam bağlama (atlanabilir) ve ilk durumlar adımları bitti mi. */
+    val onboardingTamamlandi: Boolean = false,
 )

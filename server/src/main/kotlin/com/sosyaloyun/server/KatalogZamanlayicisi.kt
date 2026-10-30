@@ -25,3 +25,13 @@ fun Application.katalogZamanlayicisiniBaslat(iceAktarici: KatalogIceAktarici) {
         }
     }
 }
+
+/** Günde bir: bağlı Steam hesaplarının süreleri güncellenir (akışa düşmez). */
+fun Application.steamZamanlayicisiniBaslat(steam: Steam) {
+    launch {
+        while (true) {
+            delay(24.hours)
+            runCatching { steam.hepsiniGuncelle() }.onFailure { log.error("Steam süreleri güncellenemedi", it) }
+        }
+    }
+}

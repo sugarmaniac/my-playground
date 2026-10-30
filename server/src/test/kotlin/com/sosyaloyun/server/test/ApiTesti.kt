@@ -4,6 +4,8 @@ import com.sosyaloyun.server.Ayarlar
 import com.sosyaloyun.server.DavetKodlari
 import com.sosyaloyun.server.Katalog
 import com.sosyaloyun.server.KatalogIceAktarici
+import com.sosyaloyun.server.Kutuphane
+import com.sosyaloyun.server.Steam
 import com.sosyaloyun.server.Bagimliliklar
 import com.sosyaloyun.server.modul
 import com.sosyaloyun.server.veritabaniniHazirla
@@ -39,6 +41,9 @@ class ApiTestOrtami(
     val katalogKaynagi: SahteKatalogKaynagi,
     /** Kataloğu sahte kaynaktan içeri alır; gerçekte açılışta ve zamanlanmış olarak çalışır. */
     val katalogIceAktarici: KatalogIceAktarici,
+    val steamKaynagi: SahteSteamKaynagi,
+    /** Steam sürelerinin günlük güncellemesi gerçekte zamanlanmış çalışır; testte [Steam.hepsiniGuncelle] elle çağrılır. */
+    val steam: Steam,
 ) {
     private var kurucuKoduSayaci = 0
 
@@ -103,12 +108,14 @@ fun apiTesti(blok: suspend ApiTestOrtami.() -> Unit) = testApplication {
     val saat = SahteSaat()
     val kimlikDogrulayici = SahteKimlikDogrulayici()
     val katalogKaynagi = SahteKatalogKaynagi()
+    val steamKaynagi = SahteSteamKaynagi()
     val bagimliliklar = Bagimliliklar(
         veriKaynagi = TestVeritabani.kaynak,
         saat = saat,
         kimlikDogrulayici = kimlikDogrulayici,
         katalogKaynagi = katalogKaynagi,
         igdbWebhookSirri = TEST_WEBHOOK_SIRRI,
+        steamKaynagi = steamKaynagi,
     )
     application { modul(bagimliliklar) }
 
@@ -120,5 +127,7 @@ fun apiTesti(blok: suspend ApiTestOrtami.() -> Unit) = testApplication {
         davetKodlari = DavetKodlari(veritabani, saat),
         katalogKaynagi = katalogKaynagi,
         katalogIceAktarici = KatalogIceAktarici(katalogKaynagi, Katalog(veritabani)),
+        steamKaynagi = steamKaynagi,
+        steam = Steam(veritabani, Katalog(veritabani), Kutuphane(veritabani, saat), steamKaynagi, saat),
     ).blok()
 }

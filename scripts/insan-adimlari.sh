@@ -194,7 +194,7 @@ cd "$(dirname "$0")/.."
 
 RAILWAY_PROJE="https://railway.com/project/211ca30f-570f-489b-9a5f-7f42afd64bc4"
 
-TOTAL_STAGES=11
+TOTAL_STAGES=12
 
 # gradle_ayari_yaz AD DEGER: gradle.properties'teki bir derleme ayarını günceller (gizli olmayan değerler).
 gradle_ayari_yaz() {
@@ -321,6 +321,19 @@ if [[ -n "${RAILWAY_ADRESI:-$(_existing RAILWAY_ADRESI || true)}" ]]; then
 else
   SKIPPED+=("IGDB webhook'ları: Railway adresi yok; Railway adımlarından sonra bu wizard'ı tekrar çalıştır")
 fi
+
+# ── Steam (#18) ────────────────────────────────────────────────────────────
+stage "Steam: Web API anahtarı"
+say "Kullanıcılar Steam hesaplarını bağlayınca oyunları ve süreleri Steam Web API'sinden okunur."
+open_url "https://steamcommunity.com/dev/apikey"
+step "Steam hesabıyla gir (hesapta en az 5 dolarlık harcama ve Steam Guard gerekir)."
+step "Domain Name: sosyaloyun (herhangi bir ad olur) → şartları kabul et → Register; anahtarı kopyala."
+ask_secret STEAM_WEB_API_KEY "Steam Web API anahtarını yapıştır (görünmez):"
+write_env STEAM_WEB_API_KEY "$STEAM_WEB_API_KEY"
+open_url "$RAILWAY_PROJE"
+step "Backend servisi → Variables → STEAM_WEB_API_KEY ekle (değer .env'de) ve Deploy'a bas."
+note "Anahtar yokken uygulama Steam'siz çalışır; Steam bağlama 'şu an ulaşılamıyor' der."
+pause "Değişken eklenince Enter'a bas"
 
 # ── Apple ile giriş (#5) ───────────────────────────────────────────────────
 stage "Apple: Sign in with Apple"

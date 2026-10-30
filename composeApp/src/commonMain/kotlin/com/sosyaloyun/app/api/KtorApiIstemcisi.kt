@@ -25,6 +25,12 @@ import com.sosyaloyun.shared.OrtakOyunlar
 import com.sosyaloyun.shared.OyunAramaYaniti
 import com.sosyaloyun.shared.IncelemeListesi
 import com.sosyaloyun.shared.OyunDetayi
+import com.sosyaloyun.shared.HataKodu
+import com.sosyaloyun.shared.OyunOzeti
+import com.sosyaloyun.shared.PopulerOyunlar
+import com.sosyaloyun.shared.SteamBaglaIstegi
+import com.sosyaloyun.shared.SteamIceAktarmaSonucu
+import com.sosyaloyun.shared.SteamBaglantisi
 import com.sosyaloyun.shared.ProfilIstegi
 import com.sosyaloyun.shared.ProfilSayfasi
 import com.sosyaloyun.shared.VitrinIstegi
@@ -75,6 +81,29 @@ class KtorApiIstemcisi(
     }
 
     override suspend fun ben(): BenYaniti = istek { http.get(ApiYollari.BEN).body() }
+
+    override suspend fun steamBaglantisi(): SteamBaglantisi? = try {
+        istek { http.get(ApiYollari.STEAM).body<SteamBaglantisi>() }
+    } catch (e: ApiHatasiIstisnasi) {
+        if (e.kod == HataKodu.STEAM_BAGLI_DEGIL) null else throw e
+    }
+
+    override suspend fun steamBagla(girdi: String): SteamIceAktarmaSonucu = istek {
+        http.put(ApiYollari.STEAM) {
+            contentType(ContentType.Application.Json)
+            setBody(SteamBaglaIstegi(girdi))
+        }.body()
+    }
+
+    override suspend fun steamBaglantisiniKaldir() {
+        istek { http.delete(ApiYollari.STEAM) }
+    }
+
+    override suspend fun populerOyunlar(): List<OyunOzeti> = istek { http.get(ApiYollari.POPULER_OYUNLAR).body<PopulerOyunlar>().oyunlar }
+
+    override suspend fun onboardingiTamamla() {
+        istek { http.post(ApiYollari.ONBOARDING_TAMAMLA) }
+    }
 
     override suspend fun davetKoduKullan(kod: String) {
         istek {
