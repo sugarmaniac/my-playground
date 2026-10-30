@@ -72,6 +72,8 @@ import com.sosyaloyun.app.gunluk.GunlukDetayViewModel
 import com.sosyaloyun.app.gizlilik.GizlilikViewModel
 import com.sosyaloyun.app.kurator.KuratorListeleriBolumu
 import com.sosyaloyun.app.kurator.KuratorListeleriViewModel
+import com.sosyaloyun.app.istatistik.YillikOzetGorunumu
+import com.sosyaloyun.app.istatistik.YillikOzetViewModel
 import com.sosyaloyun.app.itiraz.ItirazViewModel
 import com.sosyaloyun.app.kurator.KuratorViewModel
 import com.sosyaloyun.app.puan.PuanDegisimiBolumu
@@ -226,6 +228,10 @@ private data object VitrinRota
 
 @Serializable
 private data class ListeRota(val listeId: String)
+
+/** Faz 3 (#55): yıllık özet; [kullaniciAdi] null ise kendi özetin. */
+@Serializable
+private data class YillikOzetRota(val kullaniciAdi: String?, val yil: Int)
 
 /** Düzenlenen liste [duzenlenenListe]'de; null ise yeni liste. */
 @Serializable
@@ -420,6 +426,15 @@ private fun UygulamaGezintisi(api: ApiIstemcisi, profil: KullaniciOzeti, cikisYa
                         duzenlenenListe = null
                         gezinti.navigate(ListeDuzenleRota)
                     },
+                    yillikOzeteGit = { gezinti.navigate(YillikOzetRota(null, it)) },
+                )
+            }
+            composable<YillikOzetRota> { girdi ->
+                val rota = girdi.toRoute<YillikOzetRota>()
+                YillikOzetGorunumu(
+                    viewModel(key = "yillik-${rota.kullaniciAdi}-${rota.yil}") { YillikOzetViewModel(api, rota.kullaniciAdi, rota.yil) },
+                    geri = { gezinti.popBackStack() },
+                    oyunaGit = { gezinti.navigate(OyunRota(it)) },
                 )
             }
             composable<KullaniciRota> { kullaniciGirdisi ->
@@ -439,6 +454,7 @@ private fun UygulamaGezintisi(api: ApiIstemcisi, profil: KullaniciOzeti, cikisYa
                     gunlukKaydinaGit = { gezinti.navigate(GunlukDetayRota(it)) },
                     geri = { gezinti.popBackStack() },
                     listeyeGit = { gezinti.navigate(ListeRota(it)) },
+                    yillikOzeteGit = { gezinti.navigate(YillikOzetRota(ad.takeIf { ad != profil.kullaniciAdi }, it)) },
                     sikayetPenceresi = { hedef, kapat ->
                         SikayetPenceresi(viewModel(key = "sikayet-$hedef") { SikayetViewModel(api, SikayetHedefi(hedef)) }, kapat)
                     },

@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Yıllık özet · Sosyal Oyun</title>
+  <link rel="stylesheet" href="stil.css">
+</head>
+<body>
+<main>
+  <header><a href="./">Sosyal Oyun</a></header>
+  <section id="icerik" class="kart"><p class="soluk">Yükleniyor…</p></section>
+  <footer><p>Oyun verisi <a href="https://www.igdb.com" rel="noopener">IGDB.com</a>'dan alınmıştır.</p></footer>
+</main>
+<script src="ayarlar.js"></script>
+<script src="ortak.js"></script>
+<script>
+  (async () => {
+    const kutu = document.getElementById("icerik");
+    const parametreler = new URLSearchParams(location.search);
+    const ad = parametreler.get("ad");
+    const yil = parametreler.get("yil");
+    try {
+      // Yalnızca Herkes görünürlüğündeki kayıtlardan hesaplanır; Faz 3 kapalıyken hiç açılmaz.
+      const yol = "/paylasim/yillik-ozet/" + encodeURIComponent(ad || "") + (yil ? "?yil=" + encodeURIComponent(yil) : "");
+      const ozet = ad ? await apiGetir(yol) : null;
+      if (!ozet) return bulunamadi(kutu, "Bu yıllık özet bulunamadı ya da herkese açık değil.");
+      document.title = ozet.yil + " özeti · " + ozet.kullanici.gorunenAd + " · Sosyal Oyun";
+      const saat = Math.round(ozet.toplamSureDakika / 60);
+      kutu.replaceChildren(
+        oge("h1", { metin: ozet.yil + " özeti" }),
+        kisiKarti(ozet.kullanici),
+        oge("p", { metin: ozet.bitirilenler.length + " oyun bitirdi · " + saat + " saat oynadı" + (ozet.enCokTur ? " · en çok: " + ozet.enCokTur : "") }),
+        ozet.enYuksekPuanlilar.length ? oge("h2", { metin: "En yüksek puanlılar" }) : null,
+        ozet.enYuksekPuanlilar.length ? oge("ol", { sinif: "liste" }, ...ozet.enYuksekPuanlilar.map((p) =>
+          oge("li", {}, oge("div", { sinif: "oyun" },
+            p.oyun.kapakUrl ? oge("img", { sinif: "kapak", src: p.oyun.kapakUrl, alt: "" }) : null,
+            oge("strong", { metin: p.oyun.ad + " · ★ " + (p.puan / 2).toLocaleString("tr-TR") }))))) : null,
+        ozet.bitirilenler.length ? oge("h2", { metin: "Bitirdikleri" }) : null,
+        ozet.bitirilenler.length ? oge("ul", { sinif: "liste" }, ...ozet.bitirilenler.map((o) =>
+          oge("li", {}, oge("div", { sinif: "oyun" },
+            o.kapakUrl ? oge("img", { sinif: "kapak", src: o.kapakUrl, alt: "" }) : null,
+            oge("strong", { metin: o.ad }))))) : null,
+        magazaDugmeleri());
+    } catch (e) {
+      kutu.replaceChildren(oge("p", { metin: "Şu an yüklenemedi. Biraz sonra tekrar dene." }));
+    }
+  })();
+</script>
+</body>
+</html>

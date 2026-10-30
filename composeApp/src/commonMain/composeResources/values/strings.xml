@@ -350,4 +350,18 @@
     <string name="tercih_yorum_yasagi">Comment bans</string>
     <string name="tercih_itiraz_kabul">Accepted appeals</string>
     <string name="tercih_itiraz_red">Declined appeals</string>
+    <string name="profil_sekme_istatistik">Stats</string>
+    <string name="istatistik_sure">Total play time: %1$d hours</string>
+    <string name="istatistik_puanlar">Ratings</string>
+    <string name="istatistik_puanlar_ozet">Rating distribution of %1$d games, half stars to five stars.</string>
+    <string name="istatistik_aylar">Finished in %1$d by month</string>
+    <string name="istatistik_aylar_ozet">%2$d games finished in %1$d, by month.</string>
+    <string name="istatistik_turler">Most played genres</string>
+    <string name="istatistik_platformlar">Most used platforms</string>
+    <string name="istatistik_yillik_ozet">%1$d in review</string>
+    <string name="yillik_baslik">%1$d · %2$s</string>
+    <string name="yillik_ozet_satiri">%1$d games finished · %2$d hours played</string>
+    <string name="yillik_en_cok_tur">Top genre: %1$s</string>
+    <string name="yillik_en_yuksek">Highest rated</string>
+    <string name="yillik_bitirilenler">Finished</string>
 </resources>

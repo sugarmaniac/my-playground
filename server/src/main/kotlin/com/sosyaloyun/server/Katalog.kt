@@ -160,6 +160,15 @@ class Katalog(private val veritabani: Database) {
         transaction(veritabani) { ozetler(idler.distinct()) }
     }
 
+    /** Oyunların türleri (IGDB adlarıyla); istatistikler için (#55). */
+    suspend fun turleri(idler: Collection<UUID>): Map<UUID, List<String>> = withContext(Dispatchers.IO) {
+        if (idler.isEmpty()) return@withContext emptyMap()
+        transaction(veritabani) {
+            OyunTablosu.select(OyunTablosu.id, OyunTablosu.turler).where { OyunTablosu.id inList idler.distinct() }
+                .associate { it[OyunTablosu.id] to it[OyunTablosu.turler] }
+        }
+    }
+
     /** Katalogda olan (kaynakta silinmemiş) bir oyun mu. */
     suspend fun varMi(oyunId: UUID): Boolean = withContext(Dispatchers.IO) {
         transaction(veritabani) {

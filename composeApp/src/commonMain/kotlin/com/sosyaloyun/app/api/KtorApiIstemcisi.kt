@@ -6,6 +6,8 @@ import com.sosyaloyun.shared.ListeSayfasi
 import com.sosyaloyun.shared.PuanGecmisi
 import com.sosyaloyun.shared.HaftalikPuanDegisimi
 import com.sosyaloyun.shared.ItirazDurumu
+import com.sosyaloyun.shared.Istatistikler
+import com.sosyaloyun.shared.YillikOzet
 import com.sosyaloyun.shared.ItirazIstegi
 import com.sosyaloyun.shared.GirisItirazIstegi
 import com.sosyaloyun.shared.ListeIstegi
@@ -484,6 +486,16 @@ class KtorApiIstemcisi(
     override suspend fun puanDegisimi(): HaftalikPuanDegisimi = istek { http.get(ApiYollari.PUAN_DEGISIMI).body() }
 
     override suspend fun itirazDurumu(): ItirazDurumu = istek { http.get(ApiYollari.ITIRAZ).body() }
+
+    override suspend fun istatistikler(kullaniciAdi: String?, yil: Int?): Istatistikler = istek {
+        val yol = kullaniciAdi?.let { ApiYollari.kullaniciSekmesi(it, ApiYollari.SEKME_ISTATISTIK) } ?: ApiYollari.PROFILIM_ISTATISTIK
+        http.get(yol) { yil?.let { parameter("yil", it) } }.body()
+    }
+
+    override suspend fun yillikOzet(kullaniciAdi: String?, yil: Int): YillikOzet = istek {
+        val yol = kullaniciAdi?.let { ApiYollari.kullaniciSekmesi(it, ApiYollari.SEKME_YILLIK_OZET) } ?: ApiYollari.PROFILIM_YILLIK_OZET
+        http.get(yol) { parameter("yil", yil) }.body()
+    }
 
     override suspend fun itirazEt(metin: String): ItirazDurumu = istek {
         http.post(ApiYollari.ITIRAZ) {

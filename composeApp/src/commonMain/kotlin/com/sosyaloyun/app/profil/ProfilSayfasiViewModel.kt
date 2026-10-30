@@ -7,6 +7,7 @@ import com.sosyaloyun.app.api.sunucuAdresi
 import com.sosyaloyun.shared.ArkadaslikDurumu
 import com.sosyaloyun.shared.GunlukOgesi
 import com.sosyaloyun.shared.KutuphaneOgesi
+import com.sosyaloyun.shared.Istatistikler
 import com.sosyaloyun.shared.ListeOzeti
 import com.sosyaloyun.shared.OrtakOyunlar
 import com.sosyaloyun.shared.PaylasimLinkleri
@@ -18,8 +19,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-/** [LISTELER] yalnızca Faz 2 açıkken gösterilir (#49). */
-enum class ProfilSekmesi { GUNLUK, OYUNLAR, INCELEMELER, ISTEK_LISTESI, LISTELER }
+/** [LISTELER] yalnızca Faz 2 (#49), [ISTATISTIK] yalnızca Faz 3 açıkken gösterilir (#55). */
+enum class ProfilSekmesi { GUNLUK, OYUNLAR, INCELEMELER, ISTEK_LISTESI, LISTELER, ISTATISTIK }
 
 /** Oyunlar sekmesinin süzgeci; `DURUMSUZ` henüz durum seçilmemiş girişler. */
 enum class OyunFiltresi { HEPSI, OYNUYORUM, BITIRDIM, BIRAKTIM, BEKLEMEDE, DURUMSUZ }
@@ -35,6 +36,7 @@ sealed interface SekmeIcerigi {
     data class Gunluk(val ogeler: List<GunlukOgesi>, val dahaVar: Boolean) : SekmeIcerigi
     data class Kutuphane(val ogeler: List<KutuphaneOgesi>, val dahaVar: Boolean) : SekmeIcerigi
     data class Listeler(val ogeler: List<ListeOzeti>, val dahaVar: Boolean) : SekmeIcerigi
+    data class Istatistik(val istatistikler: Istatistikler) : SekmeIcerigi
     data object Hata : SekmeIcerigi
 }
 
@@ -250,6 +252,7 @@ class ProfilSayfasiViewModel(
                     sonrakiImlec = sayfa.sonrakiImlec
                     SekmeIcerigi.Listeler(((onceki as? SekmeIcerigi.Listeler)?.ogeler.orEmpty()) + sayfa.listeler, sayfa.sonrakiImlec != null)
                 }
+                ProfilSekmesi.ISTATISTIK -> SekmeIcerigi.Istatistik(api.istatistikler(kullaniciAdi))
             }
         } catch (e: CancellationException) {
             throw e
