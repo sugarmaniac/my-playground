@@ -53,6 +53,15 @@ class IgdbKatalogKaynagi(
             ListSerializer(IgdbPopulerlik.serializer()),
         ).map { KaynakPopulerlik(it.gameId, it.value) }
 
+    override suspend fun enPopulerler(adet: Int): List<KaynakPopulerlik> =
+        (0 until adet step SAYFA_SINIRI).flatMap { ofset ->
+            sorgula(
+                "popularity_primitives",
+                "fields game_id,value; where popularity_type = 1; sort value desc; limit ${minOf(SAYFA_SINIRI, adet - ofset)}; offset $ofset;",
+                ListSerializer(IgdbPopulerlik.serializer()),
+            ).map { KaynakPopulerlik(it.gameId, it.value) }
+        }
+
     private suspend fun oyunSorgusu(kosul: String): List<KaynakOyun> =
         sorgula("games", "fields $OYUN_ALANLARI; $kosul", ListSerializer(IgdbOyun.serializer())).mapNotNull { it.kaynakOyun() }
 
@@ -232,3 +241,6 @@ private class IgdbHariciOyun(
     val category: Int? = null,
     @SerialName("external_game_source") val externalGameSource: Int? = null,
 )
+
+/** IGDB bir istekte en fazla 500 kayıt döner. */
+private const val SAYFA_SINIRI = 500

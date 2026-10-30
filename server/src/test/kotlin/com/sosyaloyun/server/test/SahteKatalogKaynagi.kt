@@ -21,6 +21,11 @@ class SahteKatalogKaynagi : KatalogKaynagi {
         return oyunlar.filter { it.kaynakId in kaynakIdleri }
     }
 
+    override suspend fun enPopulerler(adet: Int): List<KaynakPopulerlik> {
+        cagriSayisi++
+        return populerlikler.sortedByDescending { it.deger }.take(adet)
+    }
+
     override suspend fun populerlikSayfasi(sonKaynakId: Long, adet: Int): List<KaynakPopulerlik> {
         cagriSayisi++
         return populerlikler.sortedBy { it.oyunKaynakId }.filter { it.oyunKaynakId > sonKaynakId }.take(adet)

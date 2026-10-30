@@ -393,18 +393,33 @@ class Katalog(private val veritabani: Database) {
 }
 
 /** Kataloğu kaynaktan sayfa sayfa içeri alır (ADR 0001); webhook'lar arada güncel tutar. */
-class KatalogIceAktarici(private val kaynak: KatalogKaynagi, private val katalog: Katalog) {
+/**
+ * Katalog içe aktarma. Tam içe aktarma 80 dakikadan uzun sürer; bu yüzden önce en popüler oyunlar (popülerlikleriyle)
+ * alınır ki arama, keşif ve onboarding hemen dolu olsun, sonra bütün katalog IGDB kimliği sırasıyla gelir. Server
+ * yarıda yeniden başlarsa tam içe aktarma kaydedilen konumdan devam eder.
+ */
+class KatalogIceAktarici(private val kaynak: KatalogKaynagi, private val katalog: Katalog, private val ayarlar: Ayarlar? = null) {
     suspend fun tamIceAktar() {
+        populerleriAl()
         val bekleyenler = mutableListOf<KaynakOyun>()
-        var son = 0L
+        var son = ayarlar?.oku(Ayar.KatalogIceAktarmaKonumu) ?: 0L
         while (true) {
             val sayfa = kaynak.oyunSayfasi(son, SAYFA)
             if (sayfa.isEmpty()) break
             sayfa.forEach { if (!katalog.uygula(it)) bekleyenler += it }
             son = sayfa.last().kaynakId
+            ayarlar?.yaz(Ayar.KatalogIceAktarmaKonumu, son)
         }
         // Ana oyunundan önce gelen port ve sürümler.
         bekleyenler.forEach { katalog.uygula(it) }
+        ayarlar?.yaz(Ayar.KatalogIceAktarmaKonumu, 0L)
+    }
+
+    /** En popüler [POPULER_ONCE] oyun ve popülerlikleri; ana oyunu henüz gelmemiş sürümler tam içe aktarmada gelir. */
+    private suspend fun populerleriAl() {
+        val populerler = kaynak.enPopulerler(POPULER_ONCE)
+        populerler.map { it.oyunKaynakId }.chunked(SAYFA).forEach { idler -> kaynak.oyunlar(idler).forEach { katalog.uygula(it) } }
+        katalog.populerlikleriYaz(populerler)
     }
 
     suspend fun populerlikleriGuncelle() {
@@ -427,6 +442,7 @@ class KatalogIceAktarici(private val kaynak: KatalogKaynagi, private val katalog
 
     private companion object {
         const val SAYFA = 500
+        const val POPULER_ONCE = 2000
     }
 }
 

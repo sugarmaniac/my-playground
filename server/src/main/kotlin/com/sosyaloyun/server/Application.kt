@@ -32,7 +32,7 @@ fun Application.modul(bagimliliklar: Bagimliliklar) {
     val davetKodlari = DavetKodlari(veritabani, bagimliliklar.saat)
     runBlocking { davetKodlari.kurucuKodlariniEkle(bagimliliklar.kurucuDavetKodlari) }
     val katalog = Katalog(veritabani)
-    val katalogIceAktarici = bagimliliklar.katalogKaynagi?.let { KatalogIceAktarici(it, katalog) }
+    val katalogIceAktarici = bagimliliklar.katalogKaynagi?.let { KatalogIceAktarici(it, katalog, ayarlar) }
     if (bagimliliklar.katalogZamanlayici && katalogIceAktarici != null) katalogZamanlayicisiniBaslat(katalogIceAktarici)
 
     oturumDogrulamasiKur(oturumlar, Aktiflik(veritabani, bagimliliklar.saat))
