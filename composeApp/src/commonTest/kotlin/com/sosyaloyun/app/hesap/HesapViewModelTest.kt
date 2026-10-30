@@ -4,6 +4,7 @@ import com.sosyaloyun.app.api.ApiHatasiIstisnasi
 import com.sosyaloyun.app.test.SahteApiIstemcisi
 import com.sosyaloyun.app.test.viewModelTesti
 import com.sosyaloyun.shared.Avatar
+import com.sosyaloyun.shared.Faz
 import com.sosyaloyun.shared.HataKodu
 import com.sosyaloyun.shared.KullaniciOzeti
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -48,6 +49,14 @@ class HesapViewModelTest {
         val viewModel = HesapViewModel(api)
         advanceUntilIdle()
         assertEquals(HesapEkrani.Hazir(profil), viewModel.ekran.value)
+    }
+
+    @Test
+    fun aktifFazBenYanitindanGelir() = viewModelTesti {
+        api.benYaniti = api.benYaniti.copy(davetKabulEdildi = true, profil = profil, onboardingTamamlandi = true, aktifFaz = Faz.FAZ_3)
+        val viewModel = HesapViewModel(api)
+        advanceUntilIdle()
+        assertEquals(HesapEkrani.Hazir(profil, Faz.FAZ_3), viewModel.ekran.value)
     }
 
     @Test

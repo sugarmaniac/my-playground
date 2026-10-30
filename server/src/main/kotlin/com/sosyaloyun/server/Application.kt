@@ -25,6 +25,7 @@ fun main() {
 fun Application.modul(bagimliliklar: Bagimliliklar) {
     val veritabani = veritabaniniHazirla(bagimliliklar.veriKaynagi)
     val ayarlar = Ayarlar(veritabani)
+    val fazlar = Fazlar(ayarlar)
     val oturumlar = Oturumlar(veritabani)
     val moderasyon = Moderasyon(veritabani, ayarlar, bagimliliklar.epostaGonderici, bagimliliklar.saat)
     val kullanicilar = Kullanicilar(veritabani)
@@ -42,8 +43,9 @@ fun Application.modul(bagimliliklar: Bagimliliklar) {
     }
     routing {
         kimlikRotalari(bagimliliklar.kimlikDogrulayici, kullanicilar, oturumlar, moderasyon)
-        sikayetRotalari(moderasyon, bagimliliklar.moderasyonSifresi)
-        profilRotalari(kullanicilar, davetKodlari, ayarlar)
+        sikayetRotalari(moderasyon)
+        yonetimRotalari(moderasyon, fazlar, bagimliliklar.moderasyonSifresi)
+        profilRotalari(kullanicilar, davetKodlari, ayarlar, fazlar)
         val gunluk = Gunluk(veritabani, bagimliliklar.saat)
         val kutuphane = Kutuphane(veritabani, bagimliliklar.saat)
         val begeniler = Begeniler(veritabani, bagimliliklar.saat)

@@ -33,6 +33,8 @@ import io.ktor.http.contentType
 import java.io.File
 import kotlinx.serialization.KSerializer
 import org.jetbrains.exposed.v1.jdbc.Database
+import io.ktor.server.routing.Route
+import io.ktor.server.routing.routing
 import io.ktor.server.testing.testApplication
 
 /** Bir API testinin eriştiği her şey: gerçek HTTP istemcisi, sahte saat, sahte adaptörler ve testte değiştirilebilen ayarlar. */
@@ -115,7 +117,8 @@ suspend fun <T> HttpResponse.govde(serializer: KSerializer<T>): T = ApiJson.deco
  * Backend'i gerçek PostgreSQL'e (Testcontainers) karşı ayağa kaldırıp [blok]'u çalıştırır.
  * Her test boş bir veritabanıyla başlar; dış servisler ve saat sahtedir.
  */
-fun apiTesti(blok: suspend ApiTestOrtami.() -> Unit) = testApplication {
+/** [ekRotalar]: yalnızca bu teste ait örnek uç noktalar (ör. faz denetimini denemek için). */
+fun apiTesti(ekRotalar: Route.() -> Unit = {}, blok: suspend ApiTestOrtami.() -> Unit) = testApplication {
     val veritabani = veritabaniniHazirla(TestVeritabani.kaynak)
     TestVeritabani.temizle()
     val saat = SahteSaat()
@@ -136,7 +139,10 @@ fun apiTesti(blok: suspend ApiTestOrtami.() -> Unit) = testApplication {
         // Testler server/ dizininde çalışır; web sitesi kökteki web/ dizininde.
         webDizini = File("../web").takeIf { it.isDirectory },
     )
-    application { modul(bagimliliklar) }
+    application {
+        modul(bagimliliklar)
+        routing { ekRotalar() }
+    }
 
     ApiTestOrtami(
         client = client,

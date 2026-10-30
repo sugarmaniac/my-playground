@@ -39,4 +39,6 @@ data class BenYaniti(
     val profil: KullaniciOzeti?,
     /** Steam bağlama (atlanabilir) ve ilk durumlar adımları bitti mi. */
     val onboardingTamamlandi: Boolean = false,
+    /** Açık faz; arayüz kapalı fazın girişlerini göstermez (#46). */
+    val aktifFaz: Faz = Faz.FAZ_1,
 )

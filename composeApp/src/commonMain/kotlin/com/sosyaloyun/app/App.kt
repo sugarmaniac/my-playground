@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -145,7 +146,9 @@ private fun HesapAkisi(api: ApiIstemcisi, cikisYap: () -> Unit, hesapSilindi: ()
         HesapEkrani.DavetKodu -> DavetKoduEkrani(viewModel { DavetKoduViewModel(api, hesabiYenile = hesap::yenile) })
         HesapEkrani.Profil -> ProfilEkrani(viewModel { ProfilViewModel(api, hesabiYenile = hesap::yenile) })
         HesapEkrani.Onboarding -> OnboardingEkrani(viewModel { OnboardingViewModel(api, hesabiYenile = hesap::yenile) })
-        is HesapEkrani.Hazir -> UygulamaGezintisi(api, durum.profil, cikisYap, hesapSilindi)
+        is HesapEkrani.Hazir -> CompositionLocalProvider(LocalAktifFaz provides durum.aktifFaz) {
+            UygulamaGezintisi(api, durum.profil, cikisYap, hesapSilindi)
+        }
     }
 }
 

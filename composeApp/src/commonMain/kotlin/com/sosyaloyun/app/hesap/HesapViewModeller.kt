@@ -6,6 +6,7 @@ import com.sosyaloyun.app.api.ApiHatasiIstisnasi
 import com.sosyaloyun.app.api.ApiIstemcisi
 import com.sosyaloyun.shared.Avatar
 import com.sosyaloyun.shared.DavetKodu
+import com.sosyaloyun.shared.Faz
 import com.sosyaloyun.shared.HataKodu
 import com.sosyaloyun.shared.KullaniciAdiDurumu
 import com.sosyaloyun.shared.KullaniciOzeti
@@ -39,7 +40,8 @@ sealed interface HesapEkrani {
 
     /** Steam bağlama (atlanabilir) ve ilk durumlar. */
     data object Onboarding : HesapEkrani
-    data class Hazir(val profil: KullaniciOzeti) : HesapEkrani
+    /** [aktifFaz]: açık faz (#46); kapalı fazın ekran girişleri gösterilmez. */
+    data class Hazir(val profil: KullaniciOzeti, val aktifFaz: Faz = Faz.FAZ_1) : HesapEkrani
 
     /** Oturum sunucuda kapanmış (ör. başka cihazdan çıkış); uygulama giriş ekranına döner. */
     data object OturumGecersiz : HesapEkrani
@@ -65,7 +67,7 @@ class HesapViewModel(private val api: ApiIstemcisi) : ViewModel() {
                         !ben.davetKabulEdildi -> HesapEkrani.DavetKodu
                         ben.profil == null -> HesapEkrani.Profil
                         !ben.onboardingTamamlandi -> HesapEkrani.Onboarding
-                        else -> HesapEkrani.Hazir(ben.profil!!)
+                        else -> HesapEkrani.Hazir(ben.profil!!, ben.aktifFaz)
                     }
                 }
             } catch (e: ApiHatasiIstisnasi) {

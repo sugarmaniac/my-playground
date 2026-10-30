@@ -34,7 +34,7 @@ Değerler repoya yazılmaz; Railway'in servis ayarlarına girilir. Adımları `.
 | `IGDB_WEBHOOK_SIRRI` | Backend servisi → Variables | IGDB webhook'larının `X-Secret` başlığında gönderdiği değer; webhook kaydında aynısı verilir. |
 | `APPLE_KIMLIK_KITLELERI` | Backend servisi → Variables | İsteğe bağlı; Apple token'larının kabul edilen kitleleri (virgülle). Varsayılan `com.sosyaloyun.app`. |
 | `GOOGLE_KIMLIK_KITLELERI` | Backend servisi → Variables | Google OAuth istemci kimlikleri, virgülle: web (server) istemcisi (Android token'larının kitlesi) ve iOS istemcisi (iOS token'larının kitlesi). Boşsa Google ile giriş reddedilir. |
-| `MODERASYON_SIFRESI` | Backend servisi → Variables | `/moderasyon` sayfasının şifresi (HTTP Basic). Boşsa sayfa kapalı. |
+| `MODERASYON_SIFRESI` | Backend servisi → Variables | `/yonetim` panelinin şifresi (HTTP Basic, kullanıcı adı herhangi). Panelde aktif faz ve moderasyon var; eski `/moderasyon` buraya yönlenir. Boşsa panel kapalı. |
 | `RESEND_API_KEY` | Backend servisi → Variables | Resend API anahtarı. Boşsa ekibe e-posta gitmez. |
 | `MODERASYON_EPOSTASI` | Backend servisi → Variables | Ekibin e-posta adresi: yeni şikayetler ve pazartesi sabahı haftalık doğrulama metrikleri buraya gider. |
 | `EPOSTA_GONDEREN` | Backend servisi → Variables | Resend'de doğrulanmış gönderen adresi; boşsa Resend'in deneme adresi. |

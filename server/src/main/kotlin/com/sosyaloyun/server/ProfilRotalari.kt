@@ -7,6 +7,7 @@ import com.sosyaloyun.shared.DavetKoduKullanIstegi
 import com.sosyaloyun.shared.HataKodu
 import com.sosyaloyun.shared.HesapSilmeIstegi
 import com.sosyaloyun.shared.KullaniciAdiMusaitlikYaniti
+import com.sosyaloyun.shared.OzellikDurumu
 import com.sosyaloyun.shared.ProfilIstegi
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.request.receive
@@ -21,10 +22,12 @@ import io.ktor.server.routing.put
 suspend fun RoutingCall.hata(durum: HttpStatusCode, kod: HataKodu) = respond(durum, ApiHatasi(kod))
 
 /** Onboarding'in davet kodu ve kullanıcı adı adımları. */
-fun Route.profilRotalari(kullanicilar: Kullanicilar, davetKodlari: DavetKodlari, ayarlar: Ayarlar) {
+fun Route.profilRotalari(kullanicilar: Kullanicilar, davetKodlari: DavetKodlari, ayarlar: Ayarlar, fazlar: Fazlar) {
+    get(ApiYollari.OZELLIKLER) { call.respond(OzellikDurumu(fazlar.aktif())) }
+
     oturumGerekli {
         get(ApiYollari.BEN) {
-            call.respond(kullanicilar.ben(call.oturumSahibi.kullaniciId))
+            call.respond(kullanicilar.ben(call.oturumSahibi.kullaniciId).copy(aktifFaz = fazlar.aktif()))
         }
 
         delete(ApiYollari.BEN) {
@@ -64,7 +67,7 @@ fun Route.profilRotalari(kullanicilar: Kullanicilar, davetKodlari: DavetKodlari,
         put(ApiYollari.PROFIL) {
             val kullaniciId = call.oturumSahibi.kullaniciId
             when (kullanicilar.profilKaydet(kullaniciId, call.receive<ProfilIstegi>())) {
-                Kullanicilar.ProfilSonucu.KAYDEDILDI -> call.respond(kullanicilar.ben(kullaniciId))
+                Kullanicilar.ProfilSonucu.KAYDEDILDI -> call.respond(kullanicilar.ben(kullaniciId).copy(aktifFaz = fazlar.aktif()))
                 Kullanicilar.ProfilSonucu.DAVET_GEREKLI -> call.hata(HttpStatusCode.Forbidden, HataKodu.DAVET_GEREKLI)
                 Kullanicilar.ProfilSonucu.KULLANICI_ADI_GECERSIZ -> call.hata(HttpStatusCode.BadRequest, HataKodu.KULLANICI_ADI_GECERSIZ)
                 Kullanicilar.ProfilSonucu.GORUNEN_AD_GECERSIZ -> call.hata(HttpStatusCode.BadRequest, HataKodu.GORUNEN_AD_GECERSIZ)
