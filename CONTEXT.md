@@ -97,3 +97,9 @@ _Avoid_: Ceza, ban (genel anlamda)
 **Davet kodu**:
 Kapalı betada yeni bir kullanıcının katılmasını sağlayan tek kullanımlık kod. Kodu kullanan kişi, kodu veren kişiyi otomatik olarak takip eder.
 _Avoid_: Referans kodu, davetiye linki
+
+### Ürün
+
+**Faz**:
+Ürünün kullanıcılara açık olan kapsamı: Faz 1 MVP, Faz 2 ve Faz 3 sonraki özellikler. Fazlar birikimlidir; Faz 3 açıkken Faz 2 de açıktır. Ekip aktif fazı yönetim panelinden değiştirir; bir fazı kapatmak veriyi silmez, yalnızca gizler.
+_Avoid_: Sürüm, özellik bayrağı (tek tek özellikler için ayrı bayrak yok)

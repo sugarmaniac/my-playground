@@ -79,6 +79,10 @@ object ApiYollari {
     /** Moderatörün şifreyle (HTTP Basic) açtığı tek sayfalık şikayet listesi; uygulama kullanmaz. */
     const val MODERASYON = "/moderasyon"
 
+    /** Ekibin yönetim paneli (HTTP Basic): aktif faz ve moderasyon. Eski `/moderasyon` buraya yönlenir. */
+    const val YONETIM = "/yonetim"
+    const val OZELLIKLER = "/ozellikler"
+
     /** `GET` liste (son 200 bildirim, beğeniler gruplanmış). */
     const val BILDIRIMLER = "/bildirimler"
 

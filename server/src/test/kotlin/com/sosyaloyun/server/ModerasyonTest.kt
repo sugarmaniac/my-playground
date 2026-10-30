@@ -68,15 +68,15 @@ class ModerasyonTest {
         }
 
     private suspend fun ApiTestOrtami.sayfa(sifre: String? = TEST_MODERASYON_SIFRESI): HttpResponse =
-        client.get(ApiYollari.MODERASYON) { sifre?.let { basicAuth("moderator", it) } }
+        client.get(ApiYollari.YONETIM) { sifre?.let { basicAuth("moderator", it) } }
 
     /** Sayfadaki ilk açık şikayete kararı verir; sayfanın formundaki anahtarı kullanır. */
     private suspend fun ApiTestOrtami.karar(karar: SikayetDurumu, anahtar: String? = null): HttpResponse {
         val html = sayfa().bodyAsText()
-        val id = Regex("/moderasyon/sikayetler/([0-9a-f-]{36})").find(html)!!.groupValues[1]
+        val id = Regex("/yonetim/sikayetler/([0-9a-f-]{36})").find(html)!!.groupValues[1]
         val formAnahtari = anahtar ?: Regex("name=\"anahtar\" value=\"([^\"]+)\"").find(html)!!.groupValues[1]
         return client.submitForm(
-            "${ApiYollari.MODERASYON}/sikayetler/$id",
+            "${ApiYollari.YONETIM}/sikayetler/$id",
             parameters {
                 append("anahtar", formAnahtari)
                 append("karar", karar.name)

@@ -351,7 +351,7 @@ pause "Hepsi bitince Enter'a bas"
 
 # ── Moderasyon (#22) ───────────────────────────────────────────────────────
 stage "Moderasyon: şifre ve şikayet e-postaları"
-say "Şikayetler <sunucu>/moderasyon sayfasına düşer; sayfa şifreyle korunur, yeni şikayet e-postayla bildirilir (Resend)."
+say "Şikayetler ve aktif faz <sunucu>/yonetim panelindedir; panel şifreyle korunur, yeni şikayet e-postayla bildirilir (Resend)."
 MODERASYON_SIFRESI=$(_existing MODERASYON_SIFRESI || true)
 if [[ -z "$MODERASYON_SIFRESI" ]]; then
   MODERASYON_SIFRESI=$(LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32)
@@ -365,7 +365,7 @@ ask MODERASYON_EPOSTASI "Şikayetlerin gideceği e-posta adresi:"
 write_env MODERASYON_EPOSTASI "$MODERASYON_EPOSTASI"
 open_url "$RAILWAY_PROJE"
 step "Backend servisi → Variables → şunları ekle ve Deploy'a bas:"
-note "  MODERASYON_SIFRESI=(.env'de; moderasyon sayfasında kullanıcı adı herhangi, şifre bu)"
+note "  MODERASYON_SIFRESI=(.env'de; yönetim panelinde kullanıcı adı herhangi, şifre bu)"
 note "  RESEND_API_KEY=(.env'de)"
 note "  MODERASYON_EPOSTASI=$MODERASYON_EPOSTASI"
 note "Kendi alan adın doğrulanana kadar Resend yalnızca hesabının e-postasına gönderir; gönderen onboarding@resend.dev olur."

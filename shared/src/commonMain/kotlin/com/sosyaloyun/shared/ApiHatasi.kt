@@ -112,6 +112,10 @@ enum class HataKodu {
     @SerialName("hesap_banli")
     HESAP_BANLI,
 
+    /** İstenen özellik henüz açılmamış bir faza ait (#46); 404 ile döner. */
+    @SerialName("ozellik_kapali")
+    OZELLIK_KAPALI,
+
     /** Hesap silme isteğindeki onay metni kullanıcı adıyla eşleşmiyor. */
     @SerialName("hesap_silme_onayi_gecersiz")
     HESAP_SILME_ONAYI_GECERSIZ,
