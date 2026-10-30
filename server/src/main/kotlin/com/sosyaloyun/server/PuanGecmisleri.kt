@@ -13,7 +13,6 @@ import kotlin.time.toJavaInstant
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.toKotlinLocalDate
-import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.Table
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
@@ -23,7 +22,6 @@ import org.jetbrains.exposed.v1.core.java.javaUUID
 import org.jetbrains.exposed.v1.javatime.date
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.insertIgnore
-import org.jetbrains.exposed.v1.jdbc.select
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 
@@ -79,15 +77,17 @@ class PuanGecmisleri(
         )
     }
 
-    /** Son iki görüntü arasında puanı en çok artan ve azalan oyunlar; iki haftada da eşiği geçemeyen oyun dahil değil. */
+    /** Bu haftanın ve geçen haftanın görüntüleri arasında puanı en çok artan ve azalan oyunlar; iki haftada da eşiği geçemeyen oyun dahil değil. */
     suspend fun haftalikDegisim(): HaftalikPuanDegisimi {
         val esik = ayarlar.oku(Ayar.ToplulukPuaniEsigi)
         val farklar = withContext(Dispatchers.IO) {
             transaction(veritabani) {
-                val sonIki = PuanHaftasiTablosu.select(PuanHaftasiTablosu.hafta)
-                    .orderBy(PuanHaftasiTablosu.hafta to SortOrder.DESC).limit(2).map { it[PuanHaftasiTablosu.hafta] }
-                if (sonIki.size < 2) return@transaction emptyList()
-                val (simdiki, onceki) = sonIki
+                // Yalnızca bu hafta ile geçen hafta; biri eksikse (zamanlayıcı çalışmamışsa) kart boş kalır.
+                val simdiki = buHafta()
+                val onceki = simdiki.minusWeeks(1)
+                val sonIki = listOf(simdiki, onceki)
+                val alinan = PuanHaftasiTablosu.selectAll().where { PuanHaftasiTablosu.hafta inList sonIki }.count()
+                if (alinan < 2) return@transaction emptyList()
                 val p = PuanAnlikGoruntusuTablosu
                 val puanlar = p.selectAll().where { (p.hafta inList sonIki) and (p.puanVeren greaterEq esik) }
                     .groupBy({ it[p.oyunId] }, { it[p.hafta] to it[p.ortalama].toDouble() })

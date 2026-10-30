@@ -118,6 +118,10 @@ class PuanGecmisiTest {
         val d = degisim()
         assertEquals(listOf("Alfa Oyunu" to 2.0), d.artanlar.map { it.oyun.ad to it.fark })
         assertEquals(listOf("Beta Oyunu" to -2.0), d.azalanlar.map { it.oyun.ad to it.fark })
+
+        // Bu haftanın görüntüsü yoksa eski haftalar "bu hafta" diye gösterilmez.
+        saat.ilerlet(14.days)
+        assertEquals(HaftalikPuanDegisimi(emptyList(), emptyList()), degisim())
     }
 
     private suspend fun ApiTestOrtami.degisim() =
