@@ -49,4 +49,33 @@ class GizlilikViewModelTest {
         assertEquals(GizlilikEkrani(yuklendi = true, gizli = false), vm.ekran.value)
         assertEquals(listOf("gizli:false"), api.gizlilikIstekleri)
     }
+
+    @Test
+    fun basarisizIstekYalnizcaKendiKisisiniGeriGetirir() = viewModelTesti {
+        api.profilSayfasi = api.profilSayfasi.copy(gizli = true)
+        api.gelenTakipIstekleri = mutableListOf(mehmet, zeynep)
+        val vm = GizlilikViewModel(api)
+        advanceUntilIdle()
+
+        api.basarisizTakipIstekleri += "mehmet"
+        vm.kabulEt("mehmet")
+        vm.reddet("zeynep")
+        advanceUntilIdle()
+
+        assertEquals(listOf(mehmet), vm.ekran.value.istekler)
+        assertTrue(vm.ekran.value.hata)
+    }
+
+    @Test
+    fun ilkYuklemeHatasindaTekrarDenenebilir() = viewModelTesti {
+        api.hata = IllegalStateException("bağlantı yok")
+        val vm = GizlilikViewModel(api)
+        advanceUntilIdle()
+        assertEquals(GizlilikEkrani(hata = true), vm.ekran.value)
+
+        api.hata = null
+        vm.yenile()
+        advanceUntilIdle()
+        assertTrue(vm.ekran.value.yuklendi)
+    }
 }

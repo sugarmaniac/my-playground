@@ -479,6 +479,9 @@ class SahteApiIstemcisi : ApiIstemcisi {
     val gizlilikIstekleri = mutableListOf<String>()
     var gizlilikHatasi: Exception? = null
 
+    /** Bu kişilerin takip isteği işlemleri başarısız olur. */
+    val basarisizTakipIstekleri = mutableSetOf<String>()
+
     override suspend fun gizlilikAyarla(gizli: Boolean) {
         gizlilikHatasi?.let { throw it }
         gizlilikIstekleri += "gizli:$gizli"
@@ -491,6 +494,7 @@ class SahteApiIstemcisi : ApiIstemcisi {
 
     override suspend fun takipIsteginiKabulEt(kullaniciAdi: String) {
         gizlilikHatasi?.let { throw it }
+        if (kullaniciAdi in basarisizTakipIstekleri) throw IllegalStateException("bağlantı yok")
         gizlilikIstekleri += "kabul:$kullaniciAdi"
         gelenTakipIstekleri.removeAll { it.kullaniciAdi == kullaniciAdi }
     }

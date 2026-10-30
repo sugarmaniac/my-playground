@@ -23,6 +23,11 @@ class GizlilikViewModel(private val api: ApiIstemcisi) : ViewModel() {
     val ekran: StateFlow<GizlilikEkrani> = _ekran
 
     init {
+        yenile()
+    }
+
+    fun yenile() {
+        _ekran.value = GizlilikEkrani()
         viewModelScope.launch {
             try {
                 val gizli = api.profil(null).gizli
@@ -35,12 +40,15 @@ class GizlilikViewModel(private val api: ApiIstemcisi) : ViewModel() {
         }
     }
 
-    /** Anahtar hemen döner; sunucu reddederse geri alınır. Açığa geçince bekleyen istekler kabul edilir. */
+    /** Anahtar hemen döner; sunucu reddederse yalnızca anahtar geri alınır. Açığa geçince bekleyen istekler kabul edilir. */
     fun gizliDegistir(gizli: Boolean) {
         val onceki = _ekran.value
         if (!onceki.yuklendi || onceki.gizli == gizli) return
-        _ekran.value = onceki.copy(gizli = gizli, istekler = if (gizli) onceki.istekler else emptyList(), hata = false)
-        islem(geriAl = onceki) { api.gizlilikAyarla(gizli) }
+        val bekleyenler = onceki.istekler
+        _ekran.value = onceki.copy(gizli = gizli, istekler = if (gizli) bekleyenler else emptyList(), hata = false)
+        islem(geriAl = { it.copy(gizli = !gizli, istekler = if (gizli) it.istekler else (bekleyenler + it.istekler).distinct()) }) {
+            api.gizlilikAyarla(gizli)
+        }
     }
 
     fun kabulEt(kullaniciAdi: String) = istegiKaldir(kullaniciAdi) { api.takipIsteginiKabulEt(kullaniciAdi) }
@@ -49,19 +57,20 @@ class GizlilikViewModel(private val api: ApiIstemcisi) : ViewModel() {
 
     private fun istegiKaldir(kullaniciAdi: String, istek: suspend () -> Unit) {
         val onceki = _ekran.value
-        if (onceki.istekler.none { it.kullaniciAdi == kullaniciAdi }) return
-        _ekran.value = onceki.copy(istekler = onceki.istekler.filterNot { it.kullaniciAdi == kullaniciAdi }, hata = false)
-        islem(geriAl = onceki, istek)
+        val kisi = onceki.istekler.firstOrNull { it.kullaniciAdi == kullaniciAdi } ?: return
+        _ekran.value = onceki.copy(istekler = onceki.istekler - kisi, hata = false)
+        // Hata olursa yalnızca bu kişi listeye geri döner; arada yapılan diğer işlemler korunur.
+        islem(geriAl = { if (kisi in it.istekler) it else it.copy(istekler = it.istekler + kisi) }, istek)
     }
 
-    private fun islem(geriAl: GizlilikEkrani, istek: suspend () -> Unit) {
+    private fun islem(geriAl: (GizlilikEkrani) -> GizlilikEkrani, istek: suspend () -> Unit) {
         viewModelScope.launch {
             try {
                 istek()
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                _ekran.update { geriAl.copy(hata = true) }
+                _ekran.update { geriAl(it).copy(hata = true) }
             }
         }
     }

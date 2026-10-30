@@ -411,8 +411,15 @@ class KtorApiIstemcisi(
         }
     }
 
-    override suspend fun takipIstekleri(): List<KullaniciOzeti> =
-        istek { http.get(ApiYollari.TAKIP_ISTEKLERI).body<KullaniciListesi>().kullanicilar }
+    /** Bütün sayfaları okur; bekleyen istekler ayarlarda tek listede gösterilir. */
+    override suspend fun takipIstekleri(): List<KullaniciOzeti> = buildList {
+        var imlec: String? = null
+        do {
+            val sayfa = istek { http.get(ApiYollari.TAKIP_ISTEKLERI) { imlec?.let { parameter("imlec", it) } }.body<KullaniciListesi>() }
+            addAll(sayfa.kullanicilar)
+            imlec = sayfa.sonrakiImlec
+        } while (imlec != null)
+    }
 
     override suspend fun takipIsteginiKabulEt(kullaniciAdi: String) {
         istek { http.post(ApiYollari.takipIstegiKabul(kullaniciAdi)) }

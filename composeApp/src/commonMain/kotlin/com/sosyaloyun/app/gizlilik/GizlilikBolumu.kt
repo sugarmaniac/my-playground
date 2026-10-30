@@ -21,13 +21,22 @@ import com.sosyaloyun.app.resources.gizlilik_hata
 import com.sosyaloyun.app.resources.kabul_et
 import com.sosyaloyun.app.resources.reddet
 import com.sosyaloyun.app.resources.takip_istekleri
+import com.sosyaloyun.app.resources.tekrar_dene
 import org.jetbrains.compose.resources.stringResource
 
 /** Ayarlarda gizli profil anahtarı ve gelen takip istekleri (Faz 2, #48). */
 @Composable
 fun GizlilikBolumu(viewModel: GizlilikViewModel) {
     val ekran by viewModel.ekran.collectAsStateWithLifecycle()
-    if (!ekran.yuklendi) return
+    if (!ekran.yuklendi) {
+        if (ekran.hata) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(stringResource(Res.string.gizlilik_hata), color = MaterialTheme.colorScheme.error, modifier = Modifier.weight(1f))
+                TextButton(onClick = viewModel::yenile) { Text(stringResource(Res.string.tekrar_dene)) }
+            }
+        }
+        return
+    }
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
