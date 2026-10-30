@@ -26,6 +26,7 @@ fun Application.modul(bagimliliklar: Bagimliliklar) {
     val veritabani = veritabaniniHazirla(bagimliliklar.veriKaynagi)
     val ayarlar = Ayarlar(veritabani)
     val oturumlar = Oturumlar(veritabani)
+    val moderasyon = Moderasyon(veritabani, ayarlar, bagimliliklar.epostaGonderici, bagimliliklar.saat)
     val kullanicilar = Kullanicilar(veritabani)
     val davetKodlari = DavetKodlari(veritabani, bagimliliklar.saat)
     runBlocking { davetKodlari.kurucuKodlariniEkle(bagimliliklar.kurucuDavetKodlari) }
@@ -39,7 +40,8 @@ fun Application.modul(bagimliliklar: Bagimliliklar) {
         json(ApiJson)
     }
     routing {
-        kimlikRotalari(bagimliliklar.kimlikDogrulayici, kullanicilar, oturumlar)
+        kimlikRotalari(bagimliliklar.kimlikDogrulayici, kullanicilar, oturumlar, moderasyon)
+        sikayetRotalari(moderasyon, bagimliliklar.moderasyonSifresi)
         profilRotalari(kullanicilar, davetKodlari, ayarlar)
         val gunluk = Gunluk(veritabani, bagimliliklar.saat)
         val kutuphane = Kutuphane(veritabani, bagimliliklar.saat)

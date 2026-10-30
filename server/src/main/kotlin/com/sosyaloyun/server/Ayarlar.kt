@@ -28,6 +28,9 @@ sealed class Ayar<T>(
     data object SessizSaatBaslangici : Ayar<Int>("sessiz_saat_baslangici", 23, Int::toString, String::toInt)
     data object SessizSaatBitisi : Ayar<Int>("sessiz_saat_bitisi", 9, Int::toString, String::toInt)
 
+    /** Moderatörün "askıya al" kararının süresi (gün). */
+    data object AskiSuresiGun : Ayar<Int>("aski_suresi_gun", 7, Int::toString, String::toInt)
+
     /** Topluluk puanının gösterilmesi için gereken en az puan veren kullanıcı sayısı. */
     data object ToplulukPuaniEsigi : Ayar<Int>("topluluk_puani_esigi", 5, Int::toString, String::toInt)
 }

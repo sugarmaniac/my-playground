@@ -65,6 +65,7 @@ fun Route.kimlikRotalari(
     kimlikDogrulayici: KimlikDogrulayici,
     kullanicilar: Kullanicilar,
     oturumlar: Oturumlar,
+    moderasyon: Moderasyon,
 ) {
     post(ApiYollari.OTURUM) {
         val istek = call.receive<GirisIstegi>()
@@ -74,6 +75,12 @@ fun Route.kimlikRotalari(
             return@post
         }
         val kullanici = kullanicilar.bulVeyaOlustur(istek.saglayici, kimlik.haricKimlik)
+        // Askıdaki ya da banlı hesap nedeniyle birlikte reddedilir.
+        when (val yaptirim = moderasyon.yaptirim(kullanici.kullaniciId)) {
+            is Yaptirim.Askida -> return@post call.respond(HttpStatusCode.Forbidden, ApiHatasi(HataKodu.HESAP_ASKIDA, yaptirim.bitis.toInstant().toString()))
+            Yaptirim.Banli -> return@post call.respond(HttpStatusCode.Forbidden, ApiHatasi(HataKodu.HESAP_BANLI))
+            null -> Unit
+        }
         call.respond(
             GirisYaniti(
                 oturumTokeni = oturumlar.ac(kullanici.kullaniciId),

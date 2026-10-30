@@ -29,6 +29,10 @@ class Bagimliliklar(
     val pushGonderici: PushGonderici? = null,
     /** Bekleyen push'lar arka planda düzenli gönderilir; testlerde kapalı, test dağıtıcıyı kendisi çağırır. */
     val pushZamanlayici: Boolean = false,
+    /** Yeni şikayetlerin moderatöre e-postası; null ise gönderilmez. */
+    val epostaGonderici: EpostaGonderici? = null,
+    /** Moderasyon sayfasının şifresi; null ise sayfa kapalı. */
+    val moderasyonSifresi: String? = null,
 ) {
     companion object {
         /** PostgreSQL bağlantısı standart `PG*` ortam değişkenlerinden okunur (Railway ve VDS aynı imajı kullanır, ADR 0009). */
@@ -52,6 +56,8 @@ class Bagimliliklar(
                 steamZamanlayici = true,
                 pushGonderici = FcmPushGonderici.ortamdan(),
                 pushZamanlayici = true,
+                epostaGonderici = ResendEpostaGonderici.ortamdan(),
+                moderasyonSifresi = System.getenv("MODERASYON_SIFRESI")?.takeIf { it.isNotBlank() },
                 katalogZamanlayici = true,
             )
         }

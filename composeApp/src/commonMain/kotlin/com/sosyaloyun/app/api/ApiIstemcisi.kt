@@ -22,6 +22,7 @@ import com.sosyaloyun.shared.BulunanKisi
 import com.sosyaloyun.shared.BildirimListesi
 import com.sosyaloyun.shared.BildirimTercihleri
 import com.sosyaloyun.shared.IncelemeListesi
+import com.sosyaloyun.shared.SikayetIstegi
 import com.sosyaloyun.shared.Kesif
 import com.sosyaloyun.shared.Tur
 import com.sosyaloyun.shared.SteamBaglantisi
@@ -75,6 +76,8 @@ interface ApiIstemcisi {
     suspend fun oyunDetayi(oyunId: String): OyunDetayi
 
     suspend fun kesif(): Kesif
+
+    suspend fun sikayetEt(istek: SikayetIstegi)
 
     suspend fun bildirimler(): BildirimListesi
 
@@ -168,4 +171,4 @@ enum class KisiListesiTuru { TAKIPCILER, TAKIP_EDILENLER, ARKADASLAR }
 enum class EngelListesiTuru { ENGELLENENLER, SESSIZE_ALINANLAR }
 
 /** Backend'in `ApiHatasi` gövdesiyle reddettiği istek. Bağlantı hataları bu değil, başka istisnalardır. */
-class ApiHatasiIstisnasi(val kod: HataKodu) : Exception(kod.name)
+class ApiHatasiIstisnasi(val kod: HataKodu, val ayrinti: String? = null) : Exception(kod.name)

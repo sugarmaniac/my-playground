@@ -17,7 +17,9 @@ import com.sosyaloyun.app.resources.Res
 import com.sosyaloyun.app.resources.app_name
 import com.sosyaloyun.app.resources.giris_apple
 import com.sosyaloyun.app.resources.giris_google
+import com.sosyaloyun.app.resources.giris_hata_askida
 import com.sosyaloyun.app.resources.giris_hata_baglanti
+import com.sosyaloyun.app.resources.giris_hata_banli
 import com.sosyaloyun.app.resources.giris_hata_reddedildi
 import com.sosyaloyun.app.resources.giris_hata_saglayici
 import com.sosyaloyun.app.resources.giris_saglayici_yok
@@ -55,13 +57,13 @@ fun GirisEkraniGorunumu(
         }
         ekran.hata?.let { hata ->
             Text(
-                stringResource(
-                    when (hata) {
-                        GirisHatasi.SAGLAYICI -> Res.string.giris_hata_saglayici
-                        GirisHatasi.REDDEDILDI -> Res.string.giris_hata_reddedildi
-                        GirisHatasi.BAGLANTI -> Res.string.giris_hata_baglanti
-                    },
-                ),
+                when (hata) {
+                    GirisHatasi.SAGLAYICI -> stringResource(Res.string.giris_hata_saglayici)
+                    GirisHatasi.REDDEDILDI -> stringResource(Res.string.giris_hata_reddedildi)
+                    GirisHatasi.BAGLANTI -> stringResource(Res.string.giris_hata_baglanti)
+                    GirisHatasi.HESAP_ASKIDA -> stringResource(Res.string.giris_hata_askida, ekran.askiBitisi.orEmpty())
+                    GirisHatasi.HESAP_BANLI -> stringResource(Res.string.giris_hata_banli)
+                },
                 color = MaterialTheme.colorScheme.error,
             )
         }

@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 
 /** Hata yanıtlarının gövdesi; istemci mesajı `kod`'a göre kendi dilinde seçer. */
 @Serializable
-data class ApiHatasi(val kod: HataKodu)
+data class ApiHatasi(val kod: HataKodu, val ayrinti: String? = null)
 
 @Serializable
 enum class HataKodu {
@@ -101,6 +101,16 @@ enum class HataKodu {
 
     @SerialName("onboarding_eksik")
     ONBOARDING_EKSIK,
+
+    @SerialName("sikayet_gecersiz")
+    SIKAYET_GECERSIZ,
+
+    /** Hesap askıya alınmış; [ApiHatasi.ayrinti] askının bittiği an (ISO 8601). */
+    @SerialName("hesap_askida")
+    HESAP_ASKIDA,
+
+    @SerialName("hesap_banli")
+    HESAP_BANLI,
 
     @SerialName("kendini_engelleyemezsin")
     KENDINI_ENGELLEYEMEZSIN,

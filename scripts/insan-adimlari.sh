@@ -194,7 +194,7 @@ cd "$(dirname "$0")/.."
 
 RAILWAY_PROJE="https://railway.com/project/211ca30f-570f-489b-9a5f-7f42afd64bc4"
 
-TOTAL_STAGES=13
+TOTAL_STAGES=14
 
 # gradle_ayari_yaz AD DEGER: gradle.properties'teki bir derleme ayarını günceller (gizli olmayan değerler).
 gradle_ayari_yaz() {
@@ -348,6 +348,28 @@ open_url "$RAILWAY_PROJE"
 step "Backend servisi → Variables → FCM_HIZMET_HESABI ekle: değer, indirilen JSON dosyasının içeriğinin tamamı. Deploy'a bas."
 note "JSON dosyasını repoya koyma. google-services.json ve GoogleService-Info.plist gizli değil ama commit'lenince istemcide token kaydı bağlanabilir."
 pause "Hepsi bitince Enter'a bas"
+
+# ── Moderasyon (#22) ───────────────────────────────────────────────────────
+stage "Moderasyon: şifre ve şikayet e-postaları"
+say "Şikayetler <sunucu>/moderasyon sayfasına düşer; sayfa şifreyle korunur, yeni şikayet e-postayla bildirilir (Resend)."
+MODERASYON_SIFRESI=$(_existing MODERASYON_SIFRESI || true)
+if [[ -z "$MODERASYON_SIFRESI" ]]; then
+  MODERASYON_SIFRESI=$(LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32)
+fi
+write_env MODERASYON_SIFRESI "$MODERASYON_SIFRESI"
+open_url "https://resend.com/api-keys"
+step "Resend hesabıyla gir → 'Create API Key' (Sending access) → anahtarı kopyala."
+ask_secret RESEND_API_KEY "Resend API anahtarını yapıştır (görünmez):"
+write_env RESEND_API_KEY "$RESEND_API_KEY"
+ask MODERASYON_EPOSTASI "Şikayetlerin gideceği e-posta adresi:"
+write_env MODERASYON_EPOSTASI "$MODERASYON_EPOSTASI"
+open_url "$RAILWAY_PROJE"
+step "Backend servisi → Variables → şunları ekle ve Deploy'a bas:"
+note "  MODERASYON_SIFRESI=(.env'de; moderasyon sayfasında kullanıcı adı herhangi, şifre bu)"
+note "  RESEND_API_KEY=(.env'de)"
+note "  MODERASYON_EPOSTASI=$MODERASYON_EPOSTASI"
+note "Kendi alan adın doğrulanana kadar Resend yalnızca hesabının e-postasına gönderir; gönderen onboarding@resend.dev olur."
+pause "Değişkenler eklenince Enter'a bas"
 
 # ── Apple ile giriş (#5) ───────────────────────────────────────────────────
 stage "Apple: Sign in with Apple"

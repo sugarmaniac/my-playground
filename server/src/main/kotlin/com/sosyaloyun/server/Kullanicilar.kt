@@ -178,6 +178,10 @@ internal object KullaniciTablosu : Table("kullanici") {
 
     /** Kullanıcının kendi numarasının cihazda üretilmiş hash'i (ADR 0003). */
     val telefonHash = text("telefon_hash").nullable()
+
+    /** Moderasyon yaptırımları: askının bittiği an ve kalıcı ban. */
+    val askininBitisi = timestampWithTimeZone("askinin_bitisi").nullable()
+    val banli = bool("banli").default(false)
     override val primaryKey = PrimaryKey(id)
 }
 

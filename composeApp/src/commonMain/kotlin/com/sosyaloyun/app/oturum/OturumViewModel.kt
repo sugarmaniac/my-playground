@@ -4,16 +4,18 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sosyaloyun.app.api.ApiHatasiIstisnasi
 import com.sosyaloyun.app.api.ApiIstemcisi
+import com.sosyaloyun.shared.HataKodu
 import com.sosyaloyun.shared.KimlikSaglayici
 import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-enum class GirisHatasi { SAGLAYICI, REDDEDILDI, BAGLANTI }
+enum class GirisHatasi { SAGLAYICI, REDDEDILDI, BAGLANTI, HESAP_ASKIDA, HESAP_BANLI }
 
 sealed interface OturumEkrani {
-    data class Giris(val yukleniyor: Boolean = false, val hata: GirisHatasi? = null) : OturumEkrani
+    /** [askiBitisi]: askıdaki hesapta askının bittiği gün (YYYY-AA-GG). */
+    data class Giris(val yukleniyor: Boolean = false, val hata: GirisHatasi? = null, val askiBitisi: String? = null) : OturumEkrani
     data object Acik : OturumEkrani
 }
 
@@ -35,7 +37,11 @@ class OturumViewModel(private val api: ApiIstemcisi, private val depo: OturumDep
                 } catch (e: CancellationException) {
                     throw e
                 } catch (e: ApiHatasiIstisnasi) {
-                    OturumEkrani.Giris(hata = GirisHatasi.REDDEDILDI)
+                    when (e.kod) {
+                        HataKodu.HESAP_ASKIDA -> OturumEkrani.Giris(hata = GirisHatasi.HESAP_ASKIDA, askiBitisi = e.ayrinti?.take(10))
+                        HataKodu.HESAP_BANLI -> OturumEkrani.Giris(hata = GirisHatasi.HESAP_BANLI)
+                        else -> OturumEkrani.Giris(hata = GirisHatasi.REDDEDILDI)
+                    }
                 } catch (e: Exception) {
                     OturumEkrani.Giris(hata = GirisHatasi.BAGLANTI)
                 }

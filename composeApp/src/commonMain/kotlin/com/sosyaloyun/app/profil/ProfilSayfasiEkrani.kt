@@ -86,6 +86,7 @@ import com.sosyaloyun.app.resources.engelle_onay_metin
 import com.sosyaloyun.app.resources.sessize_al
 import com.sosyaloyun.app.resources.sessizden_cikar
 import com.sosyaloyun.app.resources.vazgec
+import com.sosyaloyun.app.resources.sikayet_et
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -97,6 +98,8 @@ fun ProfilSayfasiEkrani(
     kisiListesi: (String, KisiListesiTuru) -> Unit,
     gunlukKaydinaGit: (String) -> Unit,
     geri: (() -> Unit)? = null,
+    /** Başkasının profilinde şikayet penceresi: kullanıcı adı ve kapatma işlevi alır. */
+    sikayetPenceresi: @Composable (kullaniciAdi: String, kapat: () -> Unit) -> Unit = { _, _ -> },
 ) {
     val durum by viewModel.ekran.collectAsStateWithLifecycle()
     LaunchedEffect(durum.engellendi) { if (durum.engellendi) geri?.invoke() }
@@ -109,7 +112,7 @@ fun ProfilSayfasiEkrani(
                     Text(stringResource(Res.string.durum_hata))
                     TextButton(onClick = viewModel::yenile) { Text(stringResource(Res.string.tekrar_dene)) }
                 }
-                is ProfilBasligi.Hazir -> Baslik(baslik.sayfa, profiliDuzenle, vitriniDuzenle, oyunaGit, kisiListesi, viewModel)
+                is ProfilBasligi.Hazir -> Baslik(baslik.sayfa, profiliDuzenle, vitriniDuzenle, oyunaGit, kisiListesi, viewModel, sikayetPenceresi)
             }
         }
         item {
@@ -153,6 +156,7 @@ private fun Baslik(
     oyunaGit: (String) -> Unit,
     kisiListesi: (String, KisiListesiTuru) -> Unit,
     viewModel: ProfilSayfasiViewModel,
+    sikayetPenceresi: @Composable (String, () -> Unit) -> Unit,
 ) {
     val kullanici = sayfa.kullanici
     Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -207,7 +211,7 @@ private fun Baslik(
                 }
             }
         }
-        if (sayfa.takipEdiyorum != null) EngelVeSessiz(sayfa, viewModel)
+        if (sayfa.takipEdiyorum != null) EngelVeSessiz(sayfa, viewModel, sikayetPenceresi)
         val ortak by viewModel.ekran.collectAsStateWithLifecycle()
         ortak.ortak?.let { OrtakOyunlarBolumu(it, oyunaGit) }
         Text(stringResource(Res.string.profil_vitrin), style = MaterialTheme.typography.titleSmall)
@@ -235,14 +239,17 @@ private fun OrtakOyunlarBolumu(ortak: OrtakOyunlar, oyunaGit: (String) -> Unit) 
 
 /** Başkasının profilinde sessize alma ve onaylı engelleme. */
 @Composable
-private fun EngelVeSessiz(sayfa: ProfilSayfasi, viewModel: ProfilSayfasiViewModel) {
+private fun EngelVeSessiz(sayfa: ProfilSayfasi, viewModel: ProfilSayfasiViewModel, sikayetPenceresi: @Composable (String, () -> Unit) -> Unit) {
     val durum by viewModel.ekran.collectAsStateWithLifecycle()
     var onayAcik by remember { mutableStateOf(false) }
+    var sikayetAcik by remember { mutableStateOf(false) }
+    if (sikayetAcik) sikayetPenceresi(sayfa.kullanici.kullaniciAdi) { sikayetAcik = false }
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         TextButton(onClick = viewModel::sessizDegistir) {
             Text(stringResource(if (sayfa.sessizeAldim == true) Res.string.sessizden_cikar else Res.string.sessize_al))
         }
         TextButton(onClick = { onayAcik = true }) { Text(stringResource(Res.string.engelle), color = MaterialTheme.colorScheme.error) }
+        TextButton(onClick = { sikayetAcik = true }) { Text(stringResource(Res.string.sikayet_et)) }
     }
     if (durum.engelHatasi) Text(stringResource(Res.string.engel_hatasi), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
     if (onayAcik) {

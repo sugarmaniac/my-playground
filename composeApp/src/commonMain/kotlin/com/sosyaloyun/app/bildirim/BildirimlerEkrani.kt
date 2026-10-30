@@ -30,6 +30,10 @@ import com.sosyaloyun.app.resources.bildirim_begeni_grup
 import com.sosyaloyun.app.resources.bildirim_davet
 import com.sosyaloyun.app.resources.bildirim_tercihleri
 import com.sosyaloyun.app.resources.bildirim_yeni_takipci
+import com.sosyaloyun.app.resources.bildirim_sikayet_sonuclandi
+import com.sosyaloyun.app.resources.bildirim_icerik_kaldirildi
+import com.sosyaloyun.app.resources.tercih_sikayet
+import com.sosyaloyun.app.resources.tercih_icerik_kaldirildi
 import com.sosyaloyun.app.resources.bildirimler
 import com.sosyaloyun.app.resources.bildirimler_bos
 import com.sosyaloyun.app.resources.durum_hata
@@ -67,7 +71,10 @@ fun BildirimlerGorunumu(
                 items(durum.bildirimler, key = { it.id }) { bildirim ->
                     BildirimSatiri(bildirim) {
                         val kayit = bildirim.gunlukKaydiId
-                        if (bildirim.tur == BildirimTuru.BEGENI && kayit != null) gunlukKaydinaGit(kayit) else kullaniciyaGit(bildirim.kisi.kullaniciAdi)
+                        when {
+                            bildirim.tur == BildirimTuru.BEGENI && kayit != null -> gunlukKaydinaGit(kayit)
+                            else -> bildirim.kisi?.let { kullaniciyaGit(it.kullaniciAdi) }
+                        }
                     }
                 }
             }
@@ -83,8 +90,8 @@ private fun BildirimSatiri(bildirim: Bildirim, tikla: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        AvatarGorunumu(bildirim.kisi.avatar, boyut = 36.dp)
-        val ad = bildirim.kisi.gorunenAd
+        bildirim.kisi?.let { AvatarGorunumu(it.avatar, boyut = 36.dp) }
+        val ad = bildirim.kisi?.gorunenAd.orEmpty()
         Text(
             when (bildirim.tur) {
                 BildirimTuru.YENI_TAKIPCI -> stringResource(Res.string.bildirim_yeni_takipci, ad)
@@ -96,6 +103,8 @@ private fun BildirimSatiri(bildirim: Bildirim, tikla: () -> Unit) {
                     stringResource(Res.string.bildirim_begeni, ad)
                 }
                 BildirimTuru.DAVET_KODU_KULLANILDI -> stringResource(Res.string.bildirim_davet, ad)
+                BildirimTuru.SIKAYET_SONUCLANDI -> stringResource(Res.string.bildirim_sikayet_sonuclandi)
+                BildirimTuru.ICERIK_KALDIRILDI -> stringResource(Res.string.bildirim_icerik_kaldirildi)
             },
             style = MaterialTheme.typography.bodyMedium,
         )
@@ -119,6 +128,8 @@ fun BildirimTercihleriBolumu(viewModel: BildirimTercihleriViewModel) {
                             BildirimTuru.ARKADASLIK_KABULU -> Res.string.tercih_arkadaslik_kabulu
                             BildirimTuru.BEGENI -> Res.string.tercih_begeni
                             BildirimTuru.DAVET_KODU_KULLANILDI -> Res.string.tercih_davet
+                            BildirimTuru.SIKAYET_SONUCLANDI -> Res.string.tercih_sikayet
+                            BildirimTuru.ICERIK_KALDIRILDI -> Res.string.tercih_icerik_kaldirildi
                         },
                     ),
                     modifier = Modifier.weight(1f),

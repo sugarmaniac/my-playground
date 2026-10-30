@@ -18,6 +18,7 @@ import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.Table
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.isNull
 import org.jetbrains.exposed.v1.core.java.javaUUID
 import org.jetbrains.exposed.v1.core.notInList
 import org.jetbrains.exposed.v1.core.or
@@ -45,6 +46,16 @@ internal object BildirimOlaylari {
         }
     }
 
+    /** Moderasyon kalıp mesajı: bildirimi doğuran bir kişi yok. */
+    fun JdbcTransaction.kalipMesaj(alici: UUID, tur: BildirimTuru, zaman: OffsetDateTime) {
+        BildirimTablosu.insert {
+            it[id] = UUID.randomUUID()
+            it[BildirimTablosu.alici] = alici
+            it[BildirimTablosu.tur] = tur.name
+            it[olusturulma] = zaman
+        }
+    }
+
     fun JdbcTransaction.bildirimiSil(alici: UUID, tur: BildirimTuru, aktor: UUID, gunlukKaydiId: UUID? = null) {
         BildirimTablosu.deleteWhere {
             var kosul = (BildirimTablosu.alici eq alici) and (BildirimTablosu.tur eq tur.name) and (BildirimTablosu.aktor eq aktor)
@@ -64,12 +75,13 @@ class Bildirimler(private val veritabani: Database, private val saat: Clock) {
     suspend fun liste(alici: UUID): BildirimListesi = withContext(Dispatchers.IO) {
         transaction(veritabani) {
             val b = BildirimTablosu
-            val satirlar = b.join(KullaniciTablosu, JoinType.INNER, b.aktor, KullaniciTablosu.id)
+            val satirlar = b.join(KullaniciTablosu, JoinType.LEFT, b.aktor, KullaniciTablosu.id)
                 .selectAll()
-                .where { (b.alici eq alici) and (b.aktor notInList engellileri(alici)) }
+                .where { (b.alici eq alici) and (b.aktor.isNull() or (b.aktor notInList engellileri(alici))) }
                 .orderBy(b.olusturulma to SortOrder.DESC, b.id to SortOrder.DESC)
                 .limit(SON_BILDIRIM)
-                .mapNotNull { satir -> satir.kullaniciOzeti()?.let { satir to it } }
+                // Kişisi olan ama henüz ad seçmemiş aktörün bildirimi, adını seçince görünür.
+                .mapNotNull { satir -> if (satir[b.aktor] == null) satir to null else satir.kullaniciOzeti()?.let { satir to it } }
             val gruplar = satirlar.groupBy { (satir, _) ->
                 if (satir[b.tur] == BildirimTuru.BEGENI.name) "begeni:${satir[b.gunlukKaydiId]}" else "tek:${satir[b.id]}"
             }
@@ -146,7 +158,7 @@ internal object BildirimTablosu : Table("bildirim") {
     val id = javaUUID("id")
     val alici = javaUUID("alici")
     val tur = text("tur")
-    val aktor = javaUUID("aktor")
+    val aktor = javaUUID("aktor").nullable()
     val gunlukKaydiId = javaUUID("gunluk_kaydi_id").nullable()
     val olusturulma = timestampWithTimeZone("olusturulma")
     val okundu = bool("okundu").default(false)
