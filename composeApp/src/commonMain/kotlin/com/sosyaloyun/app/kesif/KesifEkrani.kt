@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,7 +15,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.AssistChip
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -41,6 +41,8 @@ import com.sosyaloyun.app.resources.kesif_trend
 import com.sosyaloyun.app.resources.kesif_turler
 import com.sosyaloyun.app.resources.profil_bos_sekme
 import com.sosyaloyun.app.resources.tekrar_dene
+import com.sosyaloyun.app.tema.HapSekme
+import com.sosyaloyun.app.tema.Renk
 import com.sosyaloyun.shared.OyunOzeti
 import com.sosyaloyun.shared.Tur
 import org.jetbrains.compose.resources.stringResource
@@ -66,7 +68,7 @@ fun KesifEkrani(
         is KesifEkrani.Hazir -> LazyColumn(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             item { Column(Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) { ekBolumler() } }
             val kesif = durum.kesif
-            item { Text(stringResource(Res.string.kesif_baslik), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(start = 16.dp, top = 16.dp)) }
+            item { Text(stringResource(Res.string.kesif_baslik), style = MaterialTheme.typography.headlineLarge, modifier = Modifier.padding(start = 20.dp, top = 8.dp)) }
             item {
                 Bolum(stringResource(Res.string.kesif_takip_edilenlerde)) {
                     if (kesif.takipEdilenlerde.isEmpty()) {
@@ -78,18 +80,24 @@ fun KesifEkrani(
                     }
                 }
             }
-            item { Bolum(stringResource(Res.string.kesif_trend)) { KapakSirasi(kesif.trend, oyunaGit) } }
+            item {
+                Bolum(stringResource(Res.string.kesif_trend)) {
+                    Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        kesif.trend.take(TREND_SATIRI).forEachIndexed { sira, oyun -> TrendSatiri(sira + 1, oyun, oyunaGit) }
+                    }
+                }
+            }
             item {
                 Bolum(stringResource(Res.string.kesif_turler)) {
-                    FlowRow(Modifier.padding(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        kesif.turler.forEach { tur -> AssistChip(onClick = { turAc(tur) }, label = { Text(turAdi(tur)) }) }
+                    FlowRow(Modifier.padding(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        kesif.turler.forEach { tur -> HapSekme(turAdi(tur), secili = false) { turAc(tur) } }
                     }
                 }
             }
             item {
                 Bolum(stringResource(Res.string.kesif_platformlar)) {
-                    FlowRow(Modifier.padding(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        kesif.platformlar.forEach { platform -> AssistChip(onClick = { platformAc(platform) }, label = { Text(platform) }) }
+                    FlowRow(Modifier.padding(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        kesif.platformlar.forEach { platform -> HapSekme(platform, secili = false) { platformAc(platform) } }
                     }
                 }
             }
@@ -102,6 +110,22 @@ private fun Bolum(baslik: String, icerik: @Composable () -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(baslik, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(horizontal = 16.dp))
         icerik()
+    }
+}
+
+private const val TREND_SATIRI = 10
+
+/** Trend listesinin bir satırı: vurgu renginde sıra numarası, küçük kapak, ad ve yıl · platform. */
+@Composable
+private fun TrendSatiri(sira: Int, oyun: OyunOzeti, oyunaGit: (String) -> Unit) {
+    Row(Modifier.fillMaxWidth().clickable { oyunaGit(oyun.id) }, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        Text(sira.toString(), style = MaterialTheme.typography.headlineSmall, color = Renk.Vurgu, modifier = Modifier.width(28.dp))
+        Kapak(oyun, Modifier.size(width = 44.dp, height = 58.dp))
+        Column(Modifier.weight(1f)) {
+            Text(oyun.ad, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            val ayrinti = listOfNotNull(oyun.cikisYili?.toString(), oyun.platformlar.take(2).joinToString(", ").ifEmpty { null }).joinToString(" · ")
+            if (ayrinti.isNotEmpty()) Text(ayrinti, style = MaterialTheme.typography.bodySmall, color = Renk.Soluk, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        }
     }
 }
 

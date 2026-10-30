@@ -21,7 +21,8 @@ sealed interface BildirimlerEkrani {
 }
 
 /** Bildirim ekranı: açılınca liste yüklenir ve hepsi okundu sayılır. */
-class BildirimlerViewModel(private val api: ApiIstemcisi) : ViewModel() {
+/** [okundu] okundu işaretleme bitince çağrılır; alt menü rozeti ancak o zaman tazelenirse sıfırı görür. */
+class BildirimlerViewModel(private val api: ApiIstemcisi, private val okundu: () -> Unit = {}) : ViewModel() {
     private val _ekran = MutableStateFlow<BildirimlerEkrani>(BildirimlerEkrani.Yukleniyor)
     val ekran: StateFlow<BildirimlerEkrani> = _ekran
 
@@ -48,6 +49,7 @@ class BildirimlerViewModel(private val api: ApiIstemcisi) : ViewModel() {
     private suspend fun okunduSay() {
         try {
             api.bildirimleriOkunduSay()
+            okundu()
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {

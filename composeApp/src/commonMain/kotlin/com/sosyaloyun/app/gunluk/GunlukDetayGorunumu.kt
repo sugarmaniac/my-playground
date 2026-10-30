@@ -1,5 +1,12 @@
 package com.sosyaloyun.app.gunluk
 
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
+import com.sosyaloyun.app.tema.Ikonlar
+import com.sosyaloyun.app.tema.Renk
+import com.sosyaloyun.app.resources.begen
 import androidx.compose.foundation.clickable
 import com.sosyaloyun.shared.Yorum
 import com.sosyaloyun.app.resources.yorumlar_baslik
@@ -128,8 +135,11 @@ fun GunlukDetayGorunumu(viewModel: GunlukDetayViewModel, api: ApiIstemcisi, oyun
 /** Kalp ve beğeni sayısı; beğenilmişse dolu kalp. */
 @Composable
 fun BegeniButonu(kayit: GunlukKaydi, tikla: () -> Unit) {
-    TextButton(onClick = tikla) {
-        Text("${if (kayit.begendim) "♥" else "♡"} ${kayit.begeniSayisi}", color = if (kayit.begendim) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
+    val renk = if (kayit.begendim) Renk.Vurgu else Renk.Soluk
+    TextButton(onClick = tikla, colors = ButtonDefaults.textButtonColors(contentColor = renk)) {
+        Icon(if (kayit.begendim) Ikonlar.KalpDolu else Ikonlar.Kalp, contentDescription = stringResource(Res.string.begen), modifier = Modifier.size(18.dp))
+        Spacer(Modifier.width(6.dp))
+        Text(kayit.begeniSayisi.toString(), style = MaterialTheme.typography.labelLarge)
     }
 }
 

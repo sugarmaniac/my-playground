@@ -1,5 +1,22 @@
 package com.sosyaloyun.app.oyun
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Surface
+import com.sosyaloyun.app.profil.Kapak
+import com.sosyaloyun.app.tema.Ikonlar
+import com.sosyaloyun.app.tema.Renk
+import com.sosyaloyun.shared.Durum
+import com.sosyaloyun.app.resources.oyun_topluluk
+import com.sosyaloyun.app.resources.oyun_arkadaslar
+import com.sosyaloyun.app.resources.oyun_oynayan
+import com.sosyaloyun.app.resources.oyun_puan_yok
+import com.sosyaloyun.app.resources.oyun_senin_puanin
+import com.sosyaloyun.app.resources.begeni_sayisi_kisa
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -53,12 +70,8 @@ import coil3.compose.AsyncImage
 import com.sosyaloyun.app.resources.Res
 import com.sosyaloyun.app.resources.arama_daha_fazla
 import com.sosyaloyun.app.resources.geri
-import com.sosyaloyun.app.resources.oyun_arkadas_ortalamasi
 import com.sosyaloyun.app.resources.oyun_arkadasin
 import com.sosyaloyun.app.resources.oyun_incelemeler
-import com.sosyaloyun.app.resources.oyun_oynayan_arkadas
-import com.sosyaloyun.app.resources.oyun_topluluk_puani
-import com.sosyaloyun.app.resources.oyun_yeterli_puan_yok
 import com.sosyaloyun.app.resources.gunluk_ekle
 import com.sosyaloyun.app.resources.gunluk_saat
 import com.sosyaloyun.app.resources.gunluk_toplam_sure
@@ -110,7 +123,7 @@ fun OyunDetayEkrani(
 ) {
     val ekran by viewModel.ekran.collectAsStateWithLifecycle()
     Column(Modifier.fillMaxSize()) {
-        TextButton(onClick = geri, modifier = Modifier.padding(start = 8.dp, top = 8.dp)) { Text(stringResource(Res.string.geri)) }
+        if (ekran !is OyunDetayEkrani.Hazir) GeriDugmesi(geri, Modifier.padding(16.dp))
         when (val durum = ekran) {
             OyunDetayEkrani.Yukleniyor -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
             OyunDetayEkrani.Bulunamadi -> Text(stringResource(Res.string.oyun_bulunamadi), modifier = Modifier.padding(24.dp))
@@ -122,6 +135,7 @@ fun OyunDetayEkrani(
                 var kayitAcik by remember { mutableStateOf(hizliKayitAcik) }
                 Detay(
                     durum,
+                    geri,
                     oyunaGit,
                     kaydet = { kayitAcik = true },
                     gunlugeYaz = gunlugeYaz,
@@ -153,6 +167,7 @@ fun OyunDetayEkrani(
 @Composable
 private fun Detay(
     durum: OyunDetayEkrani.Hazir,
+    geri: () -> Unit,
     oyunaGit: (String) -> Unit,
     kaydet: () -> Unit,
     gunlugeYaz: (String?) -> Unit,
@@ -161,91 +176,107 @@ private fun Detay(
     val detay = durum.detay
     val uri = LocalUriHandler.current
     val oyun = detay.oyun
-    Column(
-        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 24.dp, vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            AsyncImage(
-                model = oyun.kapakUrl,
-                contentDescription = oyun.ad,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(width = 96.dp, height = 128.dp)
-                    .clip(RoundedCornerShape(6.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant),
+    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+        // Tuvaldeki üst bant: kapağın bulanık olmayan kırpılmış hali ya da oyuna özgü renk; kapak bandın üstüne biner.
+        Box(Modifier.fillMaxWidth()) {
+            Box(Modifier.fillMaxWidth().height(BANT_YUKSEKLIGI).background(Renk.avatarZemini(oyun.ad.hashCode()))) {
+                AsyncImage(model = oyun.kapakUrl, contentDescription = null, contentScale = ContentScale.Crop, alpha = 0.45f, modifier = Modifier.fillMaxSize())
+                GeriDugmesi(geri, Modifier.padding(16.dp))
+            }
+            Row(
+                Modifier.padding(start = 20.dp, end = 20.dp, top = BANT_YUKSEKLIGI - KAPAK_TASMASI),
+                horizontalArrangement = Arrangement.spacedBy(14.dp),
+                verticalAlignment = Alignment.Bottom,
+            ) {
+                Kapak(oyun, Modifier.size(width = 96.dp, height = 128.dp).border(3.dp, Renk.Zemin, RoundedCornerShape(10.dp)))
+                Column(verticalArrangement = Arrangement.spacedBy(3.dp), modifier = Modifier.padding(bottom = 4.dp)) {
+                    Text(oyun.ad, style = MaterialTheme.typography.headlineMedium)
+                    val kunye = listOfNotNull(oyun.cikisYili?.toString(), detay.gelistiriciler.firstOrNull()).joinToString(" · ")
+                    if (kunye.isNotEmpty()) Text(kunye, style = MaterialTheme.typography.bodySmall, color = Renk.Soluk)
+                    val turVePlatform = (detay.turler.take(2).map { igdbTurAdi(it) } + oyun.platformlar.take(3)).joinToString(" · ")
+                    if (turVePlatform.isNotEmpty()) Text(turVePlatform, style = MaterialTheme.typography.bodySmall, color = Renk.Soluk)
+                    oyun.anaOyun?.let { ana ->
+                        Text(
+                            stringResource(Res.string.oyun_ana_oyun, ana.ad),
+                            style = MaterialTheme.typography.labelLarge,
+                            color = Renk.Vurgu,
+                            modifier = Modifier.clickable { oyunaGit(ana.id) },
+                        )
+                    }
+                }
+            }
+        }
+        Column(
+            Modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp, top = 14.dp, bottom = 20.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp),
+        ) {
+            Puanlar(detay.puanlar)
+            KutuphaneOzeti(detay.kutuphaneGirisi, kaydet)
+            Gunlugum(detay, gunlugeYaz)
+            Text(
+                stringResource(Res.string.igdb_atfi),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.clickable { uri.openUri(detay.kaynakUrl) },
             )
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(oyun.ad, style = MaterialTheme.typography.headlineSmall)
-                oyun.cikisYili?.let { Text(it.toString(), style = MaterialTheme.typography.bodyMedium) }
-                if (oyun.platformlar.isNotEmpty()) Text(oyun.platformlar.joinToString(", "), style = MaterialTheme.typography.bodySmall)
-                oyun.anaOyun?.let { ana ->
-                    Text(
-                        stringResource(Res.string.oyun_ana_oyun, ana.ad),
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.clickable { oyunaGit(ana.id) },
-                    )
+            detay.aciklama?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
+            if (detay.gelistiriciler.isNotEmpty()) {
+                Text(stringResource(Res.string.oyun_gelistirici, detay.gelistiriciler.joinToString(", ")), style = MaterialTheme.typography.bodySmall)
+            }
+            if (detay.yayincilar.isNotEmpty()) {
+                Text(stringResource(Res.string.oyun_yayinci, detay.yayincilar.joinToString(", ")), style = MaterialTheme.typography.bodySmall)
+            }
+            if (detay.magazaLinkleri.isNotEmpty()) {
+                HorizontalDivider()
+                Text(stringResource(Res.string.oyun_magazalar), style = MaterialTheme.typography.titleSmall)
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    detay.magazaLinkleri.forEach { link ->
+                        OutlinedButton(onClick = { uri.openUri(link.url) }) { Text(magazaAdi(link.magaza)) }
+                    }
                 }
             }
-        }
-        Puanlar(detay.puanlar)
-        KutuphaneOzeti(detay.kutuphaneGirisi, kaydet)
-        Gunlugum(detay, gunlugeYaz)
-        Text(
-            stringResource(Res.string.igdb_atfi),
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.clickable { uri.openUri(detay.kaynakUrl) },
-        )
-        if (detay.turler.isNotEmpty()) {
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                detay.turler.forEach { AssistChip(onClick = {}, label = { Text(igdbTurAdi(it)) }) }
+            if (detay.eklentiler.isNotEmpty()) {
+                HorizontalDivider()
+                Text(stringResource(Res.string.oyun_eklentiler), style = MaterialTheme.typography.titleSmall)
+                detay.eklentiler.forEach { EklentiSatiri(it) { oyunaGit(it.id) } }
             }
+            topluluk()
         }
-        detay.aciklama?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
-        if (detay.gelistiriciler.isNotEmpty()) {
-            Text(stringResource(Res.string.oyun_gelistirici, detay.gelistiriciler.joinToString(", ")), style = MaterialTheme.typography.bodySmall)
-        }
-        if (detay.yayincilar.isNotEmpty()) {
-            Text(stringResource(Res.string.oyun_yayinci, detay.yayincilar.joinToString(", ")), style = MaterialTheme.typography.bodySmall)
-        }
-        if (detay.magazaLinkleri.isNotEmpty()) {
-            HorizontalDivider()
-            Text(stringResource(Res.string.oyun_magazalar), style = MaterialTheme.typography.titleSmall)
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                detay.magazaLinkleri.forEach { link ->
-                    OutlinedButton(onClick = { uri.openUri(link.url) }) { Text(magazaAdi(link.magaza)) }
-                }
-            }
-        }
-        if (detay.eklentiler.isNotEmpty()) {
-            HorizontalDivider()
-            Text(stringResource(Res.string.oyun_eklentiler), style = MaterialTheme.typography.titleSmall)
-            detay.eklentiler.forEach { EklentiSatiri(it) { oyunaGit(it.id) } }
-        }
-        topluluk()
     }
 }
 
 /** Topluluk puanı, arkadaş ortalaması ve oynayan arkadaş sayısı. */
 @Composable
 private fun Puanlar(puanlar: OyunPuanlari) {
-    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-        Text(
-            puanlar.toplulukPuani?.let { stringResource(Res.string.oyun_topluluk_puani, puanMetni(it)) }
-                ?: stringResource(Res.string.oyun_yeterli_puan_yok),
-            style = MaterialTheme.typography.titleSmall,
-        )
-        val arkadaslar = listOfNotNull(
-            puanlar.arkadasOrtalamasi?.let { stringResource(Res.string.oyun_arkadas_ortalamasi, puanMetni(it)) },
-            if (puanlar.oynayanArkadasSayisi > 0) stringResource(Res.string.oyun_oynayan_arkadas, puanlar.oynayanArkadasSayisi) else null,
-        )
-        if (arkadaslar.isNotEmpty()) Text(arkadaslar.joinToString(" · "), style = MaterialTheme.typography.bodySmall)
+    Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
+        PuanKutusu(stringResource(Res.string.oyun_topluluk), puanlar.toplulukPuani?.let(::puanMetni) ?: stringResource(Res.string.oyun_puan_yok), Modifier.weight(1f), yildiz = puanlar.toplulukPuani != null)
+        PuanKutusu(stringResource(Res.string.oyun_arkadaslar), puanlar.arkadasOrtalamasi?.let(::puanMetni) ?: "–", Modifier.weight(1f), yildiz = puanlar.arkadasOrtalamasi != null)
+        PuanKutusu(stringResource(Res.string.oyun_oynayan), puanlar.oynayanArkadasSayisi.toString(), Modifier.weight(1f))
+    }
+}
+
+@Composable
+private fun PuanKutusu(baslik: String, deger: String, modifier: Modifier, yildiz: Boolean = false) {
+    Column(
+        modifier.clip(MaterialTheme.shapes.medium).background(Renk.Yuzey).border(1.dp, Renk.Cizgi, MaterialTheme.shapes.medium).padding(horizontal = 12.dp, vertical = 10.dp),
+        verticalArrangement = Arrangement.spacedBy(2.dp),
+    ) {
+        Text(deger, style = MaterialTheme.typography.titleMedium, color = if (yildiz) Renk.Yildiz else Renk.Yazi)
+        Text(baslik, style = MaterialTheme.typography.labelSmall, color = Renk.Soluk)
+    }
+}
+
+@Composable
+private fun GeriDugmesi(geri: () -> Unit, modifier: Modifier = Modifier) {
+    Surface(onClick = geri, shape = MaterialTheme.shapes.medium, color = Renk.Zemin, modifier = modifier.size(44.dp)) {
+        Box(contentAlignment = Alignment.Center) { Icon(Ikonlar.Geri, contentDescription = stringResource(Res.string.geri), tint = Renk.Yazi, modifier = Modifier.size(22.dp)) }
     }
 }
 
 /** Yarım yıldız cinsinden puanı beş üzerinden, tek ondalıkla gösterir: 7.6 → "★ 3,8". */
+private val BANT_YUKSEKLIGI = 170.dp
+private val KAPAK_TASMASI = 48.dp
+
 internal fun puanMetni(puan: Double): String {
     val onda = (puan / 2 * 10).roundToInt()
     return "★ ${onda / 10},${onda % 10}"
@@ -266,7 +297,7 @@ private fun Topluluk(durum: OyunDetayEkrani.Hazir, dahaFazla: () -> Unit, kullan
             }
             kayit.puan?.let { YildizPuani(it, sec = {}, boyut = 16) }
             kayit.inceleme?.let { Inceleme(it, kayit.spoiler) }
-            if (kayit.begeniSayisi > 0) Text("♥ ${kayit.begeniSayisi}", style = MaterialTheme.typography.labelSmall)
+            if (kayit.begeniSayisi > 0) Text(stringResource(Res.string.begeni_sayisi_kisa, kayit.begeniSayisi), style = MaterialTheme.typography.labelSmall)
         }
     }
     if (durum.incelemeImleci != null) {
@@ -277,20 +308,52 @@ private fun Topluluk(durum: OyunDetayEkrani.Hazir, dahaFazla: () -> Unit, kullan
 /** Kullanıcının bu oyun için kütüphane girişi ve hızlı kayıt düğmesi. */
 @Composable
 private fun KutuphaneOzeti(giris: KutuphaneGirisi?, kaydet: () -> Unit) {
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        if (giris != null) {
-            val isaretler = listOfNotNull(
-                giris.durum?.let { durumAdi(it) },
-                if (giris.yuzdeYuz) stringResource(Res.string.kayit_yuzde_yuz) else null,
-                if (giris.begendim) stringResource(Res.string.kayit_begendim) else null,
-                if (giris.istekListesinde) stringResource(Res.string.kayit_istek_listesi) else null,
-            )
-            if (isaretler.isNotEmpty()) Text(isaretler.joinToString(" · "), style = MaterialTheme.typography.labelLarge)
-            giris.puan?.let { YildizPuani(it, sec = {}, boyut = 20) }
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        // Durum düğmeleri tuvaldeki gibi yan yana; seçili olan lime. Dokunmak hızlı kayıt sayfasını açar.
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+            listOf(Durum.OYNUYORUM, Durum.BITIRDIM, Durum.BIRAKTIM).forEach { d ->
+                val secili = giris?.durum == d
+                Surface(
+                    onClick = kaydet,
+                    shape = MaterialTheme.shapes.medium,
+                    color = if (secili) Renk.Vurgu else Renk.Yuzey,
+                    contentColor = if (secili) Renk.Zemin else Renk.Yazi,
+                    border = if (secili) null else BorderStroke(1.dp, Renk.Cizgi),
+                    modifier = Modifier.weight(1f).height(44.dp),
+                ) {
+                    Row(horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+                        if (secili) {
+                            Icon(Ikonlar.Onay, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(Modifier.width(6.dp))
+                        }
+                        Text(durumAdi(d), style = MaterialTheme.typography.labelLarge, maxLines = 1)
+                    }
+                }
+            }
         }
-        Button(onClick = kaydet) {
-            Text(stringResource(if (giris == null) Res.string.kayit_ac else Res.string.kayit_duzenle))
+        Surface(
+            onClick = kaydet,
+            shape = MaterialTheme.shapes.medium,
+            color = Renk.Yuzey,
+            border = BorderStroke(1.dp, Renk.Cizgi),
+            modifier = Modifier.fillMaxWidth().height(48.dp),
+        ) {
+            Row(Modifier.padding(horizontal = 14.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text(stringResource(Res.string.oyun_senin_puanin), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+                if (giris?.puan != null) {
+                    YildizPuani(giris.puan, sec = {}, boyut = 18)
+                    Spacer(Modifier.width(8.dp))
+                }
+                Text(stringResource(if (giris == null) Res.string.kayit_ac else Res.string.kayit_duzenle), style = MaterialTheme.typography.labelMedium, color = Renk.Soluk)
+            }
         }
+        val isaretler = listOfNotNull(
+            if (giris?.durum == Durum.BEKLEMEDE) durumAdi(Durum.BEKLEMEDE) else null,
+            if (giris?.yuzdeYuz == true) stringResource(Res.string.kayit_yuzde_yuz) else null,
+            if (giris?.begendim == true) stringResource(Res.string.kayit_begendim) else null,
+            if (giris?.istekListesinde == true) stringResource(Res.string.kayit_istek_listesi) else null,
+        )
+        if (isaretler.isNotEmpty()) Text(isaretler.joinToString(" · "), style = MaterialTheme.typography.labelMedium, color = Renk.Vurgu)
     }
 }
 
