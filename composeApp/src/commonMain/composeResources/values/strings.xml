@@ -146,4 +146,6 @@
     <string name="akis_istek_listemde">On your wishlist</string>
     <string name="akis_spoiler">Contains spoilers</string>
     <string name="akis_spoiler_goster">Show</string>
+    <string name="begenenler">Liked by</string>
+    <string name="gunluk_kaydi_bulunamadi">This journal entry could not be found.</string>
 </resources>

@@ -13,6 +13,7 @@ import com.sosyaloyun.shared.DavetKodu
 import com.sosyaloyun.shared.DavetKoduKullanIstegi
 import com.sosyaloyun.shared.GirisIstegi
 import com.sosyaloyun.shared.GunlukKaydi
+import com.sosyaloyun.shared.GunlukKaydiDetayi
 import com.sosyaloyun.shared.GunlukKaydiIstegi
 import com.sosyaloyun.shared.GunlukSayfasi
 import com.sosyaloyun.shared.KullaniciAdiMusaitlikYaniti
@@ -228,6 +229,19 @@ class KtorApiIstemcisi(
     override suspend fun istekListesineEkle(oyunId: String) {
         istek { http.post(ApiYollari.istekListesi(oyunId)) }
     }
+
+    override suspend fun gunlukKaydiDetayi(kayitId: String): GunlukKaydiDetayi = istek { http.get("${ApiYollari.GUNLUK}/$kayitId").body() }
+
+    override suspend fun begen(kayitId: String) {
+        istek { http.put(ApiYollari.begeni(kayitId)) }
+    }
+
+    override suspend fun begeniyiGeriAl(kayitId: String) {
+        istek { http.delete(ApiYollari.begeni(kayitId)) }
+    }
+
+    override suspend fun begenenler(kayitId: String): List<KullaniciOzeti> =
+        istek { http.get(ApiYollari.begenenler(kayitId)).body<KullaniciListesi>().kullanicilar }
 
     private fun AkisSekmesi.parametre() = if (this == AkisSekmesi.ARKADASLAR) "arkadaslar" else "takip"
 

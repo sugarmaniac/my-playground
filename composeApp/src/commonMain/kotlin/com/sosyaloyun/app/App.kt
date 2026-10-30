@@ -42,6 +42,8 @@ import com.sosyaloyun.app.arama.AramaViewModel
 import com.sosyaloyun.app.api.KtorApiIstemcisi
 import com.sosyaloyun.app.gunluk.DetayliKayitEkrani
 import com.sosyaloyun.app.gunluk.DetayliKayitViewModel
+import com.sosyaloyun.app.gunluk.GunlukDetayGorunumu
+import com.sosyaloyun.app.gunluk.GunlukDetayViewModel
 import com.sosyaloyun.app.hesap.AnaEkran
 import com.sosyaloyun.app.hesap.DavetKodlarimViewModel
 import com.sosyaloyun.app.hesap.DavetKoduEkrani
@@ -144,6 +146,9 @@ private data class OyunRota(val oyunId: String, val hizliKayitAc: Boolean = fals
 private data class DetayliKayitRota(val oyunId: String, val kayitId: String? = null)
 
 @Serializable
+private data class GunlukDetayRota(val kayitId: String)
+
+@Serializable
 private data class KullaniciRota(val kullaniciAdi: String)
 
 @Serializable
@@ -218,6 +223,16 @@ private fun UygulamaGezintisi(api: ApiIstemcisi, profil: KullaniciOzeti, cikisYa
                     },
                     oyunaGit = { gezinti.navigate(OyunRota(it)) },
                     kullaniciyaGit = { gezinti.navigate(KullaniciRota(it)) },
+                    gunlukKaydinaGit = { gezinti.navigate(GunlukDetayRota(it)) },
+                )
+            }
+            composable<GunlukDetayRota> { detayGirdisi ->
+                val kayitId = detayGirdisi.toRoute<GunlukDetayRota>().kayitId
+                GunlukDetayGorunumu(
+                    viewModel(key = "gunluk-detay-$kayitId") { GunlukDetayViewModel(api, kayitId) },
+                    oyunaGit = { gezinti.navigate(OyunRota(it)) },
+                    kullaniciyaGit = { gezinti.navigate(KullaniciRota(it)) },
+                    geri = { gezinti.popBackStack() },
                 )
             }
             composable<DavetlerRota> {
@@ -249,6 +264,7 @@ private fun UygulamaGezintisi(api: ApiIstemcisi, profil: KullaniciOzeti, cikisYa
                     },
                     oyunaGit = { gezinti.navigate(OyunRota(it)) },
                     kisiListesi = { ad, tur -> gezinti.navigate(TakipListesiRota(ad, tur)) },
+                    gunlukKaydinaGit = { gezinti.navigate(GunlukDetayRota(it)) },
                 )
             }
             composable<KullaniciRota> { kullaniciGirdisi ->
@@ -265,6 +281,7 @@ private fun UygulamaGezintisi(api: ApiIstemcisi, profil: KullaniciOzeti, cikisYa
                     },
                     oyunaGit = { gezinti.navigate(OyunRota(it)) },
                     kisiListesi = { kisi, tur -> gezinti.navigate(TakipListesiRota(kisi, tur)) },
+                    gunlukKaydinaGit = { gezinti.navigate(GunlukDetayRota(it)) },
                     geri = { gezinti.popBackStack() },
                 )
             }

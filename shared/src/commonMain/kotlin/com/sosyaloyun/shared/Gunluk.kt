@@ -44,6 +44,17 @@ data class GunlukKaydi(
     val gorunurluk: Gorunurluk,
     val sessiz: Boolean,
     val olusturulma: Instant,
+    val begeniSayisi: Int = 0,
+    /** İsteyen bu kaydı beğendi mi. */
+    val begendim: Boolean = false,
+)
+
+/** `GET /gunluk/{id}`: günlük kaydı detayı; yalnızca görme yetkisi olana. */
+@Serializable
+data class GunlukKaydiDetayi(
+    val kayit: GunlukKaydi,
+    val oyun: OyunOzeti,
+    val sahip: KullaniciOzeti,
 )
 
 object GunlukKurallari {

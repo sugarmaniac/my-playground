@@ -42,7 +42,7 @@ import org.jetbrains.exposed.v1.jdbc.transactions.transaction
  * Akış: takip edilenlerin akışa düşen olayları, yeniden eskiye. Beta ölçeğinde okuma anında sorgulanır;
  * yazma anında dağıtıma geçilirse bu sınıfın arayüzü değişmez (spec #1).
  */
-class Akis(private val veritabani: Database, private val katalog: Katalog) {
+class Akis(private val veritabani: Database, private val katalog: Katalog, private val begeniler: Begeniler) {
     suspend fun sayfa(izleyen: UUID, sekme: AkisSekmesi, imlec: String?): AkisSayfasi {
         val (satirlar, kisiler, istekListem) = withContext(Dispatchers.IO) {
             transaction(veritabani) {
@@ -82,6 +82,7 @@ class Akis(private val veritabani: Database, private val katalog: Katalog) {
             }
         }
         val oyunlar = katalog.ozetleri(satirlar.mapNotNull { it.oyun })
+        val kayitlar = begeniler.ekle(izleyen, satirlar.mapNotNull { it.gunluk }).associateBy { it.id }
         val ogeler = satirlar.take(SAYFA).mapNotNull { satir ->
             AkisOgesi(
                 id = satir.id.toString(),
@@ -89,7 +90,7 @@ class Akis(private val veritabani: Database, private val katalog: Katalog) {
                 kisi = kisiler[satir.kisi] ?: return@mapNotNull null,
                 zaman = satir.zaman.toInstant().let { Instant.fromEpochSeconds(it.epochSecond, it.nano) },
                 oyun = satir.oyun?.let(oyunlar::get),
-                gunlukKaydi = satir.gunluk,
+                gunlukKaydi = satir.gunluk?.let { kayitlar[it.id] },
                 arkadas = satir.diger?.let(kisiler::get),
                 istekListemde = satir.oyun in istekListem,
             )

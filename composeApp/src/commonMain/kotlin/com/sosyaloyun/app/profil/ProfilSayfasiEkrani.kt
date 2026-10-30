@@ -83,6 +83,7 @@ fun ProfilSayfasiEkrani(
     vitriniDuzenle: (ProfilSayfasi) -> Unit,
     oyunaGit: (String) -> Unit,
     kisiListesi: (String, KisiListesiTuru) -> Unit,
+    gunlukKaydinaGit: (String) -> Unit,
     geri: (() -> Unit)? = null,
 ) {
     val durum by viewModel.ekran.collectAsStateWithLifecycle()
@@ -119,7 +120,7 @@ fun ProfilSayfasiEkrani(
             SekmeIcerigi.Hata -> item { Text(stringResource(Res.string.durum_hata), modifier = Modifier.padding(24.dp)) }
             is SekmeIcerigi.Gunluk -> {
                 if (icerik.ogeler.isEmpty()) item { BosSekme() }
-                items(icerik.ogeler, key = { it.kayit.id }) { GunlukSatiri(it) { oyunaGit(it.oyun.id) } }
+                items(icerik.ogeler, key = { it.kayit.id }) { GunlukSatiri(it) { gunlukKaydinaGit(it.kayit.id) } }
                 if (icerik.dahaVar) item { DahaFazla(viewModel::dahaFazlaYukle) }
             }
             is SekmeIcerigi.Kutuphane -> {

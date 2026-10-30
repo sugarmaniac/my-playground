@@ -40,6 +40,7 @@ class Profiller(
     private val katalog: Katalog,
     private val kullanicilar: Kullanicilar,
     private val sosyalGraf: SosyalGraf,
+    private val begeniler: Begeniler,
     private val saat: Clock,
 ) {
     /** [izleyen]'in gördüğü haliyle [kullaniciId]'nin profili; profili yoksa null. */
@@ -131,7 +132,7 @@ class Profiller(
                     .map { it.gunlukKaydi() }
             }
         }
-        val sayfa = kayitlar.take(SAYFA)
+        val sayfa = begeniler.ekle(izleyen, kayitlar.take(SAYFA))
         val oyunlar = katalog.ozetleri(sayfa.map { UUID.fromString(it.oyunId) })
         return GunlukSayfasi(
             ogeler = sayfa.map { GunlukOgesi(it, oyunlar.getValue(UUID.fromString(it.oyunId))) },

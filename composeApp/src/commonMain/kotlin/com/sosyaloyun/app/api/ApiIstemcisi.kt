@@ -6,6 +6,7 @@ import com.sosyaloyun.shared.BenYaniti
 import com.sosyaloyun.shared.DavetKodu
 import com.sosyaloyun.shared.GirisYaniti
 import com.sosyaloyun.shared.GunlukKaydi
+import com.sosyaloyun.shared.GunlukKaydiDetayi
 import com.sosyaloyun.shared.GunlukKaydiIstegi
 import com.sosyaloyun.shared.GunlukSayfasi
 import com.sosyaloyun.shared.HataKodu
@@ -91,6 +92,14 @@ interface ApiIstemcisi {
 
     /** Diğer işaretlere dokunmadan istek listesine ekler. */
     suspend fun istekListesineEkle(oyunId: String)
+
+    suspend fun gunlukKaydiDetayi(kayitId: String): GunlukKaydiDetayi
+
+    suspend fun begen(kayitId: String)
+
+    suspend fun begeniyiGeriAl(kayitId: String)
+
+    suspend fun begenenler(kayitId: String): List<KullaniciOzeti>
 
     suspend fun kullaniciAra(sorgu: String, imlec: String? = null): KullaniciListesi
 

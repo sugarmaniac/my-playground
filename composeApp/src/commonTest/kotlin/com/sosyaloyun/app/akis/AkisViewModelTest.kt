@@ -6,6 +6,8 @@ import com.sosyaloyun.shared.AkisOgesi
 import com.sosyaloyun.shared.AkisOlayTuru
 import com.sosyaloyun.shared.AkisSekmesi
 import com.sosyaloyun.shared.Avatar
+import com.sosyaloyun.shared.Gorunurluk
+import com.sosyaloyun.shared.GunlukKaydi
 import com.sosyaloyun.shared.KullaniciOzeti
 import com.sosyaloyun.shared.OyunOzeti
 import com.sosyaloyun.shared.OyunTuru
@@ -100,6 +102,42 @@ class AkisViewModelTest {
         advanceUntilIdle()
 
         assertEquals(listOf(false), ogeler(vm).map { it.istekListemde })
+    }
+
+    private fun kayitOgesi(begeniSayisi: Int, begendim: Boolean) = AkisOgesi(
+        "g1", AkisOlayTuru.GUNLUK_KAYDI, ayse, Instant.parse("2026-01-05T09:00:00Z"), oyun = oyun,
+        gunlukKaydi = GunlukKaydi("k1", "o1", null, null, null, null, null, null, false, Gorunurluk.HERKES, false,
+            Instant.parse("2026-01-05T09:00:00Z"), begeniSayisi = begeniSayisi, begendim = begendim),
+    )
+
+    @Test
+    fun begeniAnindaGorunurVeIstekGider() = viewModelTesti {
+        api.akisOgeleri = listOf(kayitOgesi(2, begendim = false))
+        val vm = AkisViewModel(api)
+        advanceUntilIdle()
+
+        vm.begeniDegistir("k1")
+        assertEquals(3 to true, ogeler(vm).single().gunlukKaydi!!.let { it.begeniSayisi to it.begendim })
+        advanceUntilIdle()
+        assertEquals(listOf("begen:k1"), api.begeniIstekleri)
+
+        vm.begeniDegistir("k1")
+        advanceUntilIdle()
+        assertEquals(2 to false, ogeler(vm).single().gunlukKaydi!!.let { it.begeniSayisi to it.begendim })
+        assertEquals(listOf("begen:k1", "geri:k1"), api.begeniIstekleri)
+    }
+
+    @Test
+    fun begeniSunucudaBasarisizOlursaGeriAlinir() = viewModelTesti {
+        api.akisOgeleri = listOf(kayitOgesi(2, begendim = false))
+        api.begeniHatasi = IllegalStateException("bağlantı yok")
+        val vm = AkisViewModel(api)
+        advanceUntilIdle()
+
+        vm.begeniDegistir("k1")
+        advanceUntilIdle()
+
+        assertEquals(2 to false, ogeler(vm).single().gunlukKaydi!!.let { it.begeniSayisi to it.begendim })
     }
 
     @Test

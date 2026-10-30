@@ -3,6 +3,7 @@ package com.sosyaloyun.app.akis
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sosyaloyun.app.api.ApiIstemcisi
+import com.sosyaloyun.app.gunluk.begenisiCevrilmis
 import com.sosyaloyun.shared.AkisOgesi
 import com.sosyaloyun.shared.AkisSekmesi
 import com.sosyaloyun.shared.KullaniciOzeti
@@ -112,6 +113,32 @@ class AkisViewModel(private val api: ApiIstemcisi) : ViewModel() {
                 isaretle(oyunId, false)
             }
         }
+    }
+
+    /** Beğen ya da geri al; hemen gösterilir, sunucu reddederse geri alınır. */
+    fun begeniDegistir(kayitId: String) {
+        if (kayitId in suregelenBegeniler) return
+        val kayit = (_ekran.value.icerik as? AkisIcerigi.Ogeler)?.ogeler?.firstNotNullOfOrNull { it.gunlukKaydi?.takeIf { k -> k.id == kayitId } } ?: return
+        kaydiGuncelle(kayit.begenisiCevrilmis())
+        suregelenBegeniler += kayitId
+        viewModelScope.launch {
+            try {
+                if (kayit.begendim) api.begeniyiGeriAl(kayitId) else api.begen(kayitId)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                kaydiGuncelle(kayit)
+            } finally {
+                suregelenBegeniler -= kayitId
+            }
+        }
+    }
+
+    private val suregelenBegeniler = mutableSetOf<String>()
+
+    private fun kaydiGuncelle(kayit: com.sosyaloyun.shared.GunlukKaydi) = _ekran.update { durum ->
+        val icerik = durum.icerik as? AkisIcerigi.Ogeler ?: return@update durum
+        durum.copy(icerik = icerik.copy(ogeler = icerik.ogeler.map { if (it.gunlukKaydi?.id == kayit.id) it.copy(gunlukKaydi = kayit) else it }))
     }
 
     fun onerilenKisiyiTakipEt(kullaniciAdi: String) {

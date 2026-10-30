@@ -19,6 +19,7 @@ import com.sosyaloyun.shared.KutuphaneGirisi
 import com.sosyaloyun.shared.KutuphaneOgesi
 import com.sosyaloyun.shared.KutuphaneSayfasi
 import com.sosyaloyun.shared.GunlukKaydi
+import com.sosyaloyun.shared.GunlukKaydiDetayi
 import com.sosyaloyun.shared.GunlukKaydiIstegi
 import com.sosyaloyun.shared.GunlukOgesi
 import com.sosyaloyun.shared.GunlukSayfasi
@@ -254,6 +255,32 @@ class SahteApiIstemcisi : ApiIstemcisi {
     override suspend fun istekListesineEkle(oyunId: String) {
         istekListesiHatasi?.let { throw it }
         akisIstekleri += "istek-listesi:$oyunId"
+    }
+
+    var gunlukDetaylari = emptyMap<String, GunlukKaydiDetayi>()
+    var begenenListesi = emptyList<KullaniciOzeti>()
+    val begeniIstekleri = mutableListOf<String>()
+    var begeniHatasi: Exception? = null
+
+    override suspend fun gunlukKaydiDetayi(kayitId: String): GunlukKaydiDetayi {
+        hata?.let { throw it }
+        return gunlukDetaylari[kayitId] ?: throw ApiHatasiIstisnasi(HataKodu.GUNLUK_KAYDI_BULUNAMADI)
+    }
+
+    override suspend fun begen(kayitId: String) {
+        begeniHatasi?.let { throw it }
+        begeniIstekleri += "begen:$kayitId"
+    }
+
+    override suspend fun begeniyiGeriAl(kayitId: String) {
+        begeniHatasi?.let { throw it }
+        begeniIstekleri += "geri:$kayitId"
+    }
+
+    override suspend fun begenenler(kayitId: String): List<KullaniciOzeti> {
+        hata?.let { throw it }
+        begeniIstekleri += "begenenler:$kayitId"
+        return begenenListesi
     }
 
     val kullaniciAramalari = mutableListOf<String>()
