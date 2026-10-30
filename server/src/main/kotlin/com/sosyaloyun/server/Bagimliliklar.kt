@@ -2,6 +2,7 @@ package com.sosyaloyun.server
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
+import java.io.File
 import javax.sql.DataSource
 import kotlin.time.Clock
 
@@ -33,6 +34,8 @@ class Bagimliliklar(
     val epostaGonderici: EpostaGonderici? = null,
     /** Moderasyon sayfasının şifresi; null ise sayfa kapalı. */
     val moderasyonSifresi: String? = null,
+    /** Statik web sitesinin dizini (`web/`); null ise server web sitesini sunmaz. */
+    val webDizini: File? = null,
 ) {
     companion object {
         /** PostgreSQL bağlantısı standart `PG*` ortam değişkenlerinden okunur (Railway ve VDS aynı imajı kullanır, ADR 0009). */
@@ -58,6 +61,7 @@ class Bagimliliklar(
                 pushZamanlayici = true,
                 epostaGonderici = ResendEpostaGonderici.ortamdan(),
                 moderasyonSifresi = System.getenv("MODERASYON_SIFRESI")?.takeIf { it.isNotBlank() },
+                webDizini = File(ortam("WEB_DIZINI", "web")).takeIf { it.isDirectory },
                 katalogZamanlayici = true,
             )
         }

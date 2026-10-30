@@ -272,4 +272,5 @@
     <string name="hesap_sil_onay_etiketi">Type %1$s to confirm</string>
     <string name="hesap_sil_onay">Delete permanently</string>
     <string name="hesap_sil_hata">Couldn't delete your account. Try again.</string>
+    <string name="paylas">Share</string>
 </resources>

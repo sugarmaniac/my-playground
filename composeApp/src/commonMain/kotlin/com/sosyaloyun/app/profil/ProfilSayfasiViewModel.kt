@@ -3,10 +3,12 @@ package com.sosyaloyun.app.profil
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sosyaloyun.app.api.ApiIstemcisi
+import com.sosyaloyun.app.api.sunucuAdresi
 import com.sosyaloyun.shared.ArkadaslikDurumu
 import com.sosyaloyun.shared.GunlukOgesi
 import com.sosyaloyun.shared.KutuphaneOgesi
 import com.sosyaloyun.shared.OrtakOyunlar
+import com.sosyaloyun.shared.PaylasimLinkleri
 import com.sosyaloyun.shared.ProfilSayfasi
 import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.Job
@@ -44,10 +46,16 @@ data class ProfilSayfasiDurumu(
     val engellendi: Boolean = false,
     /** Engelleme isteği sürüyor ya da başarısız oldu. */
     val engelHatasi: Boolean = false,
+    /** Web sitesindeki profil paylaşım sayfası; profil yüklenince dolar. */
+    val paylasimLinki: String? = null,
 )
 
 /** Profil sayfası: başlık (vitrin, bu yıl bitirilenler, sayaçlar) ve dört sekme. [kullaniciAdi] null ise kendi profilin. */
-class ProfilSayfasiViewModel(private val api: ApiIstemcisi, private val kullaniciAdi: String? = null) : ViewModel() {
+class ProfilSayfasiViewModel(
+    private val api: ApiIstemcisi,
+    private val kullaniciAdi: String? = null,
+    private val webAdresi: String = sunucuAdresi(),
+) : ViewModel() {
     private val _ekran = MutableStateFlow(ProfilSayfasiDurumu())
     val ekran: StateFlow<ProfilSayfasiDurumu> = _ekran
     private var sekmeIsi: Job? = null
@@ -68,7 +76,8 @@ class ProfilSayfasiViewModel(private val api: ApiIstemcisi, private val kullanic
             } catch (e: Exception) {
                 ProfilBasligi.Hata
             }
-            _ekran.update { it.copy(baslik = baslik) }
+            val link = (baslik as? ProfilBasligi.Hazir)?.let { PaylasimLinkleri.profil(webAdresi, it.sayfa.kullanici.kullaniciAdi) }
+            _ekran.update { it.copy(baslik = baslik, paylasimLinki = link ?: it.paylasimLinki) }
             if ((baslik as? ProfilBasligi.Hazir)?.sayfa?.arkadaslik == ArkadaslikDurumu.ARKADAS) ortakOyunlariYukle()
         }
         sekmeyiYukle()

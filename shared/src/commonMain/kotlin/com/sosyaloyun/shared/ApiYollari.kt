@@ -69,6 +69,11 @@ object ApiYollari {
 
     const val KESIF = "/kesif"
 
+    /** Web sitesinin oturumsuz, salt okunur paylaşım uç noktaları; yalnızca Herkes görünürlüğündeki içerik. */
+    const val PAYLASIM = "/paylasim"
+    fun paylasilanKayit(kayitId: String) = "$PAYLASIM/gunluk/$kayitId"
+    fun paylasilanProfil(kullaniciAdi: String) = "$PAYLASIM/profil/$kullaniciAdi"
+
     const val SIKAYETLER = "/sikayetler"
 
     /** Moderatörün şifreyle (HTTP Basic) açtığı tek sayfalık şikayet listesi; uygulama kullanmaz. */

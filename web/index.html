@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sosyal Oyun</title>
+  <meta name="description" content="Oynadığın oyunların günlüğünü tut, arkadaşlarının ne oynadığını gör.">
+  <link rel="stylesheet" href="stil.css">
+</head>
+<body>
+<main>
+  <header><a href="./">Sosyal Oyun</a></header>
+  <h1>Oyun günlüğün, arkadaşlarınla birlikte.</h1>
+  <p class="soluk">Oynadığın, bitirdiğin ve bıraktığın oyunları kaydet; puan ver, inceleme yaz. Arkadaşlarının ne oynadığını akışında gör, oyunlara topluluğun ve arkadaşlarının puanlarıyla bak.</p>
+  <div id="magaza"></div>
+
+  <section class="kart">
+    <h2>Davet kodun var mı?</h2>
+    <p class="soluk">Sosyal Oyun şimdilik kapalı betada; davet koduyla katılınır. Kodunu gir, uygulamayı indir ve girişten sonra aynı kodu kullan.</p>
+    <form id="davet-formu">
+      <input id="davet-kodu" name="kod" autocomplete="off" placeholder="Davet kodu" aria-label="Davet kodu" required>
+      <button class="dugme" type="submit">Devam</button>
+    </form>
+    <p id="davet-sonucu" class="soluk" hidden></p>
+  </section>
+
+  <footer>
+    <p>Oyun verisi <a href="https://www.igdb.com" rel="noopener">IGDB.com</a>'dan alınmıştır.</p>
+  </footer>
+</main>
+<script src="ayarlar.js"></script>
+<script src="ortak.js"></script>
+<script>
+  document.getElementById("magaza").append(magazaDugmeleri());
+  const kodKutusu = document.getElementById("davet-kodu");
+  // Paylaşılan davet linki (?kod=...) kutuyu doldurur.
+  const gelenKod = new URLSearchParams(location.search).get("kod");
+  if (gelenKod) kodKutusu.value = gelenKod;
+  document.getElementById("davet-formu").addEventListener("submit", async (olay) => {
+    olay.preventDefault();
+    const kod = kodKutusu.value.trim().toUpperCase();
+    if (!kod) return;
+    let kopyalandi = false;
+    try { await navigator.clipboard.writeText(kod); kopyalandi = true; } catch (e) { /* pano izni yoksa kodu elle girer */ }
+    const sonuc = document.getElementById("davet-sonucu");
+    sonuc.textContent = (kopyalandi ? "Kodun panoya kopyalandı: " : "Kodun: ") + kod +
+      ". Uygulamayı indir, Apple ya da Google ile giriş yap ve davet kodu adımında bu kodu gir.";
+    sonuc.hidden = false;
+  });
+</script>
+</body>
+</html>

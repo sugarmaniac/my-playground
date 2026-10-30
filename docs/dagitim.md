@@ -4,8 +4,8 @@
 
 Backend, `main`'e her merge'de Railway'deki test ortamına kendiliğinden dağıtılır (ADR 0009). Repo bağlantısı Railway'de kurulu; derleme ve sağlık kontrolü ayarları repodaki `railway.json`'da:
 
-- İmaj kök dizindeki `Dockerfile` ile derlenir (yalnızca `server` ve `shared`; mobil modüller imaja girmez).
-- Yalnızca backend'i etkileyen yollar (`server/`, `shared/`, Gradle dosyaları, `Dockerfile`, `railway.json`) değişince yeniden dağıtılır.
+- İmaj kök dizindeki `Dockerfile` ile derlenir (yalnızca `server` ve `shared`; mobil modüller imaja girmez). Statik web sitesi (`web/`, ADR 0004) imaja kopyalanır ve server tarafından kök adreste sunulur; paylaşım linkleri bu adrese gider.
+- Yalnızca backend'i etkileyen yollar (`server/`, `shared/`, `web/`, Gradle dosyaları, `Dockerfile`, `railway.json`) değişince yeniden dağıtılır.
 - Sağlık kontrolü `GET /saglik`; yanıt veritabanından okunan bakım modu ayarını içerdiği için veritabanı bağlantısını da doğrular.
 - Şema göçleri (Flyway) server açılırken uygulanır.
 - Oyun kataloğu IGDB'den server açılırken ve sonra günde bir sayfa sayfa içeri alınır; arada IGDB webhook'ları (`/igdb/webhook/{create|update|delete}`) güncel tutar. Kullanıcı istekleri IGDB'ye gitmez (ADR 0001).
@@ -27,6 +27,7 @@ Değerler repoya yazılmaz; Railway'in servis ayarlarına girilir. Adımları `.
 | `PGUSER` | Backend servisi → Variables | `${{Postgres.PGUSER}}` |
 | `PGPASSWORD` | Backend servisi → Variables | `${{Postgres.PGPASSWORD}}` |
 | `PORT` | Railway kendisi verir | Girilmez. |
+| `WEB_DIZINI` | İsteğe bağlı | Statik web sitesinin dizini; varsayılan `web` (imajda `/uygulama/web`). Dizin yoksa web sitesi sunulmaz. |
 | `KURUCU_DAVET_KODLARI` | Backend servisi → Variables | Betanın ilk kullanıcılarının katılacağı, sahibi olmayan tek kullanımlık davet kodları (virgülle). Açılışta eklenir; var olan kod değişmez. |
 | `IGDB_ISTEMCI_KIMLIGI` | Backend servisi → Variables | Twitch geliştirici uygulamasının Client ID'si. Boşsa oyun kataloğu içe aktarılmaz. |
 | `IGDB_ISTEMCI_SIRRI` | Backend servisi → Variables | Twitch uygulamasının Client Secret'ı. |

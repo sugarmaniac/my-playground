@@ -41,6 +41,14 @@ class ProfilSayfasiViewModelTest {
     }
 
     @Test
+    fun paylasButonuWebSitesindekiProfilSayfasinaLinkUretir() = viewModelTesti {
+        val vm = ProfilSayfasiViewModel(api, "mehmet", webAdresi = "https://ornek.test")
+        advanceUntilIdle()
+
+        assertEquals("https://ornek.test/profil.html?ad=${api.profilSayfasi.kullanici.kullaniciAdi}", vm.ekran.value.paylasimLinki)
+    }
+
+    @Test
     fun sekmelerDogruVeriyleDolar() = viewModelTesti {
         api.gunlukOgeleri = listOf(kayit("1", inceleme = "İyi"), kayit("2"))
         api.kutuphaneOgeleri = listOf(giris("Oynanan", Durum.OYNUYORUM), giris("İstenen", null, istek = true))
