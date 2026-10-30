@@ -8,6 +8,8 @@ import com.sosyaloyun.shared.HataKodu
 import com.sosyaloyun.shared.HesapSilmeIstegi
 import com.sosyaloyun.shared.KullaniciAdiMusaitlikYaniti
 import com.sosyaloyun.shared.OzellikDurumu
+import com.sosyaloyun.shared.Faz
+import com.sosyaloyun.shared.WebGirisAyari
 import com.sosyaloyun.shared.ProfilIstegi
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.request.receive
@@ -22,8 +24,11 @@ import io.ktor.server.routing.put
 suspend fun RoutingCall.hata(durum: HttpStatusCode, kod: HataKodu) = respond(durum, ApiHatasi(kod))
 
 /** Onboarding'in davet kodu ve kullanıcı adı adımları. */
-fun Route.profilRotalari(kullanicilar: Kullanicilar, davetKodlari: DavetKodlari, ayarlar: Ayarlar, fazlar: Fazlar) {
-    get(ApiYollari.OZELLIKLER) { call.respond(OzellikDurumu(fazlar.aktif())) }
+fun Route.profilRotalari(kullanicilar: Kullanicilar, davetKodlari: DavetKodlari, ayarlar: Ayarlar, fazlar: Fazlar, webGiris: WebGirisAyari? = null) {
+    get(ApiYollari.OZELLIKLER) {
+        val aktif = fazlar.aktif()
+        call.respond(OzellikDurumu(aktif, webGiris?.takeIf { aktif.kapsar(Faz.FAZ_3) }))
+    }
 
     oturumGerekli {
         get(ApiYollari.BEN) {

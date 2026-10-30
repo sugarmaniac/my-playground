@@ -21,6 +21,13 @@ enum class Faz(val seviye: Int) {
     }
 }
 
-/** `GET /ozellikler`: oturum gerektirmez; web sitesi ve girişten önceki ekranlar kullanır. */
+/**
+ * `GET /ozellikler`: oturum gerektirmez; web sitesi ve girişten önceki ekranlar kullanır. [webGiris] yalnızca Faz 3
+ * açıkken ve sunucuda web istemci ayarları varken dolar; yoksa web sitesinde giriş düğmesi görünmez (#58).
+ */
 @Serializable
-data class OzellikDurumu(val aktifFaz: Faz)
+data class OzellikDurumu(val aktifFaz: Faz, val webGiris: WebGirisAyari? = null)
+
+/** Web sitesindeki Google ve Apple girişinin istemci kimlikleri (gizli değildir); boş olan sağlayıcının düğmesi yoktur. */
+@Serializable
+data class WebGirisAyari(val googleIstemciKimligi: String? = null, val appleServisKimligi: String? = null)

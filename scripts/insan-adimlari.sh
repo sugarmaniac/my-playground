@@ -459,6 +459,22 @@ step "Railway → backend servisi → Variables → GOOGLE_KIMLIK_KITLELERI'ni i
 note "    ${GOOGLE_WEB_ISTEMCI_KIMLIGI:-<web client id>},$GOOGLE_IOS_ISTEMCI_KIMLIGI"
 pause "Railway değişkeni güncellenip deploy edilince Enter'a bas"
 note "gradle.properties ve Config.xcconfig değişikliklerini commit'leyip main'e gönder (değerler gizli değil)."
+
+# ── Webde giriş (#58, Faz 3) ───────────────────────────────────────────────
+stage "Webde giriş: Google ve Apple web istemcileri (Faz 3)"
+say "Faz 3 açıkken web sitesinde (uygulama.html) Google ve Apple ile giriş yapılır. Kimlikler yoksa giriş düğmesi görünmez."
+open_url "https://console.cloud.google.com/apis/credentials"
+step "Google: 'Sosyal Oyun server' Web istemcisini aç → Authorized JavaScript origins'e sitenin adresini ekle (ör. ${RAILWAY_ADRESI:-https://<railway adresi>}) → Save."
+note "Web girişi aynı web istemci kimliğini kullanır: ${GOOGLE_WEB_ISTEMCI_KIMLIGI:-<web client id>} (GOOGLE_KIMLIK_KITLELERI'nde zaten var)."
+open_url "https://developer.apple.com/account/resources/identifiers/list/serviceId"
+step "Apple: Identifiers → '+' → Services IDs → Identifier: com.sosyaloyun.web → Continue → Register."
+step "Oluşan Services ID'yi aç → 'Sign In with Apple' işaretle → Configure: Primary App ID com.sosyaloyun.app; Domains: site alan adı; Return URLs: <site adresi>/uygulama.html → Save."
+ask WEB_APPLE_SERVIS_KIMLIGI "Apple Services ID (ör. com.sosyaloyun.web):"
+write_env WEB_APPLE_SERVIS_KIMLIGI "$WEB_APPLE_SERVIS_KIMLIGI"
+open_url "$RAILWAY_PROJE"
+step "Railway → backend → Variables: WEB_GOOGLE_ISTEMCI_KIMLIGI=${GOOGLE_WEB_ISTEMCI_KIMLIGI:-<web client id>}, WEB_APPLE_SERVIS_KIMLIGI=$WEB_APPLE_SERVIS_KIMLIGI ekle."
+step "Aynı yerde APPLE_KIMLIK_KITLELERI'ni com.sosyaloyun.app,$WEB_APPLE_SERVIS_KIMLIGI yap (web token'larının kitlesi Services ID'dir) ve Deploy'a bas."
+pause "Değişkenler eklenince Enter'a bas"
 # ──────────────────────────────────────────────────────────────────────────
 
 finish

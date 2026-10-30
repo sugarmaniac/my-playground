@@ -32,6 +32,10 @@
 <script src="ortak.js"></script>
 <script>
   document.getElementById("magaza").append(magazaDugmeleri());
+  // Faz 3'te ve web istemci kimlikleri tanımlıyken webde giriş açılır (#58); aksi halde düğme hiç görünmez.
+  apiGetir("/ozellikler").then((o) => {
+    if (o && o.webGiris) document.getElementById("magaza").append(oge("p", {}, oge("a", { sinif: "dugme", href: "uygulama.html", metin: "Webde giriş yap" })));
+  }).catch(() => {});
   const kodKutusu = document.getElementById("davet-kodu");
   // Paylaşılan davet linki (?kod=...) kutuyu doldurur.
   const gelenKod = new URLSearchParams(location.search).get("kod");

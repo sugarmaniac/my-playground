@@ -46,7 +46,7 @@ fun Application.modul(bagimliliklar: Bagimliliklar) {
         kimlikRotalari(bagimliliklar.kimlikDogrulayici, kullanicilar, oturumlar, moderasyon, itirazlar, fazlar)
         itirazRotalari(itirazlar, fazlar)
         sikayetRotalari(moderasyon)
-        profilRotalari(kullanicilar, davetKodlari, ayarlar, fazlar)
+        profilRotalari(kullanicilar, davetKodlari, ayarlar, fazlar, bagimliliklar.webGiris)
         val gunluk = Gunluk(veritabani, bagimliliklar.saat)
         val kutuphane = Kutuphane(veritabani, bagimliliklar.saat)
         val begeniler = Begeniler(veritabani, bagimliliklar.saat)
