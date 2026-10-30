@@ -119,10 +119,12 @@ class ModerasyonTest {
 
     @Test
     fun icerikKaldirilincaHicbirUcNoktadaDonmezVeIkiTarafaMesajGider() = apiTesti {
-        hazirla("ayse", "mehmet")
+        hazirla("ayse", "mehmet", "zeynep")
         client.post(ApiYollari.kullaniciSekmesi("mehmet", ApiYollari.TAKIP)) { bearerAuth(t("ayse")) }
         val kayit = kayitGir("mehmet", "Kaba bir inceleme")
         sikayetEt("ayse", SikayetIstegi(SikayetSebebi.TACIZ, gunlukKaydiId = kayit.id))
+        // Aynı kaydı başkası da şikayet etti: tek kararla ikisi de kapanır, profil şikayetine dönüşmez.
+        sikayetEt("zeynep", SikayetIstegi(SikayetSebebi.SPAM, gunlukKaydiId = kayit.id))
 
         karar(SikayetDurumu.ICERIK_KALDIRILDI)
 
@@ -135,6 +137,7 @@ class ModerasyonTest {
 
         assertEquals(listOf(BildirimTuru.ICERIK_KALDIRILDI, BildirimTuru.YENI_TAKIPCI), bildirimler("mehmet").map { it.tur })
         assertEquals(listOf(BildirimTuru.SIKAYET_SONUCLANDI), bildirimler("ayse").map { it.tur })
+        assertEquals(listOf(BildirimTuru.SIKAYET_SONUCLANDI), bildirimler("zeynep").map { it.tur })
         assertFalse("<article>" in sayfa().bodyAsText())
     }
 

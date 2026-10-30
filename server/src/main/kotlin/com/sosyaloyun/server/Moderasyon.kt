@@ -150,6 +150,16 @@ class Moderasyon(
                 val hedef = sikayet[SikayetTablosu.hedefKullanici]
                 val kayit = sikayet[SikayetTablosu.gunlukKaydiId]
                 val simdi = simdi()
+                // Aynı hedefle ilgili açık şikayetler aynı kararla kapanır; her şikayet edene mesaj gider. Kayıt silinince
+                // gunluk_kaydi_id boşaldığından kayıt şikayetleri silmeden önce toplanır, yoksa profil şikayeti gibi görünürler.
+                val ilgili = SikayetTablosu.selectAll().where {
+                    val acik = (SikayetTablosu.hedefKullanici eq hedef) and (SikayetTablosu.durum eq SikayetDurumu.ACIK.name)
+                    when {
+                        karar == SikayetDurumu.ICERIK_KALDIRILDI && kayit != null -> acik and (SikayetTablosu.gunlukKaydiId eq kayit)
+                        karar == SikayetDurumu.ICERIK_KALDIRILDI || karar == SikayetDurumu.REDDEDILDI -> acik and (SikayetTablosu.id eq sikayetId)
+                        else -> acik
+                    }
+                }.toList()
                 when (karar) {
                     SikayetDurumu.ICERIK_KALDIRILDI -> {
                         if (kayit != null) {
@@ -171,14 +181,6 @@ class Moderasyon(
                     }
                     else -> Unit
                 }
-                // Aynı hedefle ilgili açık şikayetler (aynı kayıt ya da hesap) aynı kararla kapanır; her şikayet edene mesaj gider.
-                val ilgili = SikayetTablosu.selectAll().where {
-                    var kosul = (SikayetTablosu.hedefKullanici eq hedef) and (SikayetTablosu.durum eq SikayetDurumu.ACIK.name)
-                    if (karar == SikayetDurumu.ICERIK_KALDIRILDI || karar == SikayetDurumu.REDDEDILDI) {
-                        kosul = kosul and (SikayetTablosu.id eq sikayetId)
-                    }
-                    kosul
-                }.toList()
                 ilgili.forEach { satir ->
                     SikayetTablosu.update({ SikayetTablosu.id eq satir[SikayetTablosu.id] }) {
                         it[durum] = karar.name
