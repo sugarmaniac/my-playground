@@ -34,12 +34,16 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import com.sosyaloyun.app.liste.ListeOzetiSatiri
+import com.sosyaloyun.app.LocalAktifFaz
 import com.sosyaloyun.app.api.KisiListesiTuru
 import com.sosyaloyun.app.gunluk.tarihMetni
 import com.sosyaloyun.app.hesap.AvatarGorunumu
 import com.sosyaloyun.app.kutuphane.YildizPuani
 import com.sosyaloyun.app.kutuphane.durumAdi
 import com.sosyaloyun.app.resources.Res
+import com.sosyaloyun.app.resources.profil_sekme_listeler
+import com.sosyaloyun.app.resources.liste_yeni
 import com.sosyaloyun.app.resources.takip_istegi_gonderildi
 import com.sosyaloyun.app.resources.profil_gizli
 import com.sosyaloyun.app.resources.paylas
@@ -71,6 +75,7 @@ import com.sosyaloyun.app.resources.profil_sekme_oyunlar
 import com.sosyaloyun.app.resources.profil_vitrin
 import com.sosyaloyun.app.resources.profil_vitrin_duzenle
 import com.sosyaloyun.app.resources.tekrar_dene
+import com.sosyaloyun.shared.Faz
 import com.sosyaloyun.shared.ArkadaslikDurumu
 import com.sosyaloyun.shared.Durum
 import com.sosyaloyun.shared.GunlukOgesi
@@ -102,10 +107,14 @@ fun ProfilSayfasiEkrani(
     kisiListesi: (String, KisiListesiTuru) -> Unit,
     gunlukKaydinaGit: (String) -> Unit,
     geri: (() -> Unit)? = null,
+    /** Faz 2 (#49): listeye git; kendi profilinde yeni liste. */
+    listeyeGit: (String) -> Unit = {},
+    yeniListe: (() -> Unit)? = null,
     /** Başkasının profilinde şikayet penceresi: kullanıcı adı ve kapatma işlevi alır. */
     sikayetPenceresi: @Composable (kullaniciAdi: String, kapat: () -> Unit) -> Unit = { _, _ -> },
 ) {
     val durum by viewModel.ekran.collectAsStateWithLifecycle()
+    val aktifFaz = LocalAktifFaz.current
     LaunchedEffect(durum.engellendi) { if (durum.engellendi) geri?.invoke() }
     LazyColumn(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         geri?.let { item { TextButton(onClick = it, modifier = Modifier.padding(start = 8.dp)) { Text(stringResource(Res.string.geri)) } } }
@@ -120,8 +129,9 @@ fun ProfilSayfasiEkrani(
             }
         }
         item {
-            PrimaryScrollableTabRow(selectedTabIndex = durum.sekme.ordinal, edgePadding = 16.dp) {
-                ProfilSekmesi.entries.forEach { sekme ->
+            val sekmeler = ProfilSekmesi.entries.filter { it != ProfilSekmesi.LISTELER || aktifFaz.kapsar(Faz.FAZ_2) }
+            PrimaryScrollableTabRow(selectedTabIndex = sekmeler.indexOf(durum.sekme).coerceAtLeast(0), edgePadding = 16.dp) {
+                sekmeler.forEach { sekme ->
                     Tab(selected = durum.sekme == sekme, onClick = { viewModel.sekmeSecildi(sekme) }, text = { Text(sekmeAdi(sekme)) })
                 }
             }
@@ -146,6 +156,12 @@ fun ProfilSayfasiEkrani(
             is SekmeIcerigi.Kutuphane -> {
                 if (icerik.ogeler.isEmpty()) item { BosSekme() }
                 items(icerik.ogeler, key = { it.oyun.id }) { KutuphaneSatiri(it) { oyunaGit(it.oyun.id) } }
+                if (icerik.dahaVar) item { DahaFazla(viewModel::dahaFazlaYukle) }
+            }
+            is SekmeIcerigi.Listeler -> {
+                yeniListe?.let { yeni -> item { TextButton(onClick = yeni, modifier = Modifier.padding(horizontal = 16.dp)) { Text(stringResource(Res.string.liste_yeni)) } } }
+                if (icerik.ogeler.isEmpty()) item { BosSekme() }
+                items(icerik.ogeler, key = { "liste-${it.id}" }) { ListeOzetiSatiri(it) { listeyeGit(it.id) } }
                 if (icerik.dahaVar) item { DahaFazla(viewModel::dahaFazlaYukle) }
             }
         }
@@ -345,6 +361,7 @@ private fun sekmeAdi(sekme: ProfilSekmesi): String = stringResource(
         ProfilSekmesi.OYUNLAR -> Res.string.profil_sekme_oyunlar
         ProfilSekmesi.INCELEMELER -> Res.string.profil_sekme_incelemeler
         ProfilSekmesi.ISTEK_LISTESI -> Res.string.profil_sekme_istek_listesi
+        ProfilSekmesi.LISTELER -> Res.string.profil_sekme_listeler
     },
 )
 

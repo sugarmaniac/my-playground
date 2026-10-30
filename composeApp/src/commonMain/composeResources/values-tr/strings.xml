@@ -292,4 +292,20 @@
     <string name="tercih_takip_istegi_kabulu">Kabul edilen takip istekleri</string>
     <string name="takip_istegi_gonderildi">İstek gönderildi</string>
     <string name="profil_gizli">Bu profil gizli. Günlüğünü görmek için takip et.</string>
+    <string name="profil_sekme_listeler">Listeler</string>
+    <string name="liste_yeni">+ Yeni liste</string>
+    <string name="liste_oyun_sayisi">%1$d oyun · %2$s</string>
+    <string name="liste_bulunamadi">Bu liste yok ya da sana görünmüyor.</string>
+    <string name="liste_begen">Beğen (%1$d)</string>
+    <string name="liste_begenildi">Beğenildi (%1$d)</string>
+    <string name="liste_duzenle">Düzenle</string>
+    <string name="liste_sil">Sil</string>
+    <string name="liste_baslik">Başlık</string>
+    <string name="liste_aciklama">Açıklama (isteğe bağlı)</string>
+    <string name="liste_herkes">Herkes</string>
+    <string name="liste_sadece_ben">Yalnızca ben</string>
+    <string name="liste_oyun_ara">Oyun ekle</string>
+    <string name="liste_kaydet">Listeyi kaydet</string>
+    <string name="liste_kayit_hatasi">Liste kaydedilemedi. Tekrar dene.</string>
+    <string name="oyun_listeleri">Bu oyunun geçtiği listeler</string>
 </resources>

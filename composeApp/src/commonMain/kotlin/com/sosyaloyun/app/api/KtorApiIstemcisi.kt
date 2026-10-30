@@ -1,6 +1,9 @@
 package com.sosyaloyun.app.api
 
 import com.sosyaloyun.app.oturum.OturumDeposu
+import com.sosyaloyun.shared.ListeSayfasi
+import com.sosyaloyun.shared.ListeIstegi
+import com.sosyaloyun.shared.Liste
 import com.sosyaloyun.shared.GizlilikIstegi
 import com.sosyaloyun.shared.YorumListesi
 import com.sosyaloyun.shared.YorumIstegi
@@ -428,6 +431,41 @@ class KtorApiIstemcisi(
     override suspend fun takipIsteginiReddet(kullaniciAdi: String) {
         istek { http.delete(ApiYollari.takipIstegi(kullaniciAdi)) }
     }
+
+    override suspend fun profilListeleri(kullaniciAdi: String?, imlec: String?): ListeSayfasi = istek {
+        val yol = kullaniciAdi?.let { ApiYollari.kullaniciSekmesi(it, ApiYollari.SEKME_LISTELER) } ?: ApiYollari.PROFILIM_LISTELER
+        http.get(yol) { imlec?.let { parameter("imlec", it) } }.body()
+    }
+
+    override suspend fun liste(listeId: String): Liste = istek { http.get(ApiYollari.liste(listeId)).body() }
+
+    override suspend fun listeOlustur(istek: ListeIstegi): Liste = istek {
+        http.post(ApiYollari.LISTELER) {
+            contentType(ContentType.Application.Json)
+            setBody(istek)
+        }.body()
+    }
+
+    override suspend fun listeGuncelle(listeId: String, istek: ListeIstegi): Liste = istek {
+        http.put(ApiYollari.liste(listeId)) {
+            contentType(ContentType.Application.Json)
+            setBody(istek)
+        }.body()
+    }
+
+    override suspend fun listeSil(listeId: String) {
+        istek { http.delete(ApiYollari.liste(listeId)) }
+    }
+
+    override suspend fun listeBegen(listeId: String) {
+        istek { http.put(ApiYollari.listeBegenisi(listeId)) }
+    }
+
+    override suspend fun listeBegenisiniGeriAl(listeId: String) {
+        istek { http.delete(ApiYollari.listeBegenisi(listeId)) }
+    }
+
+    override suspend fun oyunListeleri(oyunId: String): ListeSayfasi = istek { http.get(ApiYollari.oyunListeleri(oyunId)).body() }
 
     private fun AkisSekmesi.parametre() = if (this == AkisSekmesi.ARKADASLAR) "arkadaslar" else "takip"
 

@@ -1,5 +1,8 @@
 package com.sosyaloyun.app.api
 
+import com.sosyaloyun.shared.ListeSayfasi
+import com.sosyaloyun.shared.ListeIstegi
+import com.sosyaloyun.shared.Liste
 import com.sosyaloyun.shared.YorumListesi
 import com.sosyaloyun.shared.Yorum
 import com.sosyaloyun.shared.AkisSayfasi
@@ -180,6 +183,23 @@ interface ApiIstemcisi {
     suspend fun takipIsteginiKabulEt(kullaniciAdi: String)
 
     suspend fun takipIsteginiReddet(kullaniciAdi: String)
+
+    /** Faz 2 (#49): listeler. [kullaniciAdi] null ise kendi listelerin. */
+    suspend fun profilListeleri(kullaniciAdi: String?, imlec: String? = null): ListeSayfasi
+
+    suspend fun liste(listeId: String): Liste
+
+    suspend fun listeOlustur(istek: ListeIstegi): Liste
+
+    suspend fun listeGuncelle(listeId: String, istek: ListeIstegi): Liste
+
+    suspend fun listeSil(listeId: String)
+
+    suspend fun listeBegen(listeId: String)
+
+    suspend fun listeBegenisiniGeriAl(listeId: String)
+
+    suspend fun oyunListeleri(oyunId: String): ListeSayfasi
 
     suspend fun kullaniciAra(sorgu: String, imlec: String? = null): KullaniciListesi
 

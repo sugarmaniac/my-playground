@@ -4,6 +4,10 @@ import com.sosyaloyun.app.api.ApiHatasiIstisnasi
 import com.sosyaloyun.app.api.ApiIstemcisi
 import com.sosyaloyun.app.api.EngelListesiTuru
 import com.sosyaloyun.app.api.KisiListesiTuru
+import com.sosyaloyun.shared.OyunTuru
+import com.sosyaloyun.shared.ListeSayfasi
+import com.sosyaloyun.shared.ListeIstegi
+import com.sosyaloyun.shared.Liste
 import com.sosyaloyun.shared.YorumListesi
 import com.sosyaloyun.shared.Yorum
 import com.sosyaloyun.shared.AkisOgesi
@@ -504,6 +508,74 @@ class SahteApiIstemcisi : ApiIstemcisi {
         gizlilikIstekleri += "reddet:$kullaniciAdi"
         gelenTakipIstekleri.removeAll { it.kullaniciAdi == kullaniciAdi }
     }
+
+    var listeler = mutableMapOf<String, Liste>()
+    var profilListeSayfasi = ListeSayfasi(emptyList(), null)
+    var oyunListeSayfasi = ListeSayfasi(emptyList(), null)
+    val listeIstekleri = mutableListOf<String>()
+    var listeHatasi: Exception? = null
+
+    override suspend fun profilListeleri(kullaniciAdi: String?, imlec: String?): ListeSayfasi {
+        hata?.let { throw it }
+        listeIstekleri += "profil:${kullaniciAdi ?: "ben"}"
+        return profilListeSayfasi
+    }
+
+    override suspend fun liste(listeId: String): Liste {
+        hata?.let { throw it }
+        return listeler[listeId] ?: throw ApiHatasiIstisnasi(HataKodu.LISTE_BULUNAMADI)
+    }
+
+    override suspend fun listeOlustur(istek: ListeIstegi): Liste {
+        listeHatasi?.let { throw it }
+        listeIstekleri += "olustur:${istek.baslik}:${istek.oyunIdleri.joinToString(",")}"
+        val liste = ornekListe("l${listeler.size + 1}", istek)
+        listeler[liste.id] = liste
+        return liste
+    }
+
+    override suspend fun listeGuncelle(listeId: String, istek: ListeIstegi): Liste {
+        listeHatasi?.let { throw it }
+        listeIstekleri += "guncelle:$listeId:${istek.baslik}:${istek.oyunIdleri.joinToString(",")}"
+        val liste = ornekListe(listeId, istek)
+        listeler[listeId] = liste
+        return liste
+    }
+
+    override suspend fun listeSil(listeId: String) {
+        listeHatasi?.let { throw it }
+        listeIstekleri += "sil:$listeId"
+        listeler.remove(listeId)
+    }
+
+    override suspend fun listeBegen(listeId: String) {
+        listeHatasi?.let { throw it }
+        listeIstekleri += "begen:$listeId"
+    }
+
+    override suspend fun listeBegenisiniGeriAl(listeId: String) {
+        listeHatasi?.let { throw it }
+        listeIstekleri += "geri:$listeId"
+    }
+
+    override suspend fun oyunListeleri(oyunId: String): ListeSayfasi {
+        hata?.let { throw it }
+        listeIstekleri += "oyun:$oyunId"
+        return oyunListeSayfasi
+    }
+
+    fun ornekListe(id: String, istek: ListeIstegi, begeniSayisi: Int = 0, begendim: Boolean = false, benim: Boolean = true) = Liste(
+        id = id,
+        sahip = KullaniciOzeti("k1", "ben", "Ben", Avatar.KUMANDA),
+        baslik = istek.baslik.trim(),
+        aciklama = istek.aciklama,
+        gorunurluk = istek.gorunurluk,
+        oyunlar = istek.oyunIdleri.map { OyunOzeti(it, "Oyun $it", OyunTuru.ANA_OYUN, null, null, emptyList(), null) },
+        begeniSayisi = begeniSayisi,
+        begendim = begendim,
+        benim = benim,
+        guncellenme = Instant.parse("2026-01-05T10:00:00Z"),
+    )
 
     override suspend fun yorumSil(yorumId: String) {
         yorumHatasi?.let { throw it }

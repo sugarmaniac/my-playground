@@ -105,6 +105,8 @@ fun OyunDetayEkrani(
     gunlukKaydinaGit: (String) -> Unit,
     /** Ortadaki kaydet butonundan gelindiyse hızlı kayıt alt sayfası hemen açılır. */
     hizliKayitAcik: Boolean = false,
+    /** Fazlara bağlı ek bölümler (ör. Faz 2'de bu oyunun geçtiği listeler); topluluğun altında. */
+    ekBolumler: @Composable () -> Unit = {},
 ) {
     val ekran by viewModel.ekran.collectAsStateWithLifecycle()
     Column(Modifier.fillMaxSize()) {
@@ -123,7 +125,10 @@ fun OyunDetayEkrani(
                     oyunaGit,
                     kaydet = { kayitAcik = true },
                     gunlugeYaz = gunlugeYaz,
-                    topluluk = { Topluluk(durum, viewModel::dahaFazlaInceleme, kullaniciyaGit, gunlukKaydinaGit) },
+                    topluluk = {
+                        Topluluk(durum, viewModel::dahaFazlaInceleme, kullaniciyaGit, gunlukKaydinaGit)
+                        ekBolumler()
+                    },
                 )
                 if (kayitAcik) {
                     val detay = durum.detay

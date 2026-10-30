@@ -62,6 +62,7 @@ fun Application.modul(bagimliliklar: Bagimliliklar) {
         gunlukRotalari(gunluk, katalog, begeniler, sosyalGraf, kullanicilar, Yorumlar(veritabani, bagimliliklar.saat), fazlar)
         val profiller = Profiller(veritabani, katalog, kullanicilar, sosyalGraf, begeniler, bagimliliklar.saat)
         profilSayfasiRotalari(profiller, kullanicilar, sosyalGraf, fazlar)
+        listeRotalari(Listeler(veritabani, katalog, sosyalGraf, bagimliliklar.saat), kullanicilar, fazlar)
         paylasimRotalari(Paylasim(veritabani, katalog, profiller, begeniler, bagimliliklar.saat, sosyalGraf), kullanicilar, bagimliliklar.webDizini)
         get(ApiYollari.SAGLIK) {
             val durum = if (ayarlar.oku(Ayar.BakimModu)) SunucuDurumu.BAKIMDA else SunucuDurumu.AYAKTA

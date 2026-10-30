@@ -7,6 +7,7 @@ import com.sosyaloyun.app.api.sunucuAdresi
 import com.sosyaloyun.shared.ArkadaslikDurumu
 import com.sosyaloyun.shared.GunlukOgesi
 import com.sosyaloyun.shared.KutuphaneOgesi
+import com.sosyaloyun.shared.ListeOzeti
 import com.sosyaloyun.shared.OrtakOyunlar
 import com.sosyaloyun.shared.PaylasimLinkleri
 import com.sosyaloyun.shared.ProfilSayfasi
@@ -17,7 +18,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-enum class ProfilSekmesi { GUNLUK, OYUNLAR, INCELEMELER, ISTEK_LISTESI }
+/** [LISTELER] yalnızca Faz 2 açıkken gösterilir (#49). */
+enum class ProfilSekmesi { GUNLUK, OYUNLAR, INCELEMELER, ISTEK_LISTESI, LISTELER }
 
 /** Oyunlar sekmesinin süzgeci; `DURUMSUZ` henüz durum seçilmemiş girişler. */
 enum class OyunFiltresi { HEPSI, OYNUYORUM, BITIRDIM, BIRAKTIM, BEKLEMEDE, DURUMSUZ }
@@ -32,6 +34,7 @@ sealed interface SekmeIcerigi {
     data object Yukleniyor : SekmeIcerigi
     data class Gunluk(val ogeler: List<GunlukOgesi>, val dahaVar: Boolean) : SekmeIcerigi
     data class Kutuphane(val ogeler: List<KutuphaneOgesi>, val dahaVar: Boolean) : SekmeIcerigi
+    data class Listeler(val ogeler: List<ListeOzeti>, val dahaVar: Boolean) : SekmeIcerigi
     data object Hata : SekmeIcerigi
 }
 
@@ -241,6 +244,11 @@ class ProfilSayfasiViewModel(
                     val sayfa = api.profilKutuphanesi(kullaniciAdi, istekListesi, filtre, imlec)
                     sonrakiImlec = sayfa.sonrakiImlec
                     SekmeIcerigi.Kutuphane(((onceki as? SekmeIcerigi.Kutuphane)?.ogeler.orEmpty()) + sayfa.ogeler, sayfa.sonrakiImlec != null)
+                }
+                ProfilSekmesi.LISTELER -> {
+                    val sayfa = api.profilListeleri(kullaniciAdi, imlec)
+                    sonrakiImlec = sayfa.sonrakiImlec
+                    SekmeIcerigi.Listeler(((onceki as? SekmeIcerigi.Listeler)?.ogeler.orEmpty()) + sayfa.listeler, sayfa.sonrakiImlec != null)
                 }
             }
         } catch (e: CancellationException) {
