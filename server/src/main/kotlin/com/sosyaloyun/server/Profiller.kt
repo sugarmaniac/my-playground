@@ -76,6 +76,7 @@ class Profiller(
             gizli = gizli,
             takipIstegiGonderdim = if (kendisi || !gizli) null else sosyalGraf.takipIstegiGonderdiMi(izleyen, kullaniciId),
             icerikGizli = icerikGizli,
+            kurator = sosyalGraf.kuratorMu(kullaniciId),
         )
     }
 

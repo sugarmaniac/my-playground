@@ -27,6 +27,10 @@ import com.sosyaloyun.app.resources.tercih_takip_istegi_kabulu
 import com.sosyaloyun.app.resources.tercih_takip_istegi
 import com.sosyaloyun.app.resources.bildirim_takip_istegi_kabulu
 import com.sosyaloyun.app.resources.bildirim_takip_istegi
+import com.sosyaloyun.app.resources.bildirim_kurator_onaylandi
+import com.sosyaloyun.app.resources.bildirim_kurator_reddedildi
+import com.sosyaloyun.app.resources.tercih_kurator_onaylandi
+import com.sosyaloyun.app.resources.tercih_kurator_reddedildi
 import com.sosyaloyun.app.resources.tercih_yorum
 import com.sosyaloyun.app.resources.bildirim_yorum
 import com.sosyaloyun.app.resources.bildirim_arkadaslik_istegi
@@ -114,6 +118,8 @@ private fun BildirimSatiri(bildirim: Bildirim, tikla: () -> Unit) {
                 BildirimTuru.YORUM -> stringResource(Res.string.bildirim_yorum, ad)
                 BildirimTuru.TAKIP_ISTEGI -> stringResource(Res.string.bildirim_takip_istegi, ad)
                 BildirimTuru.TAKIP_ISTEGI_KABULU -> stringResource(Res.string.bildirim_takip_istegi_kabulu, ad)
+                BildirimTuru.KURATOR_ONAYLANDI -> stringResource(Res.string.bildirim_kurator_onaylandi)
+                BildirimTuru.KURATOR_REDDEDILDI -> stringResource(Res.string.bildirim_kurator_reddedildi)
             },
             style = MaterialTheme.typography.bodyMedium,
         )
@@ -143,6 +149,8 @@ fun BildirimTercihleriBolumu(viewModel: BildirimTercihleriViewModel) {
                             BildirimTuru.YORUM -> Res.string.tercih_yorum
                             BildirimTuru.TAKIP_ISTEGI -> Res.string.tercih_takip_istegi
                             BildirimTuru.TAKIP_ISTEGI_KABULU -> Res.string.tercih_takip_istegi_kabulu
+                            BildirimTuru.KURATOR_ONAYLANDI -> Res.string.tercih_kurator_onaylandi
+                            BildirimTuru.KURATOR_REDDEDILDI -> Res.string.tercih_kurator_reddedildi
                         },
                     ),
                     modifier = Modifier.weight(1f),

@@ -46,6 +46,7 @@ import com.sosyaloyun.app.resources.profil_sekme_listeler
 import com.sosyaloyun.app.resources.liste_yeni
 import com.sosyaloyun.app.resources.takip_istegi_gonderildi
 import com.sosyaloyun.app.resources.profil_gizli
+import com.sosyaloyun.app.resources.kurator_rozet
 import com.sosyaloyun.app.resources.paylas
 import com.sosyaloyun.app.hesap.paylasici
 import com.sosyaloyun.app.resources.arama_daha_fazla
@@ -185,6 +186,7 @@ private fun Baslik(
             Column(Modifier.weight(1f)) {
                 Text(kullanici.gorunenAd, style = MaterialTheme.typography.titleLarge)
                 Text("@${kullanici.kullaniciAdi}", style = MaterialTheme.typography.bodyMedium)
+                if (sayfa.kurator) Text(stringResource(Res.string.kurator_rozet), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
             }
             val durum by viewModel.ekran.collectAsStateWithLifecycle()
             durum.paylasimLinki?.let { link ->

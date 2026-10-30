@@ -127,6 +127,8 @@ class PushDagitici(
                 BildirimTuru.YORUM -> "$kim günlük kaydına yorum yaptı."
                 BildirimTuru.TAKIP_ISTEGI -> "$kim seni takip etmek istiyor."
                 BildirimTuru.TAKIP_ISTEGI_KABULU -> "$kim takip isteğini kabul etti."
+                BildirimTuru.KURATOR_ONAYLANDI -> "Küratör başvurun onaylandı. Listelerin artık keşifte."
+                BildirimTuru.KURATOR_REDDEDILDI -> "Küratör başvurun bu sefer onaylanmadı."
             }
         }
     }

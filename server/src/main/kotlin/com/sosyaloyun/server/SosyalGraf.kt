@@ -76,6 +76,13 @@ class SosyalGraf(private val veritabani: Database, private val saat: Clock, priv
     suspend fun gizliMi(kullanici: UUID): Boolean =
         fazlar.acik(Faz.FAZ_2) && withContext(Dispatchers.IO) { transaction(veritabani) { gizliMiIcinde(kullanici) } }
 
+    /** Faz 2'de onaylı küratör mü (#50); profilde rozet olarak gösterilir. */
+    suspend fun kuratorMu(kullanici: UUID): Boolean = fazlar.acik(Faz.FAZ_2) && withContext(Dispatchers.IO) {
+        transaction(veritabani) {
+            KullaniciTablosu.select(KullaniciTablosu.kurator).where { KullaniciTablosu.id eq kullanici }.singleOrNull()?.get(KullaniciTablosu.kurator) ?: false
+        }
+    }
+
     /** [izleyen], gizli [sahip]'in takipçisi değilse içeriğini göremez (profil başlığı yine görünür). */
     suspend fun icerikGizliMi(izleyen: UUID, sahip: UUID): Boolean =
         izleyen != sahip && gizliMi(sahip) && !takipEdiyorMu(izleyen, sahip)

@@ -309,4 +309,19 @@
     <string name="liste_kayit_hatasi">Couldn't save the list. Try again.</string>
     <string name="oyun_listeleri">Lists with this game</string>
     <string name="liste_silme_hatasi">Couldn't delete the list. Try again.</string>
+    <string name="kurator_baslik">Curator</string>
+    <string name="kurator_rozet">Curator</string>
+    <string name="kurator_oldun">You're a curator. Your public lists appear in Discover.</string>
+    <string name="kurator_bekliyor">Your curator application is being reviewed.</string>
+    <string name="kurator_reddedildi">Your last application wasn't approved. You can apply again.</string>
+    <string name="kurator_sart_inceleme">Reviews: %1$d/%2$d</string>
+    <string name="kurator_sart_takipci">Followers: %1$d/%2$d</string>
+    <string name="kurator_sart_gun">Days since joining: %1$d/%2$d</string>
+    <string name="kurator_hata">Couldn't send the application. Try again.</string>
+    <string name="kurator_basvur">Apply to be a curator</string>
+    <string name="kurator_listeleri">Lists from curators</string>
+    <string name="bildirim_kurator_onaylandi">You're now a curator.</string>
+    <string name="bildirim_kurator_reddedildi">Your curator application wasn't approved.</string>
+    <string name="tercih_kurator_onaylandi">Curator approvals</string>
+    <string name="tercih_kurator_reddedildi">Curator rejections</string>
 </resources>

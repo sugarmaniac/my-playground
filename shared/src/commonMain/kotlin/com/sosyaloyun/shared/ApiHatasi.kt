@@ -133,6 +133,10 @@ enum class HataKodu {
     @SerialName("liste_bulunamadi")
     LISTE_BULUNAMADI,
 
+    /** Küratörlük şartları sağlanmıyor, zaten küratör ya da bekleyen başvuru var (#50). */
+    @SerialName("kurator_basvurusu_gecersiz")
+    KURATOR_BASVURUSU_GECERSIZ,
+
     /** Hesap silme isteğindeki onay metni kullanıcı adıyla eşleşmiyor. */
     @SerialName("hesap_silme_onayi_gecersiz")
     HESAP_SILME_ONAYI_GECERSIZ,
