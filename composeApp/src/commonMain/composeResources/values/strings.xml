@@ -154,4 +154,14 @@
     <string name="oyun_oynayan_arkadas">Friends who played: %1$d</string>
     <string name="oyun_incelemeler">Reviews</string>
     <string name="oyun_arkadasin">Friend</string>
+    <string name="sessize_al">Mute</string>
+    <string name="sessizden_cikar">Unmute</string>
+    <string name="engelle">Block</string>
+    <string name="engeli_kaldir">Unblock</string>
+    <string name="engelle_onay_baslik">Block %1$s?</string>
+    <string name="engelle_onay_metin">Follows, friendship and likes between you are removed in both directions and you will not see each other anywhere. %1$s is not notified.</string>
+    <string name="vazgec">Cancel</string>
+    <string name="engellenenler">Blocked</string>
+    <string name="sessize_alinanlar">Muted</string>
+    <string name="engel_hatasi">Could not block. Try again.</string>
 </resources>

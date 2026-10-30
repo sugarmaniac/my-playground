@@ -34,6 +34,16 @@ object ApiYollari {
     const val ARKADASLIK = "arkadaslik"
     const val SEKME_ARKADASLAR = "arkadaslar"
 
+    /** `PUT` engeller, `DELETE` engeli kaldırır (engellenen başka hiçbir uç noktada görünmez). */
+    const val ENGEL = "engel"
+
+    /** `PUT` sessize alır, `DELETE` geri alır. */
+    const val SESSIZ = "sessiz"
+
+    /** Ayarlar: engellediklerin ve sessize aldıkların. */
+    const val ENGELLENENLER = "/engellenenler"
+    const val SESSIZE_ALINANLAR = "/sessize-alinanlar"
+
     /** Arkadaşın profilinde ortak oyunlar ve istek listesi eşleşmeleri; yalnızca arkadaşlara açık. */
     const val SEKME_ORTAK = "ortak"
 

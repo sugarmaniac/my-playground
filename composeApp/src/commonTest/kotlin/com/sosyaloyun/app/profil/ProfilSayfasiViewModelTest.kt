@@ -257,4 +257,41 @@ class ArkadaslikViewModelTest {
         advanceUntilIdle()
         assertEquals(ArkadaslikDurumu.YOK, sayfa(vm).arkadaslik)
     }
+
+    @Test
+    fun sessizeAlmaIyimserGosterilirVeHatadaGeriAlinir() = viewModelTesti {
+        api.profilSayfasi = api.profilSayfasi.copy(takipEdiyorum = true, sessizeAldim = false)
+        val vm = ProfilSayfasiViewModel(api, "mehmet")
+        advanceUntilIdle()
+
+        vm.sessizDegistir()
+        assertEquals(true, (vm.ekran.value.baslik as ProfilBasligi.Hazir).sayfa.sessizeAldim)
+        advanceUntilIdle()
+        assertEquals(listOf("sessiz:mehmet"), api.engelIstekleri)
+
+        api.engelHatasi = IllegalStateException("bağlantı yok")
+        vm.sessizDegistir()
+        advanceUntilIdle()
+        assertEquals(true, (vm.ekran.value.baslik as ProfilBasligi.Hazir).sayfa.sessizeAldim)
+    }
+
+    @Test
+    fun engellemeSunucuOnaylayincaTamamlanir() = viewModelTesti {
+        api.profilSayfasi = api.profilSayfasi.copy(takipEdiyorum = true)
+        val vm = ProfilSayfasiViewModel(api, "mehmet")
+        advanceUntilIdle()
+
+        api.engelHatasi = IllegalStateException("bağlantı yok")
+        vm.engelle()
+        advanceUntilIdle()
+        assertEquals(false, vm.ekran.value.engellendi)
+        assertEquals(true, vm.ekran.value.engelHatasi)
+
+        api.engelHatasi = null
+        vm.engelle()
+        advanceUntilIdle()
+        assertEquals(true, vm.ekran.value.engellendi)
+        assertEquals(false, vm.ekran.value.engelHatasi)
+        assertEquals(listOf("engelle:mehmet"), api.engelIstekleri)
+    }
 }

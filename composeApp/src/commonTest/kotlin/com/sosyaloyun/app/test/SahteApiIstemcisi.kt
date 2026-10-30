@@ -2,6 +2,7 @@ package com.sosyaloyun.app.test
 
 import com.sosyaloyun.app.api.ApiHatasiIstisnasi
 import com.sosyaloyun.app.api.ApiIstemcisi
+import com.sosyaloyun.app.api.EngelListesiTuru
 import com.sosyaloyun.app.api.KisiListesiTuru
 import com.sosyaloyun.shared.AkisOgesi
 import com.sosyaloyun.shared.AkisSayfasi
@@ -278,6 +279,29 @@ class SahteApiIstemcisi : ApiIstemcisi {
     override suspend fun gunlukKaydiDetayi(kayitId: String): GunlukKaydiDetayi {
         hata?.let { throw it }
         return gunlukDetaylari[kayitId] ?: throw ApiHatasiIstisnasi(HataKodu.GUNLUK_KAYDI_BULUNAMADI)
+    }
+
+    /** Engel ve sessiz işlemleri sırayla: "engelle:ad", "sessiz:ad" gibi. */
+    val engelIstekleri = mutableListOf<String>()
+    var engelHatasi: Exception? = null
+    var engelListeleri = mapOf<EngelListesiTuru, List<KullaniciOzeti>>()
+
+    private fun engelIstegi(istek: String) {
+        engelHatasi?.let { throw it }
+        engelIstekleri += istek
+    }
+
+    override suspend fun engelle(kullaniciAdi: String) = engelIstegi("engelle:$kullaniciAdi")
+
+    override suspend fun engeliKaldir(kullaniciAdi: String) = engelIstegi("engeliKaldir:$kullaniciAdi")
+
+    override suspend fun sessizeAl(kullaniciAdi: String) = engelIstegi("sessiz:$kullaniciAdi")
+
+    override suspend fun sessizdenCikar(kullaniciAdi: String) = engelIstegi("sessizdenCikar:$kullaniciAdi")
+
+    override suspend fun engelListesi(tur: EngelListesiTuru, imlec: String?): KullaniciListesi {
+        hata?.let { throw it }
+        return KullaniciListesi(engelListeleri[tur].orEmpty(), null)
     }
 
     override suspend fun begen(kayitId: String) {

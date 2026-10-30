@@ -74,6 +74,18 @@ import com.sosyaloyun.shared.KutuphaneOgesi
 import com.sosyaloyun.shared.OrtakOyunlar
 import com.sosyaloyun.shared.OyunOzeti
 import com.sosyaloyun.shared.ProfilSayfasi
+import androidx.compose.material3.AlertDialog
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import com.sosyaloyun.app.resources.engel_hatasi
+import com.sosyaloyun.app.resources.engelle
+import com.sosyaloyun.app.resources.engelle_onay_baslik
+import com.sosyaloyun.app.resources.engelle_onay_metin
+import com.sosyaloyun.app.resources.sessize_al
+import com.sosyaloyun.app.resources.sessizden_cikar
+import com.sosyaloyun.app.resources.vazgec
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -87,6 +99,7 @@ fun ProfilSayfasiEkrani(
     geri: (() -> Unit)? = null,
 ) {
     val durum by viewModel.ekran.collectAsStateWithLifecycle()
+    LaunchedEffect(durum.engellendi) { if (durum.engellendi) geri?.invoke() }
     LazyColumn(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         geri?.let { item { TextButton(onClick = it, modifier = Modifier.padding(start = 8.dp)) { Text(stringResource(Res.string.geri)) } } }
         item {
@@ -194,6 +207,7 @@ private fun Baslik(
                 }
             }
         }
+        if (sayfa.takipEdiyorum != null) EngelVeSessiz(sayfa, viewModel)
         val ortak by viewModel.ekran.collectAsStateWithLifecycle()
         ortak.ortak?.let { OrtakOyunlarBolumu(it, oyunaGit) }
         Text(stringResource(Res.string.profil_vitrin), style = MaterialTheme.typography.titleSmall)
@@ -217,6 +231,35 @@ private fun OrtakOyunlarBolumu(ortak: OrtakOyunlar, oyunaGit: (String) -> Unit) 
                 oyunlar.forEach { oyun -> Kapak(oyun, Modifier.clickable { oyunaGit(oyun.id) }) }
             }
         }
+}
+
+/** Başkasının profilinde sessize alma ve onaylı engelleme. */
+@Composable
+private fun EngelVeSessiz(sayfa: ProfilSayfasi, viewModel: ProfilSayfasiViewModel) {
+    val durum by viewModel.ekran.collectAsStateWithLifecycle()
+    var onayAcik by remember { mutableStateOf(false) }
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        TextButton(onClick = viewModel::sessizDegistir) {
+            Text(stringResource(if (sayfa.sessizeAldim == true) Res.string.sessizden_cikar else Res.string.sessize_al))
+        }
+        TextButton(onClick = { onayAcik = true }) { Text(stringResource(Res.string.engelle), color = MaterialTheme.colorScheme.error) }
+    }
+    if (durum.engelHatasi) Text(stringResource(Res.string.engel_hatasi), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+    if (onayAcik) {
+        val ad = sayfa.kullanici.gorunenAd
+        AlertDialog(
+            onDismissRequest = { onayAcik = false },
+            title = { Text(stringResource(Res.string.engelle_onay_baslik, ad)) },
+            text = { Text(stringResource(Res.string.engelle_onay_metin, ad)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    onayAcik = false
+                    viewModel.engelle()
+                }) { Text(stringResource(Res.string.engelle), color = MaterialTheme.colorScheme.error) }
+            },
+            dismissButton = { TextButton(onClick = { onayAcik = false }) { Text(stringResource(Res.string.vazgec)) } },
+        )
+    }
 }
 
 @Composable

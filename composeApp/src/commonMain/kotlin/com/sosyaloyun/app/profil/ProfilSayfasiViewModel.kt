@@ -40,6 +40,10 @@ data class ProfilSayfasiDurumu(
     val icerik: SekmeIcerigi = SekmeIcerigi.Yukleniyor,
     /** Arkadaşın profilinde ortak oyunlar ve istek listesi eşleşmeleri; arkadaş değilse null. */
     val ortak: OrtakOyunlar? = null,
+    /** Engelleme sunucuda tamamlandı; ekran profilden çıkar, engellenen artık görünmez. */
+    val engellendi: Boolean = false,
+    /** Engelleme isteği sürüyor ya da başarısız oldu. */
+    val engelHatasi: Boolean = false,
 )
 
 /** Profil sayfası: başlık (vitrin, bu yıl bitirilenler, sayaçlar) ve dört sekme. [kullaniciAdi] null ise kendi profilin. */
@@ -160,6 +164,29 @@ class ProfilSayfasiViewModel(private val api: ApiIstemcisi, private val kullanic
         },
         istek = { ad -> if ((_ekran.value.baslik as ProfilBasligi.Hazir).sayfa.takipEdiyorum == true) api.takipEt(ad) else api.takibiBirak(ad) },
     )
+
+    /** Sessize al ya da geri al; takip ve arkadaşlık değişmez, yalnızca akış etkilenir. */
+    fun sessizDegistir() = iyimser(
+        donustur = { sayfa -> sayfa.sessizeAldim?.let { sayfa.copy(sessizeAldim = !it) } },
+        istek = { ad -> if ((_ekran.value.baslik as ProfilBasligi.Hazir).sayfa.sessizeAldim == true) api.sessizeAl(ad) else api.sessizdenCikar(ad) },
+    )
+
+    /** Engelleme geri dönüşü olmayan sonuçlar doğurur (takip, arkadaşlık, beğeniler silinir); iyimser değildir, sunucu onaylayınca ekran kapanır. */
+    fun engelle() {
+        if (islemIsi?.isActive == true) return
+        val ad = kullaniciAdi ?: return
+        islemIsi = viewModelScope.launch {
+            _ekran.update { it.copy(engelHatasi = false) }
+            try {
+                api.engelle(ad)
+                _ekran.update { it.copy(engellendi = true) }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                _ekran.update { it.copy(engelHatasi = true) }
+            }
+        }
+    }
 
     fun sekmeSecildi(sekme: ProfilSekmesi) {
         if (sekme == _ekran.value.sekme) return

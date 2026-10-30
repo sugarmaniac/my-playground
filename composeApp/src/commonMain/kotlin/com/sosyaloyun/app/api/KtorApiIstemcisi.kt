@@ -164,6 +164,30 @@ class KtorApiIstemcisi(
         istek { http.post(ApiYollari.kullaniciSekmesi(kullaniciAdi, ApiYollari.TAKIP)) }
     }
 
+    override suspend fun engelle(kullaniciAdi: String) {
+        istek { http.put(ApiYollari.kullaniciSekmesi(kullaniciAdi, ApiYollari.ENGEL)) }
+    }
+
+    override suspend fun engeliKaldir(kullaniciAdi: String) {
+        istek { http.delete(ApiYollari.kullaniciSekmesi(kullaniciAdi, ApiYollari.ENGEL)) }
+    }
+
+    override suspend fun sessizeAl(kullaniciAdi: String) {
+        istek { http.put(ApiYollari.kullaniciSekmesi(kullaniciAdi, ApiYollari.SESSIZ)) }
+    }
+
+    override suspend fun sessizdenCikar(kullaniciAdi: String) {
+        istek { http.delete(ApiYollari.kullaniciSekmesi(kullaniciAdi, ApiYollari.SESSIZ)) }
+    }
+
+    override suspend fun engelListesi(tur: EngelListesiTuru, imlec: String?): KullaniciListesi {
+        val yol = when (tur) {
+            EngelListesiTuru.ENGELLENENLER -> ApiYollari.ENGELLENENLER
+            EngelListesiTuru.SESSIZE_ALINANLAR -> ApiYollari.SESSIZE_ALINANLAR
+        }
+        return istek { http.get(yol) { imlec?.let { parameter("imlec", it) } }.body() }
+    }
+
     override suspend fun takibiBirak(kullaniciAdi: String) {
         istek { http.delete(ApiYollari.kullaniciSekmesi(kullaniciAdi, ApiYollari.TAKIP)) }
     }

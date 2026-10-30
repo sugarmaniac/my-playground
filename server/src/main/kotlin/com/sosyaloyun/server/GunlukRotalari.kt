@@ -45,7 +45,7 @@ fun Route.gunlukRotalari(
         }
         get(ApiYollari.begenenler("{id}")) {
             val erisim = call.erisim(gunluk, sosyalGraf) ?: return@get
-            call.respond(begeniler.begenenler(UUID.fromString(erisim.kayit.id), call.request.queryParameters["imlec"]))
+            call.respond(begeniler.begenenler(UUID.fromString(erisim.kayit.id), call.oturumSahibi.kullaniciId, call.request.queryParameters["imlec"]))
         }
         post(ApiYollari.oyunGunlugu("{id}")) {
             val oyunId = call.kimlik()

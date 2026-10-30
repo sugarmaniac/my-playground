@@ -18,6 +18,7 @@ import org.jetbrains.exposed.v1.core.isNotNull
 import org.jetbrains.exposed.v1.core.like
 import org.jetbrains.exposed.v1.core.Table
 import org.jetbrains.exposed.v1.core.and
+import org.jetbrains.exposed.v1.core.notInList
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.java.javaUUID
 import org.jetbrains.exposed.v1.core.neq
@@ -112,12 +113,14 @@ class Kullanicilar(private val veritabani: Database) {
     }
 
     /** Kullanıcı adında ya da görünen adında bütün kelimeleri geçen, profili olan kullanıcılar. */
-    suspend fun ara(sorgu: String, imlec: String?): KullaniciListesi = withContext(Dispatchers.IO) {
+    /** [izleyen]'le arasında engel olanlar sonuçlarda görünmez. */
+    suspend fun ara(sorgu: String, izleyen: UUID, imlec: String?): KullaniciListesi = withContext(Dispatchers.IO) {
         val kelimeler = AramaMetni.kelimeler(sorgu)
         if (kelimeler.joinToString("").length < AramaKurallari.EN_AZ_KARAKTER) return@withContext KullaniciListesi(emptyList(), null)
         val baslangic = Imlec.baslangic(imlec)
         transaction(veritabani) {
-            val kosul = kelimeler.fold<String, org.jetbrains.exposed.v1.core.Op<Boolean>>(KullaniciTablosu.kullaniciAdi.isNotNull()) { op, kelime ->
+            val gorunur = KullaniciTablosu.kullaniciAdi.isNotNull() and (KullaniciTablosu.id notInList engellileri(izleyen))
+            val kosul = kelimeler.fold<String, org.jetbrains.exposed.v1.core.Op<Boolean>>(gorunur) { op, kelime ->
                 op and (KullaniciTablosu.aramaMetni like "%$kelime%")
             }
             val satirlar = KullaniciTablosu.selectAll()
