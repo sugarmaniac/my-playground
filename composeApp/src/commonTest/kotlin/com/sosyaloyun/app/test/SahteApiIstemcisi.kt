@@ -4,6 +4,8 @@ import com.sosyaloyun.app.api.ApiHatasiIstisnasi
 import com.sosyaloyun.app.api.ApiIstemcisi
 import com.sosyaloyun.app.api.EngelListesiTuru
 import com.sosyaloyun.app.api.KisiListesiTuru
+import com.sosyaloyun.shared.YorumListesi
+import com.sosyaloyun.shared.Yorum
 import com.sosyaloyun.shared.AkisOgesi
 import com.sosyaloyun.shared.AkisSayfasi
 import com.sosyaloyun.shared.AkisSekmesi
@@ -453,6 +455,30 @@ class SahteApiIstemcisi : ApiIstemcisi {
         hata?.let { throw it }
         begeniIstekleri += "begenenler:$kayitId"
         return begenenListesi
+    }
+
+    var yorumListesi = mutableListOf<Yorum>()
+    var yorumHatasi: Exception? = null
+    val yorumIstekleri = mutableListOf<String>()
+
+    override suspend fun yorumlar(kayitId: String, imlec: String?): YorumListesi {
+        hata?.let { throw it }
+        yorumIstekleri += "liste:$kayitId"
+        return YorumListesi(yorumListesi.toList(), null)
+    }
+
+    override suspend fun yorumYaz(kayitId: String, metin: String): Yorum {
+        yorumHatasi?.let { throw it }
+        yorumIstekleri += "yaz:$kayitId:$metin"
+        val yorum = Yorum("y${yorumListesi.size + 1}", KullaniciOzeti("k1", "ben", "Ben", Avatar.KUMANDA), metin.trim(), Instant.parse("2026-01-05T10:00:00Z"), silebilirim = true, benim = true)
+        yorumListesi += yorum
+        return yorum
+    }
+
+    override suspend fun yorumSil(yorumId: String) {
+        yorumHatasi?.let { throw it }
+        yorumIstekleri += "sil:$yorumId"
+        yorumListesi.removeAll { it.id == yorumId }
     }
 
     val kullaniciAramalari = mutableListOf<String>()

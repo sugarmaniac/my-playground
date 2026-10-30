@@ -1,5 +1,7 @@
 package com.sosyaloyun.app.api
 
+import com.sosyaloyun.shared.YorumListesi
+import com.sosyaloyun.shared.Yorum
 import com.sosyaloyun.shared.AkisSayfasi
 import com.sosyaloyun.shared.AkisSekmesi
 import com.sosyaloyun.shared.BenYaniti
@@ -162,6 +164,13 @@ interface ApiIstemcisi {
     suspend fun begeniyiGeriAl(kayitId: String)
 
     suspend fun begenenler(kayitId: String): List<KullaniciOzeti>
+
+    /** Faz 2 (#47): kaydın yorumları, eskiden yeniye. */
+    suspend fun yorumlar(kayitId: String, imlec: String? = null): YorumListesi
+
+    suspend fun yorumYaz(kayitId: String, metin: String): Yorum
+
+    suspend fun yorumSil(yorumId: String)
 
     suspend fun kullaniciAra(sorgu: String, imlec: String? = null): KullaniciListesi
 

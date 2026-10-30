@@ -23,6 +23,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sosyaloyun.app.hesap.AvatarGorunumu
 import com.sosyaloyun.app.resources.Res
+import com.sosyaloyun.app.resources.tercih_yorum
+import com.sosyaloyun.app.resources.bildirim_yorum
 import com.sosyaloyun.app.resources.bildirim_arkadaslik_istegi
 import com.sosyaloyun.app.resources.bildirim_arkadaslik_kabulu
 import com.sosyaloyun.app.resources.bildirim_begeni
@@ -105,6 +107,7 @@ private fun BildirimSatiri(bildirim: Bildirim, tikla: () -> Unit) {
                 BildirimTuru.DAVET_KODU_KULLANILDI -> stringResource(Res.string.bildirim_davet, ad)
                 BildirimTuru.SIKAYET_SONUCLANDI -> stringResource(Res.string.bildirim_sikayet_sonuclandi)
                 BildirimTuru.ICERIK_KALDIRILDI -> stringResource(Res.string.bildirim_icerik_kaldirildi)
+                BildirimTuru.YORUM -> stringResource(Res.string.bildirim_yorum, ad)
             },
             style = MaterialTheme.typography.bodyMedium,
         )
@@ -118,7 +121,8 @@ fun BildirimTercihleriBolumu(viewModel: BildirimTercihleriViewModel) {
     val mevcut = tercihler ?: return
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(stringResource(Res.string.bildirim_tercihleri), style = MaterialTheme.typography.titleMedium)
-        BildirimTuru.entries.forEach { tur ->
+        // Sunucu kapalı fazın türlerini döndürmez; yalnızca dönenler gösterilir.
+        BildirimTuru.entries.filter { it in mevcut }.forEach { tur ->
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     stringResource(
@@ -130,6 +134,7 @@ fun BildirimTercihleriBolumu(viewModel: BildirimTercihleriViewModel) {
                             BildirimTuru.DAVET_KODU_KULLANILDI -> Res.string.tercih_davet
                             BildirimTuru.SIKAYET_SONUCLANDI -> Res.string.tercih_sikayet
                             BildirimTuru.ICERIK_KALDIRILDI -> Res.string.tercih_icerik_kaldirildi
+                            BildirimTuru.YORUM -> Res.string.tercih_yorum
                         },
                     ),
                     modifier = Modifier.weight(1f),

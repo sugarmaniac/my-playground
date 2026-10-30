@@ -1,6 +1,9 @@
 package com.sosyaloyun.app.api
 
 import com.sosyaloyun.app.oturum.OturumDeposu
+import com.sosyaloyun.shared.YorumListesi
+import com.sosyaloyun.shared.YorumIstegi
+import com.sosyaloyun.shared.Yorum
 import com.sosyaloyun.shared.ApiHatasi
 import com.sosyaloyun.shared.ApiJson
 import com.sosyaloyun.shared.ApiYollari
@@ -383,6 +386,20 @@ class KtorApiIstemcisi(
 
     override suspend fun begenenler(kayitId: String): List<KullaniciOzeti> =
         istek { http.get(ApiYollari.begenenler(kayitId)).body<KullaniciListesi>().kullanicilar }
+
+    override suspend fun yorumlar(kayitId: String, imlec: String?): YorumListesi =
+        istek { http.get(ApiYollari.yorumlar(kayitId)) { imlec?.let { parameter("imlec", it) } }.body() }
+
+    override suspend fun yorumYaz(kayitId: String, metin: String): Yorum = istek {
+        http.post(ApiYollari.yorumlar(kayitId)) {
+            contentType(ContentType.Application.Json)
+            setBody(YorumIstegi(metin))
+        }.body()
+    }
+
+    override suspend fun yorumSil(yorumId: String) {
+        istek { http.delete("${ApiYollari.YORUMLAR}/$yorumId") }
+    }
 
     private fun AkisSekmesi.parametre() = if (this == AkisSekmesi.ARKADASLAR) "arkadaslar" else "takip"
 

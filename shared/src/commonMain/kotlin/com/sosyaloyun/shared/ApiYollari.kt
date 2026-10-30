@@ -130,6 +130,10 @@ object ApiYollari {
 
     fun begenenler(kayitId: String) = "$GUNLUK/$kayitId/begenenler"
 
+    /** Faz 2 (#47): kaydın yorumları; tek bir yorum `YORUMLAR/{id}` ile silinir. */
+    fun yorumlar(kayitId: String) = "$GUNLUK/$kayitId/yorumlar"
+    const val YORUMLAR = "/yorumlar"
+
     /** IGDB webhook'ları: `/igdb/webhook/{create|update|delete}`. */
     const val IGDB_WEBHOOK = "/igdb/webhook"
 }

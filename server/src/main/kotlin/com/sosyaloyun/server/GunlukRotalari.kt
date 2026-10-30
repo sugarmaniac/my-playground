@@ -5,6 +5,8 @@ import com.sosyaloyun.shared.GunlukKaydiDetayi
 import com.sosyaloyun.shared.GunlukKaydiIstegi
 import com.sosyaloyun.shared.GunlukKurallari
 import com.sosyaloyun.shared.HataKodu
+import com.sosyaloyun.shared.YorumIstegi
+import com.sosyaloyun.shared.Faz
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
@@ -22,8 +24,28 @@ fun Route.gunlukRotalari(
     begeniler: Begeniler,
     sosyalGraf: SosyalGraf,
     kullanicilar: Kullanicilar,
+    yorumlar: Yorumlar,
+    fazlar: Fazlar,
 ) {
     oturumGerekli {
+        fazGerekli(fazlar, Faz.FAZ_2) {
+            get(ApiYollari.yorumlar("{id}")) {
+                val erisim = call.erisim(gunluk, sosyalGraf) ?: return@get
+                val liste = yorumlar.liste(UUID.fromString(erisim.kayit.id), erisim.sahip, call.oturumSahibi.kullaniciId, call.request.queryParameters["imlec"])
+                call.respond(liste)
+            }
+            post(ApiYollari.yorumlar("{id}")) {
+                val erisim = call.erisim(gunluk, sosyalGraf) ?: return@post
+                when (val sonuc = yorumlar.yaz(call.oturumSahibi.kullaniciId, UUID.fromString(erisim.kayit.id), call.receive<YorumIstegi>().metin)) {
+                    is Yorumlar.YazmaSonucu.Yazildi -> call.respond(HttpStatusCode.Created, sonuc.yorum)
+                    Yorumlar.YazmaSonucu.Gecersiz -> call.hata(HttpStatusCode.BadRequest, HataKodu.YORUM_GECERSIZ)
+                }
+            }
+            delete("${ApiYollari.YORUMLAR}/{id}") {
+                val silindi = call.kimlik()?.let { yorumlar.sil(call.oturumSahibi.kullaniciId, it) } ?: false
+                if (silindi) call.respond(HttpStatusCode.NoContent) else call.hata(HttpStatusCode.NotFound, HataKodu.YORUM_BULUNAMADI)
+            }
+        }
         get("${ApiYollari.GUNLUK}/{id}") {
             val erisim = call.erisim(gunluk, sosyalGraf) ?: return@get
             val oyunId = UUID.fromString(erisim.kayit.oyunId)

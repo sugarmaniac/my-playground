@@ -116,6 +116,13 @@ enum class HataKodu {
     @SerialName("ozellik_kapali")
     OZELLIK_KAPALI,
 
+    /** Yorum boş ya da çok uzun. */
+    @SerialName("yorum_gecersiz")
+    YORUM_GECERSIZ,
+
+    @SerialName("yorum_bulunamadi")
+    YORUM_BULUNAMADI,
+
     /** Hesap silme isteğindeki onay metni kullanıcı adıyla eşleşmiyor. */
     @SerialName("hesap_silme_onayi_gecersiz")
     HESAP_SILME_ONAYI_GECERSIZ,

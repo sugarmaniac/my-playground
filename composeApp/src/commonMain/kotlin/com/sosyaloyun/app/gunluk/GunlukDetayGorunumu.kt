@@ -1,6 +1,16 @@
 package com.sosyaloyun.app.gunluk
 
 import androidx.compose.foundation.clickable
+import com.sosyaloyun.shared.Yorum
+import com.sosyaloyun.app.resources.yorumlar_baslik
+import com.sosyaloyun.app.resources.yorum_yok
+import com.sosyaloyun.app.resources.yorum_yaz
+import com.sosyaloyun.app.resources.yorum_sil
+import com.sosyaloyun.app.resources.yorum_hata
+import com.sosyaloyun.app.resources.yorum_gonder
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Button
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -100,6 +110,14 @@ fun GunlukDetayGorunumu(viewModel: GunlukDetayViewModel, api: ApiIstemcisi, oyun
                     item { Text(stringResource(Res.string.begenenler), style = MaterialTheme.typography.titleSmall) }
                     items(durum.begenenler, key = { it.kullaniciId }) { kisi -> KullaniciSatiri(kisi) { kullaniciyaGit(kisi.kullaniciAdi) } }
                 }
+                durum.yorumlar?.let { yorumlar ->
+                    item { Text(stringResource(Res.string.yorumlar_baslik, yorumlar.size), style = MaterialTheme.typography.titleSmall) }
+                    if (yorumlar.isEmpty()) item { Text(stringResource(Res.string.yorum_yok), style = MaterialTheme.typography.bodySmall) }
+                    items(yorumlar, key = { "yorum-${it.id}" }) { yorum ->
+                        YorumSatiri(yorum, api, kullaniciyaGit = { kullaniciyaGit(yorum.kisi.kullaniciAdi) }, sil = { viewModel.yorumSil(yorum.id) })
+                    }
+                    item { YorumYazmaAlani(durum, viewModel) }
+                }
             }
         }
     }
@@ -125,5 +143,46 @@ fun Inceleme(metin: String, spoiler: Boolean, kisalt: Boolean = true) {
         }
     } else {
         TextButton(onClick = { acik = true }) { Text("${stringResource(Res.string.akis_spoiler)} · ${stringResource(Res.string.akis_spoiler_goster)}") }
+    }
+}
+
+@Composable
+private fun YorumSatiri(yorum: Yorum, api: ApiIstemcisi, kullaniciyaGit: () -> Unit, sil: () -> Unit) {
+    Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.Top) {
+        AvatarGorunumu(yorum.kisi.avatar, boyut = 32.dp, modifier = Modifier.clickable(onClick = kullaniciyaGit))
+        Column(Modifier.weight(1f)) {
+            Text(yorum.kisi.gorunenAd, style = MaterialTheme.typography.labelLarge, modifier = Modifier.clickable(onClick = kullaniciyaGit))
+            Text(yorum.metin, style = MaterialTheme.typography.bodyMedium)
+            Row {
+                if (yorum.silebilirim) TextButton(onClick = sil) { Text(stringResource(Res.string.yorum_sil)) }
+                var sikayetAcik by remember { mutableStateOf(false) }
+                if (!yorum.benim) {
+                    TextButton(onClick = { sikayetAcik = true }) { Text(stringResource(Res.string.sikayet_et)) }
+                }
+                if (sikayetAcik) {
+                    SikayetPenceresi(
+                        viewModel(key = "sikayet-yorum-${yorum.id}") { SikayetViewModel(api, SikayetHedefi(yorum.kisi.kullaniciAdi, yorumId = yorum.id)) },
+                        kapat = { sikayetAcik = false },
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun YorumYazmaAlani(durum: GunlukDetayEkrani.Hazir, viewModel: GunlukDetayViewModel) {
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        OutlinedTextField(
+            value = durum.yorumMetni,
+            onValueChange = viewModel::yorumMetniDegisti,
+            label = { Text(stringResource(Res.string.yorum_yaz)) },
+            modifier = Modifier.fillMaxWidth(),
+            enabled = !durum.yorumGonderiliyor,
+        )
+        if (durum.yorumHatasi) Text(stringResource(Res.string.yorum_hata), color = MaterialTheme.colorScheme.error)
+        Button(onClick = viewModel::yorumGonder, enabled = durum.yorumGonderilebilir, modifier = Modifier.align(Alignment.End)) {
+            Text(stringResource(Res.string.yorum_gonder))
+        }
     }
 }

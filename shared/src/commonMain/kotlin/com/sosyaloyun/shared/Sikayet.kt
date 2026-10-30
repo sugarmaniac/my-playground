@@ -15,8 +15,8 @@ enum class SikayetSebebi {
 }
 
 /**
- * `POST /sikayetler`: bir günlük kaydını ([gunlukKaydiId]) ya da profili ([kullaniciAdi]) şikayet eder; ikisinden
- * yalnızca biri dolu. Şikayet anonimdir: içerik sahibi kimin şikayet ettiğini görmez.
+ * `POST /sikayetler`: bir günlük kaydını ([gunlukKaydiId]), bir yorumu ([yorumId], Faz 2) ya da profili
+ * ([kullaniciAdi]) şikayet eder; yalnızca biri dolu. Şikayet anonimdir: içerik sahibi kimin şikayet ettiğini görmez.
  */
 @Serializable
 data class SikayetIstegi(
@@ -24,6 +24,7 @@ data class SikayetIstegi(
     val gunlukKaydiId: String? = null,
     val kullaniciAdi: String? = null,
     val aciklama: String? = null,
+    val yorumId: String? = null,
 )
 
 object SikayetKurallari {

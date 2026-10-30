@@ -273,4 +273,12 @@
     <string name="hesap_sil_onay">Delete permanently</string>
     <string name="hesap_sil_hata">Couldn't delete your account. Try again.</string>
     <string name="paylas">Share</string>
+    <string name="yorumlar_baslik">Comments (%1$d)</string>
+    <string name="yorum_yok">No comments yet.</string>
+    <string name="yorum_sil">Delete</string>
+    <string name="yorum_yaz">Write a comment</string>
+    <string name="yorum_gonder">Send</string>
+    <string name="yorum_hata">Couldn't post your comment. Try again.</string>
+    <string name="bildirim_yorum">%1$s commented on your diary entry.</string>
+    <string name="tercih_yorum">Comments</string>
 </resources>
