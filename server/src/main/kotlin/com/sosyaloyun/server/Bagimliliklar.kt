@@ -1,5 +1,6 @@
 package com.sosyaloyun.server
 
+import com.sosyaloyun.shared.WebGirisAyari
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import java.io.File
@@ -28,6 +29,8 @@ class Bagimliliklar(
     val steamZamanlayici: Boolean = false,
     /** Faz 3 konsol içe aktarma (#57); anahtarı olmayan ağın adaptörü yoktur ve ayarlarda gösterilmez. */
     val konsolKaynaklari: List<KonsolKaynagi> = emptyList(),
+    /** Faz 3 web sitesi girişinin istemci kimlikleri (#58); `WEB_GOOGLE_ISTEMCI_KIMLIGI`, `WEB_APPLE_SERVIS_KIMLIGI`. */
+    val webGiris: WebGirisAyari? = null,
     /** Push bildirimleri (FCM); null ise bildirimler yalnızca uygulama içinde kalır. */
     val pushGonderici: PushGonderici? = null,
     /** Bekleyen push'lar arka planda düzenli gönderilir; testlerde kapalı, test dağıtıcıyı kendisi çağırır. */
@@ -65,6 +68,10 @@ class Bagimliliklar(
                 steamKaynagi = SteamWebApiKaynagi.ortamdan(),
                 steamZamanlayici = true,
                 konsolKaynaklari = listOfNotNull(OpenXblKaynagi.ortamdan(), PsnKaynagi.ortamdan()),
+                webGiris = WebGirisAyari(
+                    googleIstemciKimligi = System.getenv("WEB_GOOGLE_ISTEMCI_KIMLIGI")?.takeIf { it.isNotBlank() },
+                    appleServisKimligi = System.getenv("WEB_APPLE_SERVIS_KIMLIGI")?.takeIf { it.isNotBlank() },
+                ).takeIf { it.googleIstemciKimligi != null || it.appleServisKimligi != null },
                 pushGonderici = FcmPushGonderici.ortamdan(),
                 pushZamanlayici = true,
                 epostaGonderici = ResendEpostaGonderici.ortamdan(),

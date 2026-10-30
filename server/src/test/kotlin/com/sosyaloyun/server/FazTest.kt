@@ -88,4 +88,15 @@ class FazTest {
         val eski = client.get(ApiYollari.MODERASYON)
         assertTrue(eski.status == HttpStatusCode.Found || eski.call.request.url.encodedPath == ApiYollari.YONETIM)
     }
+
+    @Test
+    fun webGirisAyarlariYalnizcaFaz3teDoner() = apiTesti {
+        ayarlar.yaz(Ayar.AktifFaz, 2)
+        assertEquals(null, client.get(ApiYollari.OZELLIKLER).govde(OzellikDurumu.serializer()).webGiris)
+        ayarlar.yaz(Ayar.AktifFaz, 3)
+        assertEquals(
+            com.sosyaloyun.shared.WebGirisAyari("google-web-istemcisi", "com.sosyaloyun.web"),
+            client.get(ApiYollari.OZELLIKLER).govde(OzellikDurumu.serializer()).webGiris,
+        )
+    }
 }

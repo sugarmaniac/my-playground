@@ -142,6 +142,7 @@ fun apiTesti(ekRotalar: Route.() -> Unit = {}, blok: suspend ApiTestOrtami.() ->
         igdbWebhookSirri = TEST_WEBHOOK_SIRRI,
         steamKaynagi = steamKaynagi,
         konsolKaynaklari = listOf(xbox),
+        webGiris = com.sosyaloyun.shared.WebGirisAyari("google-web-istemcisi", "com.sosyaloyun.web"),
         epostaGonderici = eposta,
         moderasyonSifresi = TEST_MODERASYON_SIFRESI,
         // Testler server/ dizininde çalışır; web sitesi kökteki web/ dizininde.

@@ -7,6 +7,7 @@ Statik HTML + JavaScript sitesi (ADR 0004). Gradle projesinin dışındadır (AD
 - `profil.html?ad=<kullanıcı adı>`: profil paylaşım sayfası (`GET /paylasim/profil/{kullaniciAdi}`).
 - `liste.html?id=<liste>`: liste paylaşım sayfası (`GET /paylasim/liste/{id}`, Faz 2).
 - `yillik.html?ad=<kullanıcı adı>&yil=<yıl>`: yıllık özet paylaşım sayfası (`GET /paylasim/yillik-ozet/{kullaniciAdi}?yil=`, Faz 3).
+- `uygulama.html` + `uygulama.js`: Faz 3'te webde giriş (Google Identity Services, Sign in with Apple JS) ve oyun arama, kütüphane durumu/puanı, günlük kaydı, profil ve akış (#58). Giriş aynı `POST /oturum` doğrulamasını kullanır; oturum token'ı yalnızca bu kökenin localStorage'ında tutulur, çıkışta silinir. İstemci kimlikleri `GET /ozellikler` yanıtındaki `webGiris`'ten gelir; Faz 1–2'de ya da kimlikler yokken giriş düğmesi görünmez.
 - `ayarlar.js`: API adresi ve mağaza linkleri. Mağaza linkleri boşken düğmelerde "Yakında" yazar.
 
 Server bu dizini kök adreste sunar (imajda `/uygulama/web`, `WEB_DIZINI`). Böylece sayfalar API'ye aynı adresten ulaşır. Uygulamadaki paylaş butonu linkleri `PaylasimLinkleri` ile üretir.
