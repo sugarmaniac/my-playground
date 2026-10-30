@@ -70,6 +70,12 @@ object ApiYollari {
     /** `GET` bağlantı, `PUT` bağla ve içe aktar, `DELETE` bağlantıyı kaldır. */
     const val STEAM = "/steam"
 
+    /** `PUT` kendi telefon hash'ini kaydeder, `DELETE` siler. */
+    const val TELEFONUM = "/telefonum"
+    const val ARKADAS_BUL_REHBER = "/arkadas-bul/rehber"
+    const val ARKADAS_BUL_STEAM = "/arkadas-bul/steam"
+    const val TOPLU_TAKIP = "/takip/toplu"
+
     /** `POST`: onboarding'in son adımı bitti. */
     const val ONBOARDING_TAMAMLA = "/onboarding/tamamla"
 

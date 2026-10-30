@@ -4,13 +4,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sosyaloyun.app.api.ApiHatasiIstisnasi
 import com.sosyaloyun.app.api.ApiIstemcisi
+import com.sosyaloyun.shared.BulunanKisi
 import com.sosyaloyun.shared.Durum
 import com.sosyaloyun.shared.HataKodu
 import com.sosyaloyun.shared.KutuphaneGirisi
 import com.sosyaloyun.shared.KutuphaneOgesi
 import com.sosyaloyun.shared.OnboardingKurallari
+import com.sosyaloyun.shared.TelefonNumarasi
 import kotlin.coroutines.cancellation.CancellationException
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -45,12 +46,27 @@ sealed interface OnboardingAdimi {
         val secilenSayisi: Int get() = oyunlar.count { it.giris.durum != null }
         val bitirilebilir: Boolean get() = !bitiriliyor && (steamli || secilenSayisi >= OnboardingKurallari.EN_AZ_OYUN)
     }
+
+    /** Onboarding 6. adım: rehberdeki ve Steam arkadaşlarındaki kullanıcıları bul, takip et, davet paylaş; atlanabilir. */
+    data class Arkadaslar(
+        val steamli: Boolean,
+        val kisiler: List<BulunanKisi> = emptyList(),
+        val araniyor: Boolean = false,
+        val rehberTarandi: Boolean = false,
+        val rehberIzniYok: Boolean = false,
+        val numaraKaydedildi: Boolean = false,
+        /** Paylaşılabilecek kullanılmamış davet kodu; yoksa null. */
+        val davetKodu: String? = null,
+        val bitiriliyor: Boolean = false,
+        val hata: Boolean = false,
+    ) : OnboardingAdimi {
+        val takipEdilmeyenler: List<BulunanKisi> get() = kisiler.filterNot { it.takipEdiyorum }
+    }
 }
 
 class OnboardingViewModel(private val api: ApiIstemcisi, private val hesabiYenile: () -> Unit) : ViewModel() {
     private val _ekran = MutableStateFlow<OnboardingAdimi>(OnboardingAdimi.Steam())
     val ekran: StateFlow<OnboardingAdimi> = _ekran
-    private var is_: Job? = null
 
     fun girdiDegisti(girdi: String) {
         _ekran.update { if (it is OnboardingAdimi.Steam) it.copy(girdi = girdi, hata = null) else it }
@@ -60,7 +76,7 @@ class OnboardingViewModel(private val api: ApiIstemcisi, private val hesabiYenil
         val adim = _ekran.value as? OnboardingAdimi.Steam ?: return
         if (!adim.gonderilebilir) return
         _ekran.value = adim.copy(gonderiliyor = true, hata = null)
-        is_ = viewModelScope.launch {
+        viewModelScope.launch {
             _ekran.value = try {
                 val sonuc = api.steamBagla(adim.girdi.trim())
                 OnboardingAdimi.Durumlar(steamli = true, oyunlar = sonuc.enCokOynananlar)
@@ -77,7 +93,7 @@ class OnboardingViewModel(private val api: ApiIstemcisi, private val hesabiYenil
         val adim = _ekran.value as? OnboardingAdimi.Steam ?: return
         if (adim.gonderiliyor) return
         _ekran.value = adim.copy(gonderiliyor = true, hata = null)
-        is_ = viewModelScope.launch {
+        viewModelScope.launch {
             _ekran.value = try {
                 OnboardingAdimi.Durumlar(steamli = false, oyunlar = api.populerOyunlar().map { KutuphaneOgesi(it, KutuphaneGirisi()) })
             } catch (e: CancellationException) {
@@ -109,9 +125,89 @@ class OnboardingViewModel(private val api: ApiIstemcisi, private val hesabiYenil
         }
     }
 
-    fun bitir() {
+    /** Durumlar adımından arkadaş bulmaya geçer. Steam'liyse Steam arkadaşları hemen aranır. */
+    fun durumlariBitir() {
         val adim = _ekran.value as? OnboardingAdimi.Durumlar ?: return
         if (!adim.bitirilebilir) return
+        _ekran.value = OnboardingAdimi.Arkadaslar(steamli = adim.steamli, araniyor = adim.steamli)
+        viewModelScope.launch {
+            val davetKodu = runCatching { api.davetKodlarim().firstOrNull { !it.kullanildi }?.kod }.getOrNull()
+            _ekran.update { if (it is OnboardingAdimi.Arkadaslar) it.copy(davetKodu = davetKodu) else it }
+        }
+        if (adim.steamli) arkadasAra { api.steamdenBul() }
+    }
+
+    /** [numaralar] null ise rehber izni verilmedi. Numaralar burada hash'lenir; açık hali cihazdan çıkmaz. */
+    fun rehberdenBul(numaralar: List<String>?) {
+        if (numaralar == null) {
+            _ekran.update { if (it is OnboardingAdimi.Arkadaslar) it.copy(rehberIzniYok = true) else it }
+            return
+        }
+        val hashler = numaralar.mapNotNull(TelefonNumarasi::hash).distinct().take(TelefonNumarasi.EN_FAZLA_HASH)
+        arkadasAra(rehber = true) { if (hashler.isEmpty()) emptyList() else api.rehberdenBul(hashler) }
+    }
+
+    private fun arkadasAra(rehber: Boolean = false, ara: suspend () -> List<BulunanKisi>) {
+        _ekran.update { if (it is OnboardingAdimi.Arkadaslar) it.copy(araniyor = true, rehberIzniYok = false) else it }
+        viewModelScope.launch {
+            val bulunanlar = try {
+                ara()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                // Gizli Steam arkadaş listesi ya da bağlantı hatası: bulunan yok sayılır, adım sürer.
+                emptyList()
+            }
+            _ekran.update { mevcut ->
+                if (mevcut !is OnboardingAdimi.Arkadaslar) return@update mevcut
+                val bilinenler = mevcut.kisiler.map { it.kullanici.kullaniciId }.toSet()
+                mevcut.copy(
+                    kisiler = mevcut.kisiler + bulunanlar.filter { it.kullanici.kullaniciId !in bilinenler },
+                    araniyor = false,
+                    rehberTarandi = mevcut.rehberTarandi || rehber,
+                )
+            }
+        }
+    }
+
+    /** Kendi numaranı ekle ki arkadaşların seni bulsun; yalnızca hash'i gider. */
+    fun numaramiKaydet(numara: String) {
+        val hash = TelefonNumarasi.hash(numara) ?: return
+        viewModelScope.launch {
+            val kaydedildi = runCatching { api.telefonumuKaydet(hash) }.isSuccess
+            _ekran.update { if (it is OnboardingAdimi.Arkadaslar) it.copy(numaraKaydedildi = kaydedildi) else it }
+        }
+    }
+
+    fun takipEt(kullaniciAdi: String) = takipEt(listOf(kullaniciAdi)) { api.takipEt(kullaniciAdi) }
+
+    fun hepsiniTakipEt() {
+        val adlar = (_ekran.value as? OnboardingAdimi.Arkadaslar)?.takipEdilmeyenler?.map { it.kullanici.kullaniciAdi } ?: return
+        if (adlar.isNotEmpty()) takipEt(adlar) { api.topluTakip(adlar) }
+    }
+
+    /** Takip hemen gösterilir; başarısızsa geri alınır. */
+    private fun takipEt(adlar: List<String>, istek: suspend () -> Unit) {
+        fun isaretle(takipEdiyorum: Boolean) = _ekran.update { mevcut ->
+            if (mevcut !is OnboardingAdimi.Arkadaslar) return@update mevcut
+            mevcut.copy(kisiler = mevcut.kisiler.map { if (it.kullanici.kullaniciAdi in adlar) it.copy(takipEdiyorum = takipEdiyorum) else it })
+        }
+        isaretle(true)
+        viewModelScope.launch {
+            try {
+                istek()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                isaretle(false)
+            }
+        }
+    }
+
+    /** Onboarding'i bitirir; arkadaş bulma adımı atlanabilir. */
+    fun bitir() {
+        val adim = _ekran.value as? OnboardingAdimi.Arkadaslar ?: return
+        if (adim.bitiriliyor) return
         _ekran.value = adim.copy(bitiriliyor = true, hata = false)
         viewModelScope.launch {
             try {
@@ -120,7 +216,7 @@ class OnboardingViewModel(private val api: ApiIstemcisi, private val hesabiYenil
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                _ekran.update { if (it is OnboardingAdimi.Durumlar) it.copy(bitiriliyor = false, hata = true) else it }
+                _ekran.update { if (it is OnboardingAdimi.Arkadaslar) it.copy(bitiriliyor = false, hata = true) else it }
             }
         }
     }

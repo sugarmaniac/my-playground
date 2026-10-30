@@ -25,6 +25,11 @@ import com.sosyaloyun.shared.OrtakOyunlar
 import com.sosyaloyun.shared.OyunAramaYaniti
 import com.sosyaloyun.shared.IncelemeListesi
 import com.sosyaloyun.shared.OyunDetayi
+import com.sosyaloyun.shared.TopluTakipIstegi
+import com.sosyaloyun.shared.RehberEslestirmeIstegi
+import com.sosyaloyun.shared.TelefonumIstegi
+import com.sosyaloyun.shared.BulunanKisiler
+import com.sosyaloyun.shared.BulunanKisi
 import com.sosyaloyun.shared.HataKodu
 import com.sosyaloyun.shared.OyunOzeti
 import com.sosyaloyun.shared.PopulerOyunlar
@@ -103,6 +108,33 @@ class KtorApiIstemcisi(
 
     override suspend fun onboardingiTamamla() {
         istek { http.post(ApiYollari.ONBOARDING_TAMAMLA) }
+    }
+
+    override suspend fun telefonumuKaydet(hash: String) {
+        istek {
+            http.put(ApiYollari.TELEFONUM) {
+                contentType(ContentType.Application.Json)
+                setBody(TelefonumIstegi(hash))
+            }
+        }
+    }
+
+    override suspend fun rehberdenBul(hashler: List<String>): List<BulunanKisi> = istek {
+        http.post(ApiYollari.ARKADAS_BUL_REHBER) {
+            contentType(ContentType.Application.Json)
+            setBody(RehberEslestirmeIstegi(hashler))
+        }.body<BulunanKisiler>().kisiler
+    }
+
+    override suspend fun steamdenBul(): List<BulunanKisi> = istek { http.get(ApiYollari.ARKADAS_BUL_STEAM).body<BulunanKisiler>().kisiler }
+
+    override suspend fun topluTakip(kullaniciAdlari: List<String>) {
+        istek {
+            http.post(ApiYollari.TOPLU_TAKIP) {
+                contentType(ContentType.Application.Json)
+                setBody(TopluTakipIstegi(kullaniciAdlari))
+            }
+        }
     }
 
     override suspend fun davetKoduKullan(kod: String) {

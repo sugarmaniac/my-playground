@@ -18,6 +18,7 @@ import com.sosyaloyun.shared.KutuphaneGirisi
 import com.sosyaloyun.shared.KutuphaneSayfasi
 import com.sosyaloyun.shared.OrtakOyunlar
 import com.sosyaloyun.shared.OyunAramaYaniti
+import com.sosyaloyun.shared.BulunanKisi
 import com.sosyaloyun.shared.IncelemeListesi
 import com.sosyaloyun.shared.SteamBaglantisi
 import com.sosyaloyun.shared.SteamIceAktarmaSonucu
@@ -47,6 +48,15 @@ interface ApiIstemcisi {
     suspend fun populerOyunlar(): List<OyunOzeti>
 
     suspend fun onboardingiTamamla()
+
+    /** Kendi numaranın cihazda üretilmiş hash'i; arkadaşların seni rehberden bulur. */
+    suspend fun telefonumuKaydet(hash: String)
+
+    suspend fun rehberdenBul(hashler: List<String>): List<BulunanKisi>
+
+    suspend fun steamdenBul(): List<BulunanKisi>
+
+    suspend fun topluTakip(kullaniciAdlari: List<String>)
 
     suspend fun davetKoduKullan(kod: String)
 

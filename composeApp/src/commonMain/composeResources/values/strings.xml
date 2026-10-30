@@ -181,4 +181,17 @@
     <string name="steam_bagli">Connected: %1$s</string>
     <string name="steam_ice_aktarildi">%1$d games imported.</string>
     <string name="steam_kaldir">Disconnect Steam</string>
+    <string name="kaydet">Save</string>
+    <string name="takip_ediliyor">Following</string>
+    <string name="onboarding_devam">Continue</string>
+    <string name="onboarding_atla">Skip</string>
+    <string name="onboarding_arkadaslar_baslik">Find your friends</string>
+    <string name="onboarding_arkadaslar_aciklama">See which of your contacts and Steam friends are already here. Phone numbers are encrypted on your device; they are never sent in plain text.</string>
+    <string name="rehberde_ara">Search my contacts</string>
+    <string name="rehber_izni_yok">Contacts permission was not given. You can allow it in Settings.</string>
+    <string name="arkadas_bulunamadi">No friends found yet. Invite them!</string>
+    <string name="hepsini_takip_et">Follow all (%1$d)</string>
+    <string name="numaram_aciklama">Add your number so friends who have you in their contacts can find you. Only an encrypted fingerprint is stored.</string>
+    <string name="numaram">My phone number</string>
+    <string name="numaram_kaydedildi">Saved. Friends can now find you.</string>
 </resources>

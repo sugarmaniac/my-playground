@@ -175,6 +175,9 @@ internal object KullaniciTablosu : Table("kullanici") {
     val biyografi = text("biyografi").nullable()
     val aramaMetni = text("arama_metni").nullable()
     val onboardingTamamlandi = bool("onboarding_tamamlandi").default(false)
+
+    /** Kullanıcının kendi numarasının cihazda üretilmiş hash'i (ADR 0003). */
+    val telefonHash = text("telefon_hash").nullable()
     override val primaryKey = PrimaryKey(id)
 }
 
