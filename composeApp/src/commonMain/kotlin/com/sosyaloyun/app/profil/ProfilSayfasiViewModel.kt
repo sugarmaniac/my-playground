@@ -164,14 +164,18 @@ class ProfilSayfasiViewModel(
     fun takipDegistir() = iyimser(
         donustur = {
             val takipEdiyor = it.takipEdiyorum
-            // Arkadaşlık sürerken takipten çıkılamaz (CONTEXT.md: Arkadaşlık).
-            if (takipEdiyor == null || it.arkadaslik == ArkadaslikDurumu.ARKADAS) {
-                null
-            } else {
-                it.copy(takipEdiyorum = !takipEdiyor, takipciSayisi = it.takipciSayisi + if (takipEdiyor) -1 else 1)
+            when {
+                // Arkadaşlık sürerken takipten çıkılamaz (CONTEXT.md: Arkadaşlık).
+                takipEdiyor == null || it.arkadaslik == ArkadaslikDurumu.ARKADAS -> null
+                // Gizli profilde takip bir istektir (#48); istek gönderildiyse dokunuş isteği geri alır.
+                it.gizli && !takipEdiyor -> it.copy(takipIstegiGonderdim = it.takipIstegiGonderdim != true)
+                else -> it.copy(takipEdiyorum = !takipEdiyor, takipciSayisi = it.takipciSayisi + if (takipEdiyor) -1 else 1)
             }
         },
-        istek = { ad -> if ((_ekran.value.baslik as ProfilBasligi.Hazir).sayfa.takipEdiyorum == true) api.takipEt(ad) else api.takibiBirak(ad) },
+        istek = { ad ->
+            val yeni = (_ekran.value.baslik as ProfilBasligi.Hazir).sayfa
+            if (yeni.takipEdiyorum == true || yeni.takipIstegiGonderdim == true) api.takipEt(ad) else api.takibiBirak(ad)
+        },
     )
 
     /** Sessize al ya da geri al; takip ve arkadaşlık değişmez, yalnızca akış etkilenir. */

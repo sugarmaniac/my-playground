@@ -282,4 +282,14 @@
     <string name="bildirim_yorum">%1$s commented on your diary entry.</string>
     <string name="tercih_yorum">Comments</string>
     <string name="yorum_silme_hata">Couldn't delete the comment. Try again.</string>
+    <string name="gizli_profil">Private profile</string>
+    <string name="gizli_profil_aciklama">Only your followers see your diary, library and lists. New followers need your approval.</string>
+    <string name="gizlilik_hata">Couldn't save. Try again.</string>
+    <string name="takip_istekleri">Follow requests (%1$d)</string>
+    <string name="bildirim_takip_istegi">%1$s wants to follow you.</string>
+    <string name="bildirim_takip_istegi_kabulu">%1$s accepted your follow request.</string>
+    <string name="tercih_takip_istegi">Follow requests</string>
+    <string name="tercih_takip_istegi_kabulu">Accepted follow requests</string>
+    <string name="takip_istegi_gonderildi">Requested</string>
+    <string name="profil_gizli">This profile is private. Follow to see their diary.</string>
 </resources>

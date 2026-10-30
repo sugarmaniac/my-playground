@@ -475,6 +475,36 @@ class SahteApiIstemcisi : ApiIstemcisi {
         return yorum
     }
 
+    var gelenTakipIstekleri = mutableListOf<KullaniciOzeti>()
+    val gizlilikIstekleri = mutableListOf<String>()
+    var gizlilikHatasi: Exception? = null
+
+    /** Bu kişilerin takip isteği işlemleri başarısız olur. */
+    val basarisizTakipIstekleri = mutableSetOf<String>()
+
+    override suspend fun gizlilikAyarla(gizli: Boolean) {
+        gizlilikHatasi?.let { throw it }
+        gizlilikIstekleri += "gizli:$gizli"
+    }
+
+    override suspend fun takipIstekleri(): List<KullaniciOzeti> {
+        hata?.let { throw it }
+        return gelenTakipIstekleri.toList()
+    }
+
+    override suspend fun takipIsteginiKabulEt(kullaniciAdi: String) {
+        gizlilikHatasi?.let { throw it }
+        if (kullaniciAdi in basarisizTakipIstekleri) throw IllegalStateException("bağlantı yok")
+        gizlilikIstekleri += "kabul:$kullaniciAdi"
+        gelenTakipIstekleri.removeAll { it.kullaniciAdi == kullaniciAdi }
+    }
+
+    override suspend fun takipIsteginiReddet(kullaniciAdi: String) {
+        gizlilikHatasi?.let { throw it }
+        gizlilikIstekleri += "reddet:$kullaniciAdi"
+        gelenTakipIstekleri.removeAll { it.kullaniciAdi == kullaniciAdi }
+    }
+
     override suspend fun yorumSil(yorumId: String) {
         yorumHatasi?.let { throw it }
         yorumIstekleri += "sil:$yorumId"

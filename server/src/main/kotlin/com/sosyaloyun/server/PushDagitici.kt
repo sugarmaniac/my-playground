@@ -125,6 +125,8 @@ class PushDagitici(
                 BildirimTuru.SIKAYET_SONUCLANDI -> "Şikayetin incelendi. Bildirdiğin için teşekkürler."
                 BildirimTuru.ICERIK_KALDIRILDI -> "Bir içeriğin topluluk kurallarına aykırı bulunduğu için kaldırıldı."
                 BildirimTuru.YORUM -> "$kim günlük kaydına yorum yaptı."
+                BildirimTuru.TAKIP_ISTEGI -> "$kim seni takip etmek istiyor."
+                BildirimTuru.TAKIP_ISTEGI_KABULU -> "$kim takip isteğini kabul etti."
             }
         }
     }

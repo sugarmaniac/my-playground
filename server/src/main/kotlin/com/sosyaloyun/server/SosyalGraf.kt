@@ -2,6 +2,7 @@ package com.sosyaloyun.server
 
 import com.sosyaloyun.shared.ArkadaslikDurumu
 import com.sosyaloyun.shared.BildirimTuru
+import com.sosyaloyun.shared.Faz
 import com.sosyaloyun.shared.Gorunurluk
 import com.sosyaloyun.shared.KullaniciListesi
 import java.time.ZoneOffset
@@ -29,27 +30,113 @@ import org.jetbrains.exposed.v1.jdbc.insertIgnore
 import org.jetbrains.exposed.v1.jdbc.select
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
+import org.jetbrains.exposed.v1.jdbc.update
 
 /** Kullanıcılar arasındaki ilişkiler ve bunlardan çıkan görme yetkisi (CONTEXT.md: Takip, Görünürlük). */
-class SosyalGraf(private val veritabani: Database, private val saat: Clock) {
-    /** Yeni takip, takip edilene bildirim düşürür. */
-    suspend fun takipEt(eden: UUID, edilen: UUID) {
-        withContext(Dispatchers.IO) {
+class SosyalGraf(private val veritabani: Database, private val saat: Clock, private val fazlar: Fazlar) {
+    enum class TakipSonucu { TAKIP_EDILIYOR, ISTEK_GONDERILDI }
+
+    /**
+     * Yeni takip, takip edilene bildirim düşürür. Faz 2 açıkken gizli profili takip etmek bir takip isteğine
+     * dönüşür (#48); profil sahibi kabul edince takip başlar.
+     */
+    suspend fun takipEt(eden: UUID, edilen: UUID): TakipSonucu {
+        val gizlilik = fazlar.acik(Faz.FAZ_2)
+        return withContext(Dispatchers.IO) {
             transaction(veritabani) {
+                if (gizlilik && gizliMiIcinde(edilen) && !takipEdiyorMuIcinde(eden, edilen)) {
+                    val eklendi = TakipIstegiTablosu.insertIgnore {
+                        it[isteyen] = eden
+                        it[hedef] = edilen
+                        it[olusturulma] = simdi()
+                    }.insertedCount == 1
+                    if (eklendi) with(BildirimOlaylari) { bildir(edilen, BildirimTuru.TAKIP_ISTEGI, eden, simdi()) }
+                    return@transaction TakipSonucu.ISTEK_GONDERILDI
+                }
                 if (takipEtIcinde(eden, edilen, saat)) with(BildirimOlaylari) { bildir(edilen, BildirimTuru.YENI_TAKIPCI, eden, simdi()) }
+                TakipSonucu.TAKIP_EDILIYOR
             }
         }
     }
 
-    /** Arkadaşlık sürerken takipten çıkılamaz; bu durumda false döner. */
+    /** Arkadaşlık sürerken takipten çıkılamaz; bu durumda false döner. Bekleyen takip isteği de geri alınır. */
     suspend fun birak(eden: UUID, edilen: UUID): Boolean = withContext(Dispatchers.IO) {
         transaction(veritabani) {
             if (arkadasMiIcinde(eden, edilen)) return@transaction false
             TakipTablosu.deleteWhere { (takipEden eq eden) and (takipEdilen eq edilen) }
             with(BildirimOlaylari) { bildirimiSil(edilen, BildirimTuru.YENI_TAKIPCI, eden) }
+            istegiSilIcinde(eden, edilen)
             true
         }
     }
+
+    // ── Gizli profil ve takip istekleri (Faz 2, #48) ──────────────────────────
+
+    /** Faz 2 açık ve profil gizliyse true; Faz 1'de gizlilik yok sayılır. */
+    suspend fun gizliMi(kullanici: UUID): Boolean =
+        fazlar.acik(Faz.FAZ_2) && withContext(Dispatchers.IO) { transaction(veritabani) { gizliMiIcinde(kullanici) } }
+
+    /** [izleyen], gizli [sahip]'in takipçisi değilse içeriğini göremez (profil başlığı yine görünür). */
+    suspend fun icerikGizliMi(izleyen: UUID, sahip: UUID): Boolean =
+        izleyen != sahip && gizliMi(sahip) && !takipEdiyorMu(izleyen, sahip)
+
+    suspend fun takipIstegiGonderdiMi(isteyen: UUID, hedef: UUID): Boolean = withContext(Dispatchers.IO) {
+        transaction(veritabani) { istekVarMiIcinde(isteyen, hedef) }
+    }
+
+    /** Gizliden açığa geçince bekleyen bütün istekler kabul edilir. */
+    suspend fun gizliligiAyarla(kullanici: UUID, gizli: Boolean) {
+        withContext(Dispatchers.IO) {
+            transaction(veritabani) {
+                KullaniciTablosu.update({ KullaniciTablosu.id eq kullanici }) { it[KullaniciTablosu.gizli] = gizli }
+                if (!gizli) {
+                    TakipIstegiTablosu.select(TakipIstegiTablosu.isteyen).where { TakipIstegiTablosu.hedef eq kullanici }
+                        .map { it[TakipIstegiTablosu.isteyen] }
+                        .forEach { kabulEtIcinde(kullanici, it) }
+                }
+            }
+        }
+    }
+
+    suspend fun takipIstekleri(hedef: UUID, imlec: String?): KullaniciListesi = withContext(Dispatchers.IO) {
+        val baslangic = Imlec.baslangic(imlec)
+        transaction(veritabani) {
+            val kisiler = TakipIstegiTablosu.join(KullaniciTablosu, JoinType.INNER, TakipIstegiTablosu.isteyen, KullaniciTablosu.id)
+                .selectAll()
+                .where { TakipIstegiTablosu.hedef eq hedef }
+                .orderBy(TakipIstegiTablosu.olusturulma to SortOrder.DESC)
+                .limit(SAYFA + 1)
+                .offset(baslangic.toLong())
+                .mapNotNull { it.kullaniciOzeti() }
+            KullaniciListesi(kisiler.take(SAYFA), Imlec.sonraki(kisiler.size, baslangic, SAYFA))
+        }
+    }
+
+    /** İstek yoksa false. */
+    suspend fun takipIsteginiKabulEt(hedef: UUID, isteyen: UUID): Boolean = withContext(Dispatchers.IO) {
+        transaction(veritabani) { kabulEtIcinde(hedef, isteyen) }
+    }
+
+    /** İstek yoksa false; reddedilen tarafa bildirim gitmez. */
+    suspend fun takipIsteginiReddet(hedef: UUID, isteyen: UUID): Boolean = withContext(Dispatchers.IO) {
+        transaction(veritabani) { istegiSilIcinde(isteyen, hedef) }
+    }
+
+    private fun JdbcTransaction.kabulEtIcinde(hedef: UUID, isteyen: UUID): Boolean {
+        if (!istegiSilIcinde(isteyen, hedef)) return false
+        takipEtIcinde(isteyen, hedef, saat)
+        with(BildirimOlaylari) { bildir(isteyen, BildirimTuru.TAKIP_ISTEGI_KABULU, hedef, simdi()) }
+        return true
+    }
+
+    private fun JdbcTransaction.istegiSilIcinde(isteyen: UUID, hedef: UUID): Boolean {
+        val silindi = TakipIstegiTablosu.deleteWhere { (TakipIstegiTablosu.isteyen eq isteyen) and (TakipIstegiTablosu.hedef eq hedef) } > 0
+        if (silindi) with(BildirimOlaylari) { bildirimiSil(hedef, BildirimTuru.TAKIP_ISTEGI, isteyen) }
+        return silindi
+    }
+
+    private fun JdbcTransaction.istekVarMiIcinde(isteyen: UUID, hedef: UUID): Boolean =
+        TakipIstegiTablosu.selectAll().where { (TakipIstegiTablosu.isteyen eq isteyen) and (TakipIstegiTablosu.hedef eq hedef) }.any()
 
     /** İstek gönderir; karşı taraf zaten istek göndermişse doğrudan arkadaş olunur. */
     suspend fun arkadaslikIste(gonderen: UUID, alan: UUID) {
@@ -195,6 +282,7 @@ class SosyalGraf(private val veritabani: Database, private val saat: Clock) {
                 val (a, b) = sirali(kullanici, hedef)
                 if (ArkadaslikTablosu.deleteWhere { (kullaniciA eq a) and (kullaniciB eq b) } > 0) with(AkisOlaylari) { arkadaslikBitti(a, b) }
                 ArkadaslikIstegiTablosu.deleteWhere { ((gonderen eq kullanici) and (alan eq hedef)) or ((gonderen eq hedef) and (alan eq kullanici)) }
+                TakipIstegiTablosu.deleteWhere { ((isteyen eq kullanici) and (TakipIstegiTablosu.hedef eq hedef)) or ((isteyen eq hedef) and (TakipIstegiTablosu.hedef eq kullanici)) }
                 begenileriSil(begenen = hedef, sahip = kullanici)
                 begenileriSil(begenen = kullanici, sahip = hedef)
                 with(BildirimOlaylari) { aradakiBildirimleriSil(kullanici, hedef) }
@@ -295,16 +383,17 @@ class SosyalGraf(private val veritabani: Database, private val saat: Clock) {
      * [izleyen]'in [sahip]'in günlük kayıtlarından görebileceği görünürlük seviyeleri: sahibi hepsini,
      * takipçisi Herkes ve Takipçiler'i, arkadaşı ayrıca Arkadaşlar'ı, diğerleri yalnızca Herkes'i.
      */
-    suspend fun gorebilecegi(izleyen: UUID, sahip: UUID): Set<Gorunurluk> = withContext(Dispatchers.IO) {
-        if (izleyen == sahip) return@withContext Gorunurluk.entries.toSet()
-        transaction(veritabani) {
+    suspend fun gorebilecegi(izleyen: UUID, sahip: UUID): Set<Gorunurluk> {
+        if (izleyen == sahip) return Gorunurluk.entries.toSet()
+        if (icerikGizliMi(izleyen, sahip)) return emptySet()
+        return withContext(Dispatchers.IO) { transaction(veritabani) {
             if (sahip in engellileri(izleyen)) return@transaction emptySet()
             buildSet {
                 add(Gorunurluk.HERKES)
                 if (takipEdiyorMuIcinde(izleyen, sahip)) add(Gorunurluk.TAKIPCILER)
                 if (arkadasMiIcinde(izleyen, sahip)) add(Gorunurluk.ARKADASLAR)
             }
-        }
+        } }
     }
 
     private suspend fun liste(kosulSutunu: Column<UUID>, kisiSutunu: Column<UUID>, kullaniciId: UUID, izleyen: UUID, imlec: String?): KullaniciListesi =
@@ -391,4 +480,14 @@ internal object SessizeAlmaTablosu : Table("sessize_alma") {
     val alinan = javaUUID("alinan")
     val olusturulma = timestampWithTimeZone("olusturulma")
     override val primaryKey = PrimaryKey(alan, alinan)
+}
+
+internal fun JdbcTransaction.gizliMiIcinde(kullanici: UUID): Boolean =
+    KullaniciTablosu.select(KullaniciTablosu.gizli).where { KullaniciTablosu.id eq kullanici }.singleOrNull()?.get(KullaniciTablosu.gizli) ?: false
+
+internal object TakipIstegiTablosu : Table("takip_istegi") {
+    val isteyen = javaUUID("isteyen")
+    val hedef = javaUUID("hedef")
+    val olusturulma = timestampWithTimeZone("olusturulma")
+    override val primaryKey = PrimaryKey(isteyen, hedef)
 }

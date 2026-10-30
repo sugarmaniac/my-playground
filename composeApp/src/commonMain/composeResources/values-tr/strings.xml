@@ -282,4 +282,14 @@
     <string name="bildirim_yorum">%1$s günlük kaydına yorum yaptı.</string>
     <string name="tercih_yorum">Yorumlar</string>
     <string name="yorum_silme_hata">Yorum silinemedi. Tekrar dene.</string>
+    <string name="gizli_profil">Gizli profil</string>
+    <string name="gizli_profil_aciklama">Günlüğünü, kütüphaneni ve listelerini yalnızca takipçilerin görür. Yeni takipçiler senin onayınla gelir.</string>
+    <string name="gizlilik_hata">Kaydedilemedi. Tekrar dene.</string>
+    <string name="takip_istekleri">Takip istekleri (%1$d)</string>
+    <string name="bildirim_takip_istegi">%1$s seni takip etmek istiyor.</string>
+    <string name="bildirim_takip_istegi_kabulu">%1$s takip isteğini kabul etti.</string>
+    <string name="tercih_takip_istegi">Takip istekleri</string>
+    <string name="tercih_takip_istegi_kabulu">Kabul edilen takip istekleri</string>
+    <string name="takip_istegi_gonderildi">İstek gönderildi</string>
+    <string name="profil_gizli">Bu profil gizli. Günlüğünü görmek için takip et.</string>
 </resources>

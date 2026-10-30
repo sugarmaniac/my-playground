@@ -40,6 +40,8 @@ import com.sosyaloyun.app.hesap.AvatarGorunumu
 import com.sosyaloyun.app.kutuphane.YildizPuani
 import com.sosyaloyun.app.kutuphane.durumAdi
 import com.sosyaloyun.app.resources.Res
+import com.sosyaloyun.app.resources.takip_istegi_gonderildi
+import com.sosyaloyun.app.resources.profil_gizli
 import com.sosyaloyun.app.resources.paylas
 import com.sosyaloyun.app.hesap.paylasici
 import com.sosyaloyun.app.resources.arama_daha_fazla
@@ -203,6 +205,8 @@ private fun Baslik(
                 if (sayfa.arkadaslik != ArkadaslikDurumu.ARKADAS) {
                     if (takipEdiyorum) {
                         OutlinedButton(onClick = viewModel::takipDegistir) { Text(stringResource(Res.string.takibi_birak)) }
+                    } else if (sayfa.takipIstegiGonderdim == true) {
+                        OutlinedButton(onClick = viewModel::takipDegistir) { Text(stringResource(Res.string.takip_istegi_gonderildi)) }
                     } else {
                         Button(onClick = viewModel::takipDegistir) { Text(stringResource(Res.string.takip_et)) }
                     }
@@ -219,6 +223,7 @@ private fun Baslik(
             }
         }
         if (sayfa.takipEdiyorum != null) EngelVeSessiz(sayfa, viewModel, sikayetPenceresi)
+        if (sayfa.icerikGizli) Text(stringResource(Res.string.profil_gizli), style = MaterialTheme.typography.bodyMedium)
         val ortak by viewModel.ekran.collectAsStateWithLifecycle()
         ortak.ortak?.let { OrtakOyunlarBolumu(it, oyunaGit) }
         Text(stringResource(Res.string.profil_vitrin), style = MaterialTheme.typography.titleSmall)

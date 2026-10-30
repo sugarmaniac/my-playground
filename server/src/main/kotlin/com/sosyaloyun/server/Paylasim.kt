@@ -23,7 +23,7 @@ import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 
 /**
  * Web sitesinin paylaşım sayfaları (ADR 0004): oturumsuz izleyen yalnızca Herkes görünürlüğündeki kayıtları görür.
- * Banlı ya da askıdaki hesabın içeriği hiç yokmuş sayılır; moderasyonun "içeriği kaldır" kararı kaydı zaten siler.
+ * Banlı ya da askıdaki hesabın ve (Faz 2'de) gizli profilin içeriği hiç yokmuş sayılır; moderasyonun "içeriği kaldır" kararı kaydı zaten siler.
  */
 class Paylasim(
     private val veritabani: Database,
@@ -31,6 +31,7 @@ class Paylasim(
     private val profiller: Profiller,
     private val begeniler: Begeniler,
     private val saat: Clock,
+    private val sosyalGraf: SosyalGraf,
 ) {
     suspend fun kayit(kayitId: UUID): GunlukKaydiDetayi? {
         val (kayit, sahip) = withContext(Dispatchers.IO) {
@@ -43,12 +44,15 @@ class Paylasim(
                     ?.let { satir -> satir.kullaniciOzeti()?.let { satir.gunlukKaydi() to it } }
             }
         } ?: return null
+        // Faz 2'de gizli profilin içeriği paylaşılmaz (#48).
+        if (sosyalGraf.gizliMi(UUID.fromString(sahip.kullaniciId))) return null
         val oyunId = UUID.fromString(kayit.oyunId)
         // Oturumsuz izleyen hiçbir kaydı beğenmiş olamaz; yalnızca beğeni sayısı eklenir.
         return GunlukKaydiDetayi(begeniler.ekle(BEGENMEYEN, kayit), katalog.ozetleri(listOf(oyunId)).getValue(oyunId), sahip)
     }
 
     suspend fun profil(kullaniciId: UUID): PaylasilanProfil? {
+        if (sosyalGraf.gizliMi(kullaniciId)) return null
         val kayitlar = withContext(Dispatchers.IO) {
             transaction(veritabani) {
                 val sahip = KullaniciTablosu.selectAll().where { KullaniciTablosu.id eq kullaniciId }.singleOrNull()

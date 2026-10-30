@@ -52,6 +52,7 @@ import com.sosyaloyun.app.kesif.OyunListesiGorunumu
 import com.sosyaloyun.app.kesif.OyunListesiViewModel
 import com.sosyaloyun.app.kesif.turAdi
 import com.sosyaloyun.app.resources.sekme_kesif
+import com.sosyaloyun.shared.Faz
 import com.sosyaloyun.shared.Tur
 import com.sosyaloyun.app.api.KisiListesiTuru
 import com.sosyaloyun.app.arama.AramaEkrani
@@ -61,6 +62,7 @@ import com.sosyaloyun.app.gunluk.DetayliKayitEkrani
 import com.sosyaloyun.app.gunluk.DetayliKayitViewModel
 import com.sosyaloyun.app.gunluk.GunlukDetayGorunumu
 import com.sosyaloyun.app.gunluk.GunlukDetayViewModel
+import com.sosyaloyun.app.gizlilik.GizlilikViewModel
 import com.sosyaloyun.app.hesap.AnaEkran
 import com.sosyaloyun.app.hesap.DavetKodlarimViewModel
 import com.sosyaloyun.app.hesap.DavetKoduEkrani
@@ -314,6 +316,7 @@ private fun UygulamaGezintisi(api: ApiIstemcisi, profil: KullaniciOzeti, cikisYa
                     engelListesi = { gezinti.navigate(EngelListesiRota(it)) },
                     cikisYap = cikisYap,
                     hesapSilme = { viewModel { HesapSilmeViewModel(api, profil.kullaniciAdi, hesapSilindi) } },
+                    gizlilik = if (aktifFaz.kapsar(Faz.FAZ_2)) ({ viewModel { GizlilikViewModel(api) } }) else null,
                 )
             }
             composable<EngelListesiRota> { listeGirdisi ->

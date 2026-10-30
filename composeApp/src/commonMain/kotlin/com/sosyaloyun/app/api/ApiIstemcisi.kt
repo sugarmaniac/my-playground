@@ -172,6 +172,15 @@ interface ApiIstemcisi {
 
     suspend fun yorumSil(yorumId: String)
 
+    /** Faz 2 (#48): gizli profil ve gelen takip istekleri. */
+    suspend fun gizlilikAyarla(gizli: Boolean)
+
+    suspend fun takipIstekleri(): List<KullaniciOzeti>
+
+    suspend fun takipIsteginiKabulEt(kullaniciAdi: String)
+
+    suspend fun takipIsteginiReddet(kullaniciAdi: String)
+
     suspend fun kullaniciAra(sorgu: String, imlec: String? = null): KullaniciListesi
 
     suspend fun vitrinKaydet(oyunIdleri: List<String>): ProfilSayfasi

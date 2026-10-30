@@ -1,5 +1,6 @@
 package com.sosyaloyun.server
 
+import com.sosyaloyun.shared.Faz
 import com.sosyaloyun.shared.Gorunurluk
 import com.sosyaloyun.shared.IncelemeListesi
 import com.sosyaloyun.shared.OyunIncelemesi
@@ -7,6 +8,7 @@ import com.sosyaloyun.shared.OyunPuanlari
 import java.util.UUID
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.jetbrains.exposed.v1.core.Op
 import org.jetbrains.exposed.v1.core.Case
 import org.jetbrains.exposed.v1.core.Count
 import org.jetbrains.exposed.v1.core.JoinType
@@ -27,7 +29,7 @@ import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 
 /** Bir oyunun topluluk tarafı: topluluk puanı, arkadaş ortalaması ve incelemeler. */
-class Topluluk(private val veritabani: Database, private val ayarlar: Ayarlar) {
+class Topluluk(private val veritabani: Database, private val ayarlar: Ayarlar, private val fazlar: Fazlar) {
     suspend fun puanlar(izleyen: UUID, oyunId: UUID): OyunPuanlari {
         val esik = ayarlar.oku(Ayar.ToplulukPuaniEsigi)
         return withContext(Dispatchers.IO) {
@@ -53,9 +55,14 @@ class Topluluk(private val veritabani: Database, private val ayarlar: Ayarlar) {
      * Oyunun incelemeleri (metni olan günlük kayıtları): önce arkadaşlarınki, sonra diğerleri, her grupta yeniden eskiye.
      * İzleyenin kendi kayıtları detayda ayrıca gösterildiği için dahil değil; görünürlük ve engeller uygulanır.
      */
-    suspend fun incelemeler(izleyen: UUID, oyunId: UUID, imlec: String?): IncelemeListesi = withContext(Dispatchers.IO) {
+    suspend fun incelemeler(izleyen: UUID, oyunId: UUID, imlec: String?): IncelemeListesi {
+        val gizlilik = fazlar.acik(Faz.FAZ_2)
+        return withContext(Dispatchers.IO) { incelemelerIcinde(izleyen, oyunId, imlec, gizlilik) }
+    }
+
+    private fun incelemelerIcinde(izleyen: UUID, oyunId: UUID, imlec: String?, gizlilik: Boolean): IncelemeListesi {
         val baslangic = Imlec.baslangic(imlec)
-        transaction(veritabani) {
+        return transaction(veritabani) {
             val g = GunlukKaydiTablosu
             val arkadaslar = arkadaslari(izleyen)
             val takipEttikleri = TakipTablosu.select(TakipTablosu.takipEdilen).where { TakipTablosu.takipEden eq izleyen }
@@ -63,10 +70,12 @@ class Topluluk(private val veritabani: Database, private val ayarlar: Ayarlar) {
             val gorunur = (g.gorunurluk eq Gorunurluk.HERKES.name) or
                 ((g.gorunurluk eq Gorunurluk.TAKIPCILER.name) and (g.kullaniciId inList takipEttikleri)) or
                 ((g.gorunurluk eq Gorunurluk.ARKADASLAR.name) and (g.kullaniciId inList arkadaslar))
+            // Faz 2'de gizli profillerin incelemeleri yalnızca takipçilerine görünür (#48).
+            val gizlilikKosulu = if (gizlilik) (KullaniciTablosu.gizli eq false) or (g.kullaniciId inList takipEttikleri) else Op.TRUE
             val arkadasOnce = Case().When(g.kullaniciId inList arkadaslar, intLiteral(0)).Else(intLiteral(1))
             val satirlar = g.join(KullaniciTablosu, JoinType.INNER, g.kullaniciId, KullaniciTablosu.id)
                 .selectAll()
-                .where { (g.oyunId eq oyunId) and g.inceleme.isNotNull() and (g.kullaniciId neq izleyen) and (g.kullaniciId notInList engellileri(izleyen)) and gorunur }
+                .where { (g.oyunId eq oyunId) and g.inceleme.isNotNull() and (g.kullaniciId neq izleyen) and (g.kullaniciId notInList engellileri(izleyen)) and gorunur and gizlilikKosulu }
                 .orderBy(arkadasOnce to SortOrder.ASC, g.olusturulma to SortOrder.DESC, g.id to SortOrder.ASC)
                 .limit(SAYFA + 1)
                 .offset(baslangic.toLong())

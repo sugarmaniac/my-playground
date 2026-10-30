@@ -1,5 +1,9 @@
 package com.sosyaloyun.server
 
+import com.sosyaloyun.shared.KutuphaneSayfasi
+import com.sosyaloyun.shared.KullaniciListesi
+import com.sosyaloyun.shared.GizlilikIstegi
+import com.sosyaloyun.shared.Faz
 import com.sosyaloyun.shared.ApiYollari
 import com.sosyaloyun.shared.HataKodu
 import com.sosyaloyun.shared.VitrinIstegi
@@ -15,8 +19,34 @@ import io.ktor.server.routing.put
 import java.util.UUID
 
 /** Kendi profilin (`/profilim`) ve başkasının profili (`/kullanicilar/{ad}`): aynı sekmeler, görünürlüğe göre süzülmüş. */
-fun Route.profilSayfasiRotalari(profiller: Profiller, kullanicilar: Kullanicilar, sosyalGraf: SosyalGraf) {
+fun Route.profilSayfasiRotalari(profiller: Profiller, kullanicilar: Kullanicilar, sosyalGraf: SosyalGraf, fazlar: Fazlar) {
     oturumGerekli {
+        fazGerekli(fazlar, Faz.FAZ_2) {
+            put(ApiYollari.GIZLILIK) {
+                sosyalGraf.gizliligiAyarla(call.oturumSahibi.kullaniciId, call.receive<GizlilikIstegi>().gizli)
+                call.respond(HttpStatusCode.NoContent)
+            }
+            get(ApiYollari.TAKIP_ISTEKLERI) {
+                call.respond(sosyalGraf.takipIstekleri(call.oturumSahibi.kullaniciId, call.request.queryParameters["imlec"]))
+            }
+            post(ApiYollari.takipIstegiKabul("{ad}")) {
+                val isteyen = call.adinSahibi(kullanicilar) ?: return@post
+                if (sosyalGraf.takipIsteginiKabulEt(call.oturumSahibi.kullaniciId, isteyen)) {
+                    call.respond(HttpStatusCode.NoContent)
+                } else {
+                    call.hata(HttpStatusCode.NotFound, HataKodu.TAKIP_ISTEGI_YOK)
+                }
+            }
+            delete(ApiYollari.takipIstegi("{ad}")) {
+                val isteyen = call.adinSahibi(kullanicilar) ?: return@delete
+                if (sosyalGraf.takipIsteginiReddet(call.oturumSahibi.kullaniciId, isteyen)) {
+                    call.respond(HttpStatusCode.NoContent)
+                } else {
+                    call.hata(HttpStatusCode.NotFound, HataKodu.TAKIP_ISTEGI_YOK)
+                }
+            }
+        }
+
         get(ApiYollari.PROFILIM) {
             val sayfa = profiller.sayfa(call.oturumSahibi.kullaniciId)
             if (sayfa == null) call.hata(HttpStatusCode.Forbidden, HataKodu.DAVET_GEREKLI) else call.respond(sayfa)
@@ -49,17 +79,19 @@ fun Route.profilSayfasiRotalari(profiller: Profiller, kullanicilar: Kullanicilar
             call.gunlukSekmesi(profiller, call.sahip(kullanicilar, sosyalGraf) ?: return@get, yalnizcaIncelemeler = true)
         }
         get(ApiYollari.kullaniciSekmesi("{ad}", ApiYollari.SEKME_OYUNLAR)) {
-            call.kutuphaneSekmesi(profiller, call.sahip(kullanicilar, sosyalGraf) ?: return@get, istekListesi = false)
+            call.kutuphaneSekmesi(profiller, call.sahip(kullanicilar, sosyalGraf) ?: return@get, istekListesi = false, sosyalGraf)
         }
         get(ApiYollari.kullaniciSekmesi("{ad}", ApiYollari.SEKME_ISTEK_LISTESI)) {
-            call.kutuphaneSekmesi(profiller, call.sahip(kullanicilar, sosyalGraf) ?: return@get, istekListesi = true)
+            call.kutuphaneSekmesi(profiller, call.sahip(kullanicilar, sosyalGraf) ?: return@get, istekListesi = true, sosyalGraf)
         }
         get(ApiYollari.kullaniciSekmesi("{ad}", ApiYollari.SEKME_TAKIPCILER)) {
             val sahip = call.sahip(kullanicilar, sosyalGraf) ?: return@get
+            if (sosyalGraf.icerikGizliMi(call.oturumSahibi.kullaniciId, sahip)) return@get call.respond(KullaniciListesi(emptyList(), null))
             call.respond(sosyalGraf.takipciler(sahip, call.oturumSahibi.kullaniciId, call.request.queryParameters["imlec"]))
         }
         get(ApiYollari.kullaniciSekmesi("{ad}", ApiYollari.SEKME_TAKIP_EDILENLER)) {
             val sahip = call.sahip(kullanicilar, sosyalGraf) ?: return@get
+            if (sosyalGraf.icerikGizliMi(call.oturumSahibi.kullaniciId, sahip)) return@get call.respond(KullaniciListesi(emptyList(), null))
             call.respond(sosyalGraf.takipEdilenler(sahip, call.oturumSahibi.kullaniciId, call.request.queryParameters["imlec"]))
         }
         post(ApiYollari.kullaniciSekmesi("{ad}", ApiYollari.TAKIP)) {
@@ -68,8 +100,11 @@ fun Route.profilSayfasiRotalari(profiller: Profiller, kullanicilar: Kullanicilar
                 call.hata(HttpStatusCode.BadRequest, HataKodu.KENDINI_TAKIP_EDEMEZSIN)
                 return@post
             }
-            sosyalGraf.takipEt(call.oturumSahibi.kullaniciId, hedef)
-            call.respond(HttpStatusCode.NoContent)
+            // Gizli profile takip isteği gider: 202 (#48).
+            when (sosyalGraf.takipEt(call.oturumSahibi.kullaniciId, hedef)) {
+                SosyalGraf.TakipSonucu.TAKIP_EDILIYOR -> call.respond(HttpStatusCode.NoContent)
+                SosyalGraf.TakipSonucu.ISTEK_GONDERILDI -> call.respond(HttpStatusCode.Accepted)
+            }
         }
         delete(ApiYollari.kullaniciSekmesi("{ad}", ApiYollari.TAKIP)) {
             val hedef = call.sahip(kullanicilar, sosyalGraf) ?: return@delete
@@ -82,6 +117,7 @@ fun Route.profilSayfasiRotalari(profiller: Profiller, kullanicilar: Kullanicilar
 
         get(ApiYollari.kullaniciSekmesi("{ad}", ApiYollari.SEKME_ARKADASLAR)) {
             val sahip = call.sahip(kullanicilar, sosyalGraf) ?: return@get
+            if (sosyalGraf.icerikGizliMi(call.oturumSahibi.kullaniciId, sahip)) return@get call.respond(KullaniciListesi(emptyList(), null))
             call.respond(sosyalGraf.arkadaslar(sahip, call.oturumSahibi.kullaniciId, call.request.queryParameters["imlec"]))
         }
         get(ApiYollari.kullaniciSekmesi("{ad}", ApiYollari.SEKME_ORTAK)) {
@@ -177,7 +213,9 @@ private suspend fun RoutingCall.gunlukSekmesi(profiller: Profiller, sahip: UUID,
     respond(profiller.gunluk(sahip, izleyen = oturumSahibi.kullaniciId, yalnizcaIncelemeler, request.queryParameters["imlec"]))
 }
 
-private suspend fun RoutingCall.kutuphaneSekmesi(profiller: Profiller, sahip: UUID, istekListesi: Boolean) {
+private suspend fun RoutingCall.kutuphaneSekmesi(profiller: Profiller, sahip: UUID, istekListesi: Boolean, sosyalGraf: SosyalGraf? = null) {
+    // Gizli profilin takipçisi olmayana kütüphane boş görünür (#48).
+    if (sosyalGraf != null && sosyalGraf.icerikGizliMi(oturumSahibi.kullaniciId, sahip)) return respond(KutuphaneSayfasi(emptyList(), null))
     val q = request.queryParameters
     respond(profiller.kutuphane(sahip, istekListesi, if (istekListesi) null else q["durum"], q["imlec"]))
 }
