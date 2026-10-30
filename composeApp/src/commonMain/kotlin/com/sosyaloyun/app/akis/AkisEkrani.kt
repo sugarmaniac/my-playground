@@ -59,12 +59,12 @@ import com.sosyaloyun.app.gunluk.dakikadanSaate
 import com.sosyaloyun.app.hesap.AvatarGorunumu
 import com.sosyaloyun.app.kutuphane.YildizPuani
 import com.sosyaloyun.app.profil.Kapak
+import com.sosyaloyun.app.tema.sayfaSonu
 import com.sosyaloyun.app.resources.Res
 import com.sosyaloyun.app.resources.akis_bos
 import com.sosyaloyun.app.resources.akis_istek_listemde
 import com.sosyaloyun.app.resources.akis_istek_listeme_ekle
 import com.sosyaloyun.app.resources.akis_yeni
-import com.sosyaloyun.app.resources.arama_daha_fazla
 import com.sosyaloyun.app.resources.arkadaslar
 import com.sosyaloyun.app.resources.durum_hata
 import com.sosyaloyun.app.resources.sekme_takip
@@ -133,10 +133,8 @@ fun AkisEkrani(
                 contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                items(icerik.ogeler, key = { it.id }) { oge -> AkisKarti(oge, viewModel, oyunaGit, kullaniciyaGit, gunlukKaydinaGit) }
-                if (icerik.dahaVar) {
-                    item { TextButton(onClick = viewModel::dahaFazlaYukle, modifier = Modifier.fillMaxWidth()) { Text(stringResource(Res.string.arama_daha_fazla)) } }
-                }
+                items(icerik.ogeler, key = { it.id }, contentType = { "kart" }) { oge -> AkisKarti(oge, viewModel, oyunaGit, kullaniciyaGit, gunlukKaydinaGit) }
+                sayfaSonu(icerik.dahaVar, icerik.ogeler.size, viewModel::dahaFazlaYukle)
             }
         }
     }

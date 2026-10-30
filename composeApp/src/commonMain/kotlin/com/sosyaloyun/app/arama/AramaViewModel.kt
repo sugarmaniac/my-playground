@@ -3,6 +3,7 @@ package com.sosyaloyun.app.arama
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sosyaloyun.app.api.ApiIstemcisi
+import com.sosyaloyun.app.onbellek.OyunOzetiBellegi
 import com.sosyaloyun.shared.AramaKurallari
 import com.sosyaloyun.shared.KullaniciOzeti
 import com.sosyaloyun.shared.OyunOzeti
@@ -78,6 +79,7 @@ class AramaViewModel(private val api: ApiIstemcisi) : ViewModel() {
     private suspend fun sayfaYukle(sorgu: String, imlec: String?, onceki: List<OyunOzeti>) {
         val sonuc = try {
             val yanit = api.oyunAra(sorgu, imlec)
+            OyunOzetiBellegi.ekle(yanit.oyunlar)
             sonrakiImlec = yanit.sonrakiImlec
             val oyunlar = onceki + yanit.oyunlar
             if (oyunlar.isEmpty()) AramaSonucu.SonucYok else AramaSonucu.Oyunlar(oyunlar, dahaVar = yanit.sonrakiImlec != null)

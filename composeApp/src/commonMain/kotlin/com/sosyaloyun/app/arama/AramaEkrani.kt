@@ -30,10 +30,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.sosyaloyun.app.hesap.AvatarGorunumu
+import com.sosyaloyun.app.tema.sayfaSonu
 import com.sosyaloyun.app.resources.Res
 import com.sosyaloyun.app.resources.arama_alani
 import com.sosyaloyun.app.resources.arama_bos
-import com.sosyaloyun.app.resources.arama_daha_fazla
 import com.sosyaloyun.app.resources.arama_hata
 import com.sosyaloyun.app.resources.arama_kullanicilar
 import com.sosyaloyun.app.resources.arama_oyunlar
@@ -92,13 +92,7 @@ fun AramaEkrani(
             }
             is AramaSonucu.Oyunlar -> LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 items(sonuc.oyunlar, key = { it.id }) { oyun -> OyunSatiri(oyun) { oyunSecildi(oyun) } }
-                if (sonuc.dahaVar) {
-                    item {
-                        TextButton(onClick = viewModel::dahaFazlaYukle, modifier = Modifier.fillMaxWidth()) {
-                            Text(stringResource(Res.string.arama_daha_fazla))
-                        }
-                    }
-                }
+                sayfaSonu(sonuc.dahaVar, sonuc.oyunlar.size, viewModel::dahaFazlaYukle)
             }
         }
     }

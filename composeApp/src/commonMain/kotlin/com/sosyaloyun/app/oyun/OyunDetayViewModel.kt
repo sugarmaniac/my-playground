@@ -4,10 +4,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sosyaloyun.app.api.ApiHatasiIstisnasi
 import com.sosyaloyun.app.api.ApiIstemcisi
+import com.sosyaloyun.app.onbellek.OyunOzetiBellegi
 import com.sosyaloyun.shared.HataKodu
 import com.sosyaloyun.shared.KutuphaneGirisi
 import com.sosyaloyun.shared.OyunDetayi
 import com.sosyaloyun.shared.OyunIncelemesi
+import com.sosyaloyun.shared.OyunOzeti
 import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,7 +18,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 sealed interface OyunDetayEkrani {
-    data object Yukleniyor : OyunDetayEkrani
+    /** [ozet] listelerden biliniyorsa bant, kapak ve ad beklemeden çizilir (#60). */
+    data class Yukleniyor(val ozet: OyunOzeti? = null) : OyunDetayEkrani
     data class Hazir(
         val detay: OyunDetayi,
         /** Önce arkadaşların, sonra herkesin incelemeleri; yüklenemezse boş kalır, detayı engellemez. */
@@ -28,7 +31,7 @@ sealed interface OyunDetayEkrani {
 }
 
 class OyunDetayViewModel(private val api: ApiIstemcisi, private val oyunId: String) : ViewModel() {
-    private val _ekran = MutableStateFlow<OyunDetayEkrani>(OyunDetayEkrani.Yukleniyor)
+    private val _ekran = MutableStateFlow<OyunDetayEkrani>(OyunDetayEkrani.Yukleniyor(OyunOzetiBellegi.bul(oyunId)))
     val ekran: StateFlow<OyunDetayEkrani> = _ekran
     private var incelemeIsi: Job? = null
 
@@ -42,7 +45,7 @@ class OyunDetayViewModel(private val api: ApiIstemcisi, private val oyunId: Stri
     }
 
     fun yukle() {
-        _ekran.value = OyunDetayEkrani.Yukleniyor
+        _ekran.value = OyunDetayEkrani.Yukleniyor(OyunOzetiBellegi.bul(oyunId))
         // Yeniden yüklemede eski sayfanın devamı yeni listeye eklenmesin.
         incelemeIsi?.cancel()
         incelemeIsi = viewModelScope.launch {

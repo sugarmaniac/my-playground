@@ -23,8 +23,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sosyaloyun.app.api.EngelListesiTuru
 import com.sosyaloyun.app.api.KisiListesiTuru
 import com.sosyaloyun.app.arama.KullaniciSatiri
+import com.sosyaloyun.app.tema.sayfaSonu
 import com.sosyaloyun.app.resources.Res
-import com.sosyaloyun.app.resources.arama_daha_fazla
 import com.sosyaloyun.app.resources.arkadaslar
 import com.sosyaloyun.app.resources.arkadaslik_istekleri
 import com.sosyaloyun.app.resources.kabul_et
@@ -118,13 +118,7 @@ private fun KisiListesi(
                         islemler?.invoke(kisi.kullaniciAdi)
                     }
                 }
-                if (durum.dahaVar) {
-                    item {
-                        TextButton(onClick = dahaFazla, modifier = Modifier.fillMaxWidth()) {
-                            Text(stringResource(Res.string.arama_daha_fazla))
-                        }
-                    }
-                }
+                sayfaSonu(durum.dahaVar, durum.kullanicilar.size, dahaFazla)
             }
         }
     }

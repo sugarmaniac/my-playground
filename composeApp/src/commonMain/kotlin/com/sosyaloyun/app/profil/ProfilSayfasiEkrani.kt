@@ -8,7 +8,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -45,6 +44,7 @@ import com.sosyaloyun.app.gunluk.tarihMetni
 import com.sosyaloyun.app.hesap.AvatarGorunumu
 import com.sosyaloyun.app.kutuphane.YildizPuani
 import com.sosyaloyun.app.kutuphane.durumAdi
+import com.sosyaloyun.app.tema.sayfaSonu
 import com.sosyaloyun.app.resources.Res
 import com.sosyaloyun.app.resources.profil_sekme_listeler
 import com.sosyaloyun.app.resources.liste_yeni
@@ -55,7 +55,6 @@ import com.sosyaloyun.app.resources.profil_sekme_istatistik
 import com.sosyaloyun.app.resources.kurator_rozet
 import com.sosyaloyun.app.resources.paylas
 import com.sosyaloyun.app.hesap.paylasici
-import com.sosyaloyun.app.resources.arama_daha_fazla
 import com.sosyaloyun.app.resources.durum_hata
 import com.sosyaloyun.app.resources.arkadas_ekle
 import com.sosyaloyun.app.resources.arkadasliktan_cik
@@ -166,18 +165,18 @@ fun ProfilSayfasiEkrani(
             is SekmeIcerigi.Gunluk -> {
                 if (icerik.ogeler.isEmpty()) item { BosSekme() }
                 items(icerik.ogeler, key = { it.kayit.id }) { GunlukSatiri(it) { gunlukKaydinaGit(it.kayit.id) } }
-                if (icerik.dahaVar) item { DahaFazla(viewModel::dahaFazlaYukle) }
+                sayfaSonu(icerik.dahaVar, icerik.ogeler.size, viewModel::dahaFazlaYukle)
             }
             is SekmeIcerigi.Kutuphane -> {
                 if (icerik.ogeler.isEmpty()) item { BosSekme() }
                 items(icerik.ogeler, key = { it.oyun.id }) { KutuphaneSatiri(it) { oyunaGit(it.oyun.id) } }
-                if (icerik.dahaVar) item { DahaFazla(viewModel::dahaFazlaYukle) }
+                sayfaSonu(icerik.dahaVar, icerik.ogeler.size, viewModel::dahaFazlaYukle)
             }
             is SekmeIcerigi.Listeler -> {
                 yeniListe?.let { yeni -> item { TextButton(onClick = yeni, modifier = Modifier.padding(horizontal = 16.dp)) { Text(stringResource(Res.string.liste_yeni)) } } }
                 if (icerik.ogeler.isEmpty()) item { BosSekme() }
                 items(icerik.ogeler, key = { "liste-${it.id}" }) { ListeOzetiSatiri(it) { listeyeGit(it.id) } }
-                if (icerik.dahaVar) item { DahaFazla(viewModel::dahaFazlaYukle) }
+                sayfaSonu(icerik.dahaVar, icerik.ogeler.size, viewModel::dahaFazlaYukle)
             }
             is SekmeIcerigi.Istatistik -> item { IstatistikGorunumu(icerik.istatistikler, yillikOzeteGit) }
         }
@@ -316,11 +315,10 @@ private fun EngelVeSessiz(sayfa: ProfilSayfasi, viewModel: ProfilSayfasiViewMode
     }
 }
 
-private val KAPAK_AD_GENISLIGI = 64.dp
-
 @Composable
-fun Kapak(oyun: OyunOzeti?, modifier: Modifier = Modifier) {
-    BoxWithConstraints(
+/** [kucuk] dar kapaklar içindir (64 dp altı): ad sığmaz, yer tutucuda baş harf yazılır. */
+fun Kapak(oyun: OyunOzeti?, modifier: Modifier = Modifier, kucuk: Boolean = false) {
+    Box(
         modifier
             .size(width = 72.dp, height = 96.dp)
             .clip(RoundedCornerShape(8.dp))
@@ -328,9 +326,9 @@ fun Kapak(oyun: OyunOzeti?, modifier: Modifier = Modifier) {
         contentAlignment = Alignment.BottomStart,
     ) {
         if (oyun != null) {
-            // Görsel yoksa tasarımdaki gibi renkli zemin üstünde büyük harfli ad; dar kapakta ad sığmaz, baş harf yazılır.
+            // Görsel yoksa tasarımdaki gibi renkli zemin üstünde büyük harfli ad.
             if (oyun.kapakUrl == null) {
-                if (maxWidth < KAPAK_AD_GENISLIGI) {
+                if (kucuk) {
                     Text(oyun.ad.take(1).uppercase(), style = MaterialTheme.typography.titleLarge, modifier = Modifier.align(Alignment.Center))
                 } else {
                     Text(oyun.ad.uppercase(), style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.ExtraBold, maxLines = 3, modifier = Modifier.padding(6.dp))
@@ -345,7 +343,7 @@ fun Kapak(oyun: OyunOzeti?, modifier: Modifier = Modifier) {
 private fun GunlukSatiri(oge: GunlukOgesi, tikla: () -> Unit) {
     val kayit = oge.kayit
     Row(Modifier.fillMaxWidth().clickable(onClick = tikla).padding(horizontal = 16.dp, vertical = 6.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        Kapak(oge.oyun, Modifier.size(width = 48.dp, height = 64.dp))
+        Kapak(oge.oyun, Modifier.size(width = 48.dp, height = 64.dp), kucuk = true)
         Column(Modifier.weight(1f)) {
             Text(oge.oyun.ad, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
             val tarih = kayit.bitis ?: kayit.baslama
@@ -363,7 +361,7 @@ private fun KutuphaneSatiri(oge: KutuphaneOgesi, tikla: () -> Unit) {
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Kapak(oge.oyun, Modifier.size(width = 48.dp, height = 64.dp))
+        Kapak(oge.oyun, Modifier.size(width = 48.dp, height = 64.dp), kucuk = true)
         Column(Modifier.weight(1f)) {
             Text(oge.oyun.ad, style = MaterialTheme.typography.titleSmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
             oge.giris.durum?.let { Text(durumAdi(it), style = MaterialTheme.typography.labelMedium) }
@@ -375,11 +373,6 @@ private fun KutuphaneSatiri(oge: KutuphaneOgesi, tikla: () -> Unit) {
 @Composable
 private fun BosSekme() {
     Text(stringResource(Res.string.profil_bos_sekme), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(24.dp))
-}
-
-@Composable
-private fun DahaFazla(yukle: () -> Unit) {
-    TextButton(onClick = yukle, modifier = Modifier.fillMaxWidth()) { Text(stringResource(Res.string.arama_daha_fazla)) }
 }
 
 @Composable
