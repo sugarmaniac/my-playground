@@ -157,20 +157,20 @@
     <string name="engellenenler">Engellenenler</string>
     <string name="sessize_alinanlar">Sessize alınanlar</string>
     <string name="engel_hatasi">Engellenemedi. Tekrar dene.</string>
-    <string name="onboarding_steam_baslik">Steam\'i bağla</string>
+    <string name="onboarding_steam_baslik">Steam'i bağla</string>
     <string name="onboarding_steam_aciklama">En az bir kez açtığın oyunlar oyun süreleriyle kütüphanene eklenir. Durum tahmin edilmez ve takipçilerine hiçbir şey düşmez.</string>
     <string name="onboarding_steam_atla">Steam olmadan devam et</string>
     <string name="onboarding_durumlar_baslik">Neler oynuyorsun?</string>
-    <string name="onboarding_durumlar_steamli">Steam\'de en çok oynadığın oyunlar. İstediklerinin durumunu seç; gerisini sonra profilinden yapabilirsin.</string>
+    <string name="onboarding_durumlar_steamli">Steam'de en çok oynadığın oyunlar. İstediklerinin durumunu seç; gerisini sonra profilinden yapabilirsin.</string>
     <string name="onboarding_durumlar_steamsiz">En az %1$d oyunun durumunu seç. Seçilen: %2$d</string>
     <string name="onboarding_bitir">Bitti</string>
     <string name="onboarding_hata">Kaydedilemedi. Tekrar dene.</string>
     <string name="steam_girdi">Steam profil linki ya da adı</string>
     <string name="steam_bagla">Bağla</string>
-    <string name="steam_gizli">Steam profilin ya da oyun ayrıntıların gizli. Steam\'de Profil → Profili Düzenle → Gizlilik Ayarları\'nı aç, \"Profilim\" ve \"Oyun ayrıntıları\"nı Herkese açık yap, sonra tekrar dene.</string>
+    <string name="steam_gizli">Steam profilin ya da oyun ayrıntıların gizli. Steam'de Profil → Profili Düzenle → Gizlilik Ayarları'nı aç, "Profilim" ve "Oyun ayrıntıları"nı Herkese açık yap, sonra tekrar dene.</string>
     <string name="steam_bulunamadi">Steam hesabı bulunamadı. Profil linkini yapıştır (steamcommunity.com/id/… ya da /profiles/…).</string>
     <string name="steam_baska_kullanicida">Bu Steam hesabı başka bir kullanıcıya bağlı.</string>
-    <string name="steam_ulasilamiyor">Steam\'e şu an ulaşılamıyor. Sonra tekrar dene.</string>
+    <string name="steam_ulasilamiyor">Steam'e şu an ulaşılamıyor. Sonra tekrar dene.</string>
     <string name="steam_bagli">Bağlı: %1$s</string>
     <string name="steam_ice_aktarildi">%1$d oyun içe aktarıldı.</string>
     <string name="steam_kaldir">Steam bağlantısını kaldır</string>
@@ -181,7 +181,7 @@
     <string name="onboarding_arkadaslar_baslik">Arkadaşlarını bul</string>
     <string name="onboarding_arkadaslar_aciklama">Rehberindekilerden ve Steam arkadaşlarından kimlerin burada olduğunu gör. Telefon numaraları cihazında şifrelenir; açık hali hiç gönderilmez.</string>
     <string name="rehberde_ara">Rehberimde ara</string>
-    <string name="rehber_izni_yok">Rehber izni verilmedi. Ayarlar\'dan izin verebilirsin.</string>
+    <string name="rehber_izni_yok">Rehber izni verilmedi. Ayarlar'dan izin verebilirsin.</string>
     <string name="arkadas_bulunamadi">Henüz arkadaş bulunamadı. Davet et!</string>
     <string name="hepsini_takip_et">Hepsini takip et (%1$d)</string>
     <string name="numaram_aciklama">Numaranı ekle ki seni rehberinde kayıtlı arkadaşların bulabilsin. Yalnızca şifrelenmiş bir parmak izi saklanır.</string>
@@ -200,7 +200,7 @@
     <string name="tur_dovus">Dövüş</string>
     <string name="tur_platform">Platform</string>
     <string name="tur_bulmaca">Bulmaca</string>
-    <string name="tur_kes_bicle">Kes-biç / Beat \'em up</string>
+    <string name="tur_kes_bicle">Kes-biç / Beat 'em up</string>
     <string name="tur_arcade">Arcade</string>
     <string name="tur_bagimsiz">Bağımsız</string>
     <string name="tur_gorsel_roman">Görsel roman</string>
@@ -390,4 +390,5 @@
     <string name="oyun_oynayan">Oynayan</string>
     <string name="oyun_puan_yok">Yetersiz</string>
     <string name="oyun_senin_puanin">Senin puanın</string>
+    <string name="onboarding_davet_paylas">Davet kodunu paylaş</string>
 </resources>

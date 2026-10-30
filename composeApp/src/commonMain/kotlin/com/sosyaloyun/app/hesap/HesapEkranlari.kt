@@ -1,5 +1,16 @@
 package com.sosyaloyun.app.hesap
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.safeDrawingPadding
+import com.sosyaloyun.app.tema.Renk
+import com.sosyaloyun.app.tema.Ikonlar
+import com.sosyaloyun.app.onboarding.AnaDugme
+import com.sosyaloyun.app.onboarding.AdimIskeleti
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -85,7 +96,7 @@ import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun YukleniyorGorunumu() {
-    Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(Modifier.fillMaxSize().background(Renk.Zemin), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
         CircularProgressIndicator()
     }
 }
@@ -93,7 +104,7 @@ fun YukleniyorGorunumu() {
 @Composable
 fun HataGorunumu(tekrarDene: () -> Unit) {
     Column(
-        Modifier.fillMaxSize().padding(24.dp),
+        Modifier.fillMaxSize().safeDrawingPadding().padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -105,100 +116,115 @@ fun HataGorunumu(tekrarDene: () -> Unit) {
 @Composable
 fun DavetKoduEkrani(viewModel: DavetKoduViewModel) {
     val durum by viewModel.ekran.collectAsStateWithLifecycle()
-    Column(
-        Modifier.fillMaxSize().padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
+    AdimIskeleti(
+        baslik = stringResource(Res.string.davet_kodu_baslik),
+        aciklama = stringResource(Res.string.davet_kodu_aciklama),
+        adim = 1,
+        ikon = Ikonlar.Davet,
+        altKisim = { AnaDugme(stringResource(Res.string.davet_kodu_gonder), durum.gonderilebilir, viewModel::gonder, suruyor = durum.gonderiliyor) },
     ) {
-        Text(stringResource(Res.string.davet_kodu_baslik), style = MaterialTheme.typography.headlineSmall)
-        Text(stringResource(Res.string.davet_kodu_aciklama))
-        OutlinedTextField(
-            value = durum.kod,
-            onValueChange = viewModel::kodDegisti,
-            label = { Text(stringResource(Res.string.davet_kodu_alani)) },
-            singleLine = true,
-            isError = durum.hata != null,
-            keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters),
-            modifier = Modifier.fillMaxWidth(),
-        )
-        durum.hata?.let { hata ->
-            Text(
-                stringResource(
-                    when (hata) {
-                        DavetKoduHatasi.GECERSIZ -> Res.string.davet_kodu_hata_gecersiz
-                        DavetKoduHatasi.KULLANILMIS -> Res.string.davet_kodu_hata_kullanilmis
-                        DavetKoduHatasi.BAGLANTI -> Res.string.davet_kodu_hata_baglanti
-                    },
-                ),
-                color = MaterialTheme.colorScheme.error,
+        item {
+            OutlinedTextField(
+                value = durum.kod,
+                onValueChange = viewModel::kodDegisti,
+                label = { Text(stringResource(Res.string.davet_kodu_alani)) },
+                singleLine = true,
+                isError = durum.hata != null,
+                supportingText = durum.hata?.let { hata ->
+                    {
+                        Text(
+                            stringResource(
+                                when (hata) {
+                                    DavetKoduHatasi.GECERSIZ -> Res.string.davet_kodu_hata_gecersiz
+                                    DavetKoduHatasi.KULLANILMIS -> Res.string.davet_kodu_hata_kullanilmis
+                                    DavetKoduHatasi.BAGLANTI -> Res.string.davet_kodu_hata_baglanti
+                                },
+                            ),
+                        )
+                    }
+                },
+                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Characters, imeAction = ImeAction.Go, autoCorrectEnabled = false),
+                keyboardActions = KeyboardActions(onGo = { if (durum.gonderilebilir) viewModel.gonder() }),
+                modifier = Modifier.fillMaxWidth(),
             )
-        }
-        Button(onClick = viewModel::gonder, enabled = durum.gonderilebilir, modifier = Modifier.fillMaxWidth()) {
-            Text(stringResource(Res.string.davet_kodu_gonder))
         }
     }
 }
 
+/** Onboarding'de 2. adım; profil düzenlemede de kullanılır (o zaman ana uygulamanın Scaffold'u içinde, adımsız). */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ProfilEkrani(viewModel: ProfilViewModel) {
     val durum by viewModel.ekran.collectAsStateWithLifecycle()
-    Column(
-        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+    AdimIskeleti(
+        baslik = stringResource(if (durum.duzenleme) Res.string.profil_duzenle else Res.string.profil_baslik),
+        aciklama = null,
+        adim = if (durum.duzenleme) null else 2,
+        kenarlar = !durum.duzenleme,
+        altKisim = {
+            if (durum.baglantiHatasi) Text(stringResource(Res.string.profil_baglanti_hatasi), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+            AnaDugme(stringResource(Res.string.profil_kaydet), durum.kaydedilebilir, viewModel::kaydet, suruyor = durum.kaydediliyor)
+        },
     ) {
-        Text(
-            stringResource(if (durum.duzenleme) Res.string.profil_duzenle else Res.string.profil_baslik),
-            style = MaterialTheme.typography.headlineSmall,
-        )
-        OutlinedTextField(
-            value = durum.kullaniciAdi,
-            onValueChange = viewModel::kullaniciAdiDegisti,
-            label = { Text(stringResource(Res.string.kullanici_adi_alani)) },
-            prefix = { Text("@") },
-            singleLine = true,
-            isError = durum.musaitlik in setOf(Musaitlik.ALINMIS, Musaitlik.GECERSIZ),
-            supportingText = {
-                val metin = when (durum.musaitlik) {
-                    Musaitlik.BILINMIYOR -> null
-                    Musaitlik.KONTROL_EDILIYOR -> Res.string.kullanici_adi_kontrol
-                    Musaitlik.MUSAIT -> Res.string.kullanici_adi_musait
-                    Musaitlik.ALINMIS -> Res.string.kullanici_adi_alinmis
-                    Musaitlik.GECERSIZ -> Res.string.kullanici_adi_gecersiz
-                    Musaitlik.BAGLANTI_YOK -> Res.string.kullanici_adi_baglanti
-                }
-                metin?.let { Text(stringResource(it)) }
-            },
-            keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.None, autoCorrectEnabled = false),
-            modifier = Modifier.fillMaxWidth(),
-        )
-        OutlinedTextField(
-            value = durum.gorunenAd,
-            onValueChange = viewModel::gorunenAdDegisti,
-            label = { Text(stringResource(Res.string.gorunen_ad_alani)) },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth(),
-        )
-        if (durum.duzenleme) {
+        item {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) { AvatarGorunumu(durum.avatar, boyut = 88.dp) }
+        }
+        item {
             OutlinedTextField(
-                value = durum.biyografi,
-                onValueChange = viewModel::biyografiDegisti,
-                label = { Text(stringResource(Res.string.profil_biyografi)) },
+                value = durum.kullaniciAdi,
+                onValueChange = viewModel::kullaniciAdiDegisti,
+                label = { Text(stringResource(Res.string.kullanici_adi_alani)) },
+                prefix = { Text("@") },
+                singleLine = true,
+                isError = durum.musaitlik in setOf(Musaitlik.ALINMIS, Musaitlik.GECERSIZ),
+                supportingText = {
+                    val metin = when (durum.musaitlik) {
+                        Musaitlik.BILINMIYOR -> null
+                        Musaitlik.KONTROL_EDILIYOR -> Res.string.kullanici_adi_kontrol
+                        Musaitlik.MUSAIT -> Res.string.kullanici_adi_musait
+                        Musaitlik.ALINMIS -> Res.string.kullanici_adi_alinmis
+                        Musaitlik.GECERSIZ -> Res.string.kullanici_adi_gecersiz
+                        Musaitlik.BAGLANTI_YOK -> Res.string.kullanici_adi_baglanti
+                    }
+                    metin?.let { Text(stringResource(it), color = if (durum.musaitlik == Musaitlik.MUSAIT) Renk.Vurgu else Color.Unspecified) }
+                },
+                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.None, autoCorrectEnabled = false, imeAction = ImeAction.Next),
                 modifier = Modifier.fillMaxWidth(),
             )
         }
-        Text(stringResource(Res.string.profil_avatar), style = MaterialTheme.typography.titleSmall)
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Avatar.entries.forEach { avatar ->
-                AvatarGorunumu(
-                    avatar = avatar,
-                    secili = avatar == durum.avatar,
-                    modifier = Modifier.clickable { viewModel.avatarSecildi(avatar) },
+        item {
+            OutlinedTextField(
+                value = durum.gorunenAd,
+                onValueChange = viewModel::gorunenAdDegisti,
+                label = { Text(stringResource(Res.string.gorunen_ad_alani)) },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words, imeAction = if (durum.duzenleme) ImeAction.Next else ImeAction.Done),
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+        if (durum.duzenleme) {
+            item {
+                OutlinedTextField(
+                    value = durum.biyografi,
+                    onValueChange = viewModel::biyografiDegisti,
+                    label = { Text(stringResource(Res.string.profil_biyografi)) },
+                    modifier = Modifier.fillMaxWidth(),
                 )
             }
         }
-        if (durum.baglantiHatasi) Text(stringResource(Res.string.profil_baglanti_hatasi), color = MaterialTheme.colorScheme.error)
-        Button(onClick = viewModel::kaydet, enabled = durum.kaydedilebilir, modifier = Modifier.fillMaxWidth()) {
-            Text(stringResource(Res.string.profil_kaydet))
+        item {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Text(stringResource(Res.string.profil_avatar), style = MaterialTheme.typography.titleSmall)
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Avatar.entries.forEach { avatar ->
+                        AvatarGorunumu(
+                            avatar = avatar,
+                            secili = avatar == durum.avatar,
+                            modifier = Modifier.clip(CircleShape).clickable { viewModel.avatarSecildi(avatar) },
+                        )
+                    }
+                }
+            }
         }
     }
 }
