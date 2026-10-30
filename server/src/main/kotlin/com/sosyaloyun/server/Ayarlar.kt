@@ -21,7 +21,6 @@ sealed class Ayar<T>(
     /** Betaya katılan her kullanıcının dağıtabileceği davet kodu sayısı. */
     data object KisiBasiDavetKoduSayisi : Ayar<Int>("kisi_basi_davet_kodu_sayisi", 5, Int::toString, String::toInt)
 
-    /** Topluluk puanının gösterilmesi için gereken en az puan veren kullanıcı sayısı. */
     /** Bir kullanıcıya bir günde (kendi saatiyle) gönderilecek en fazla push; fazlası yalnızca uygulama içinde kalır. */
     data object GunlukPushSiniri : Ayar<Int>("gunluk_push_siniri", 4, Int::toString, String::toInt)
 
@@ -29,6 +28,7 @@ sealed class Ayar<T>(
     data object SessizSaatBaslangici : Ayar<Int>("sessiz_saat_baslangici", 23, Int::toString, String::toInt)
     data object SessizSaatBitisi : Ayar<Int>("sessiz_saat_bitisi", 9, Int::toString, String::toInt)
 
+    /** Topluluk puanının gösterilmesi için gereken en az puan veren kullanıcı sayısı. */
     data object ToplulukPuaniEsigi : Ayar<Int>("topluluk_puani_esigi", 5, Int::toString, String::toInt)
 }
 

@@ -34,13 +34,24 @@ class BildirimlerViewModel(private val api: ApiIstemcisi) : ViewModel() {
         viewModelScope.launch {
             _ekran.value = try {
                 val liste = api.bildirimler()
-                if (liste.okunmamisSayisi > 0) runCatching { api.bildirimleriOkunduSay() }
+                if (liste.okunmamisSayisi > 0) okunduSay()
                 BildirimlerEkrani.Hazir(liste.bildirimler)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
                 BildirimlerEkrani.Hata
             }
+        }
+    }
+
+    /** Okundu işaretlenemezse liste yine gösterilir; bir dahaki açılışta tekrar denenir. */
+    private suspend fun okunduSay() {
+        try {
+            api.bildirimleriOkunduSay()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            // Yok sayılır.
         }
     }
 }
@@ -89,7 +100,7 @@ class BildirimTercihleriViewModel(private val api: ApiIstemcisi) : ViewModel() {
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                _tercihler.update { it?.plus(tur to onceki.getValue(tur)) }
+                _tercihler.update { it?.plus(tur to (onceki[tur] ?: true)) }
             }
         }
     }

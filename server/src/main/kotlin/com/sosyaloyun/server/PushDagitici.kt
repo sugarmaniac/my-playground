@@ -41,20 +41,34 @@ class PushDagitici(
                     .map { Bekleyen(it[BildirimTablosu.id], it[BildirimTablosu.alici], BildirimTuru.valueOf(it[BildirimTablosu.tur]), it[BildirimTablosu.aktor]) }
             }
         }
+        // Bir bildirimin hatası diğerlerini durdurmaz; hatalı bildirim atlanır, yoksa her turda ilk sırada takılırdı.
         for (bildirim in bekleyenler) {
-            val plan = withContext(Dispatchers.IO) { transaction(veritabani) { planla(bildirim, sinir, sessizBaslangic, sessizBitis) } }
-            val gonderici = gonderici
-            if (plan == null || gonderici == null) {
-                isaretle(bildirim.id, PushDurumu.ATLANDI)
-                continue
+            val durum = try {
+                gonder(bildirim, sinir, sessizBaslangic, sessizBitis)
+            } catch (e: Exception) {
+                if (e is kotlinx.coroutines.CancellationException) throw e
+                log.warn("Push hazırlanamadı: ${bildirim.id}", e)
+                PushDurumu.ATLANDI
             }
-            val gonderildi = plan.tokenlar.count { token ->
-                runCatching { gonderici.gonder(token, BASLIK, plan.metin) }
-                    .onFailure { log.warn("Push gönderilemedi", it) }
-                    .isSuccess
-            }
-            isaretle(bildirim.id, if (gonderildi > 0) PushDurumu.GONDERILDI else PushDurumu.ATLANDI)
+            isaretle(bildirim.id, durum)
         }
+    }
+
+    private suspend fun gonder(bildirim: Bekleyen, sinir: Int, sessizBaslangic: Int, sessizBitis: Int): PushDurumu {
+        val gonderici = gonderici ?: return PushDurumu.ATLANDI
+        val plan = withContext(Dispatchers.IO) { transaction(veritabani) { planla(bildirim, sinir, sessizBaslangic, sessizBitis) } }
+            ?: return PushDurumu.ATLANDI
+        val gonderildi = plan.tokenlar.count { token ->
+            try {
+                gonderici.gonder(token, BASLIK, plan.metin)
+                true
+            } catch (e: Exception) {
+                if (e is kotlinx.coroutines.CancellationException) throw e
+                log.warn("Push gönderilemedi", e)
+                false
+            }
+        }
+        return if (gonderildi > 0) PushDurumu.GONDERILDI else PushDurumu.ATLANDI
     }
 
     private class Bekleyen(val id: UUID, val alici: UUID, val tur: BildirimTuru, val aktor: UUID)
