@@ -15,6 +15,8 @@ object PaylasimLinkleri {
 
     fun profil(webAdresi: String, kullaniciAdi: String) = "${webAdresi.trimEnd('/')}/profil.html?ad=$kullaniciAdi"
 
+    fun liste(webAdresi: String, listeId: String) = "${webAdresi.trimEnd('/')}/liste.html?id=$listeId"
+
     /** Herkes görünürlüğündeki son kayıtlardan profil sayfasında gösterilenler. */
     const val PROFILDEKI_KAYIT_SAYISI = 20
 }

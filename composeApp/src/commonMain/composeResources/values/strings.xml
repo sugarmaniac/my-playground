@@ -292,4 +292,21 @@
     <string name="tercih_takip_istegi_kabulu">Accepted follow requests</string>
     <string name="takip_istegi_gonderildi">Requested</string>
     <string name="profil_gizli">This profile is private. Follow to see their diary.</string>
+    <string name="profil_sekme_listeler">Lists</string>
+    <string name="liste_yeni">+ New list</string>
+    <string name="liste_oyun_sayisi">%1$d games · %2$s</string>
+    <string name="liste_bulunamadi">This list doesn't exist or isn't visible to you.</string>
+    <string name="liste_begen">Like (%1$d)</string>
+    <string name="liste_begenildi">Liked (%1$d)</string>
+    <string name="liste_duzenle">Edit</string>
+    <string name="liste_sil">Delete</string>
+    <string name="liste_baslik">Title</string>
+    <string name="liste_aciklama">Description (optional)</string>
+    <string name="liste_herkes">Everyone</string>
+    <string name="liste_sadece_ben">Only me</string>
+    <string name="liste_oyun_ara">Add a game</string>
+    <string name="liste_kaydet">Save list</string>
+    <string name="liste_kayit_hatasi">Couldn't save the list. Try again.</string>
+    <string name="oyun_listeleri">Lists with this game</string>
+    <string name="liste_silme_hatasi">Couldn't delete the list. Try again.</string>
 </resources>

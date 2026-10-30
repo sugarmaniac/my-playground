@@ -321,4 +321,17 @@ class ArkadaslikViewModelTest {
         assertEquals(false, sayfa().takipIstegiGonderdim)
         assertEquals(listOf("takip:ayse", "birak:ayse"), api.takipIstekleri)
     }
+
+    @Test
+    fun listelerSekmesiProfilListeleriniYukler() = viewModelTesti {
+        val ozet = com.sosyaloyun.shared.ListeOzeti("l1", api.profilSayfasi.kullanici, "Liste", com.sosyaloyun.shared.ListeGorunurlugu.HERKES, 3, emptyList(), 0)
+        api.profilListeSayfasi = com.sosyaloyun.shared.ListeSayfasi(listOf(ozet), null)
+        val vm = ProfilSayfasiViewModel(api, "ayse")
+        advanceUntilIdle()
+
+        vm.sekmeSecildi(ProfilSekmesi.LISTELER)
+        advanceUntilIdle()
+        assertEquals(SekmeIcerigi.Listeler(listOf(ozet), dahaVar = false), vm.ekran.value.icerik)
+        assertEquals(listOf("profil:ayse"), api.listeIstekleri)
+    }
 }

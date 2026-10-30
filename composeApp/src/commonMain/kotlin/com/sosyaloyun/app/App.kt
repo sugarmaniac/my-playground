@@ -34,6 +34,12 @@ import androidx.navigation.toRoute
 import coil3.ImageLoader
 import coil3.compose.setSingletonImageLoaderFactory
 import coil3.network.ktor3.KtorNetworkFetcherFactory
+import com.sosyaloyun.app.liste.OyunListeleriViewModel
+import com.sosyaloyun.app.liste.OyunListeleriBolumu
+import com.sosyaloyun.app.liste.ListeDuzenleViewModel
+import com.sosyaloyun.app.liste.ListeDuzenleEkrani
+import com.sosyaloyun.app.liste.ListeDetayViewModel
+import com.sosyaloyun.app.liste.ListeDetayEkrani
 import com.sosyaloyun.app.akis.AkisEkrani
 import com.sosyaloyun.app.akis.AkisViewModel
 import com.sosyaloyun.app.api.ApiIstemcisi
@@ -52,6 +58,7 @@ import com.sosyaloyun.app.kesif.OyunListesiGorunumu
 import com.sosyaloyun.app.kesif.OyunListesiViewModel
 import com.sosyaloyun.app.kesif.turAdi
 import com.sosyaloyun.app.resources.sekme_kesif
+import com.sosyaloyun.shared.Liste
 import com.sosyaloyun.shared.Faz
 import com.sosyaloyun.shared.Tur
 import com.sosyaloyun.app.api.KisiListesiTuru
@@ -207,6 +214,13 @@ private data object ProfilDuzenleRota
 @Serializable
 private data object VitrinRota
 
+@Serializable
+private data class ListeRota(val listeId: String)
+
+/** Düzenlenen liste [duzenlenenListe]'de; null ise yeni liste. */
+@Serializable
+private data object ListeDuzenleRota
+
 /** Alt ekranlardan dönünce önceki ekranın yeniden yüklenmesi ya da seçilen oyunu alması için bırakılan işaretler. */
 private const val GUNLUK_DEGISTI = "gunlukDegisti"
 private const val PROFIL_DEGISTI = "profilDegisti"
@@ -226,6 +240,8 @@ private fun UygulamaGezintisi(api: ApiIstemcisi, profil: KullaniciOzeti, cikisYa
     }
     // Profil sayfası ve düzenleme ekranları aynı ViewModel'leri paylaşmasın diye profil verisi rotalar arasında taşınır.
     var duzenlenenProfil by remember { mutableStateOf<ProfilSayfasi?>(null) }
+    var duzenlenenListe by remember { mutableStateOf<Liste?>(null) }
+    var guncellenenListe by remember { mutableStateOf<Liste?>(null) }
 
     Scaffold(
         bottomBar = {
@@ -277,6 +293,37 @@ private fun UygulamaGezintisi(api: ApiIstemcisi, profil: KullaniciOzeti, cikisYa
                     oyunaGit = { gezinti.navigate(OyunRota(it)) },
                     kullaniciyaGit = { gezinti.navigate(KullaniciRota(it)) },
                     gunlukKaydinaGit = { gezinti.navigate(GunlukDetayRota(it)) },
+                )
+            }
+            composable<ListeRota> { listeGirdisi ->
+                val listeId = listeGirdisi.toRoute<ListeRota>().listeId
+                val listeVm = viewModel(key = "liste-$listeId") { ListeDetayViewModel(api, listeId) }
+                LaunchedEffect(guncellenenListe) {
+                    guncellenenListe?.takeIf { it.id == listeId }?.let {
+                        listeVm.guncellendi(it)
+                        guncellenenListe = null
+                    }
+                }
+                ListeDetayEkrani(
+                    listeVm,
+                    oyunaGit = { gezinti.navigate(OyunRota(it)) },
+                    duzenle = {
+                        duzenlenenListe = it
+                        gezinti.navigate(ListeDuzenleRota)
+                    },
+                    geri = { gezinti.popBackStack() },
+                )
+            }
+            composable<ListeDuzenleRota> {
+                val mevcut = duzenlenenListe
+                ListeDuzenleEkrani(
+                    viewModel(key = "liste-duzenle-${mevcut?.id ?: "yeni"}") { ListeDuzenleViewModel(api, mevcut) },
+                    kaydedildi = { liste ->
+                        guncellenenListe = liste
+                        gezinti.popBackStack()
+                        if (mevcut == null) gezinti.navigate(ListeRota(liste.id))
+                    },
+                    geri = { gezinti.popBackStack() },
                 )
             }
             composable<GunlukDetayRota> { detayGirdisi ->
@@ -350,6 +397,11 @@ private fun UygulamaGezintisi(api: ApiIstemcisi, profil: KullaniciOzeti, cikisYa
                     oyunaGit = { gezinti.navigate(OyunRota(it)) },
                     kisiListesi = { ad, tur -> gezinti.navigate(TakipListesiRota(ad, tur)) },
                     gunlukKaydinaGit = { gezinti.navigate(GunlukDetayRota(it)) },
+                    listeyeGit = { gezinti.navigate(ListeRota(it)) },
+                    yeniListe = {
+                        duzenlenenListe = null
+                        gezinti.navigate(ListeDuzenleRota)
+                    },
                 )
             }
             composable<KullaniciRota> { kullaniciGirdisi ->
@@ -368,6 +420,7 @@ private fun UygulamaGezintisi(api: ApiIstemcisi, profil: KullaniciOzeti, cikisYa
                     kisiListesi = { kisi, tur -> gezinti.navigate(TakipListesiRota(kisi, tur)) },
                     gunlukKaydinaGit = { gezinti.navigate(GunlukDetayRota(it)) },
                     geri = { gezinti.popBackStack() },
+                    listeyeGit = { gezinti.navigate(ListeRota(it)) },
                     sikayetPenceresi = { hedef, kapat ->
                         SikayetPenceresi(viewModel(key = "sikayet-$hedef") { SikayetViewModel(api, SikayetHedefi(hedef)) }, kapat)
                     },
@@ -434,6 +487,13 @@ private fun UygulamaGezintisi(api: ApiIstemcisi, profil: KullaniciOzeti, cikisYa
                     oyunaGit = { gezinti.navigate(OyunRota(it)) },
                     gunlugeYaz = { kayitId -> gezinti.navigate(DetayliKayitRota(rota.oyunId, kayitId)) },
                     kullaniciyaGit = { gezinti.navigate(KullaniciRota(it)) },
+                    ekBolumler = {
+                        if (aktifFaz.kapsar(Faz.FAZ_2)) {
+                            OyunListeleriBolumu(viewModel(key = "oyun-listeleri-${rota.oyunId}") { OyunListeleriViewModel(api, rota.oyunId) }) {
+                                gezinti.navigate(ListeRota(it))
+                            }
+                        }
+                    },
                     gunlukKaydinaGit = { gezinti.navigate(GunlukDetayRota(it)) },
                     hizliKayitAcik = rota.hizliKayitAc,
                 )

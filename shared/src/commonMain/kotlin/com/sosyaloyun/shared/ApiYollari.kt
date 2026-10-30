@@ -15,6 +15,7 @@ object ApiYollari {
     const val PROFILIM_OYUNLAR = "/profilim/oyunlar"
     const val PROFILIM_INCELEMELER = "/profilim/incelemeler"
     const val PROFILIM_ISTEK_LISTESI = "/profilim/istek-listesi"
+    const val PROFILIM_LISTELER = "/profilim/listeler"
     const val PROFILIM_VITRIN = "/profilim/vitrin"
 
     /** Başkasının profili: `/kullanicilar/{kullaniciAdi}` ve aynı sekmeler; takip için `/takip`. */
@@ -26,6 +27,7 @@ object ApiYollari {
 
     const val SEKME_GUNLUK = "gunluk"
     const val SEKME_OYUNLAR = "oyunlar"
+    const val SEKME_LISTELER = "listeler"
     const val SEKME_INCELEMELER = "incelemeler"
     const val SEKME_ISTEK_LISTESI = "istek-listesi"
     const val SEKME_TAKIPCILER = "takipciler"
@@ -127,6 +129,13 @@ object ApiYollari {
 
     /** `GET`: oyunun incelemeleri, önce arkadaşlarınki; `?imlec=` ile sayfalı. */
     fun oyunIncelemeleri(oyunId: String) = "$OYUNLAR/$oyunId/incelemeler"
+
+    /** Faz 2 (#49): listeler. */
+    const val LISTELER = "/listeler"
+    fun liste(listeId: String) = "$LISTELER/$listeId"
+    fun listeBegenisi(listeId: String) = "$LISTELER/$listeId/begeni"
+    fun oyunListeleri(oyunId: String) = "$OYUNLAR/$oyunId/listeler"
+    fun paylasilanListe(listeId: String) = "$PAYLASIM/liste/$listeId"
 
     /** `GET` / `PUT` / `DELETE /gunluk/{id}`: günlük kaydı detayı, düzenleme ve silme. */
     const val GUNLUK = "/gunluk"

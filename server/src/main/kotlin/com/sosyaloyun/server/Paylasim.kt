@@ -85,5 +85,5 @@ class Paylasim(
 }
 
 /** Banlı ya da askısı sürmekte olan hesabın içeriği paylaşılmaz. */
-private fun ResultRow.paylasilabilir(simdi: OffsetDateTime): Boolean =
+internal fun ResultRow.paylasilabilir(simdi: OffsetDateTime): Boolean =
     !this[KullaniciTablosu.banli] && this[KullaniciTablosu.askininBitisi]?.isAfter(simdi) != true

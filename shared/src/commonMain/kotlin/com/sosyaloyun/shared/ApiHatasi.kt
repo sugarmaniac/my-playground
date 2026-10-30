@@ -126,6 +126,13 @@ enum class HataKodu {
     @SerialName("takip_istegi_yok")
     TAKIP_ISTEGI_YOK,
 
+    /** Liste başlığı, açıklaması ya da oyunları geçersiz (#49). */
+    @SerialName("liste_gecersiz")
+    LISTE_GECERSIZ,
+
+    @SerialName("liste_bulunamadi")
+    LISTE_BULUNAMADI,
+
     /** Hesap silme isteğindeki onay metni kullanıcı adıyla eşleşmiyor. */
     @SerialName("hesap_silme_onayi_gecersiz")
     HESAP_SILME_ONAYI_GECERSIZ,
