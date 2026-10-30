@@ -29,20 +29,22 @@ private const val OTURUM = "oturum"
 /** Kimliği doğrulanmış isteğin sahibi. */
 data class OturumSahibi(val kullaniciId: UUID, val token: String)
 
-fun Application.oturumDogrulamasiKur(oturumlar: Oturumlar) {
+fun Application.oturumDogrulamasiKur(oturumlar: Oturumlar, aktiflik: Aktiflik) {
     install(Authentication) {
-        register(OturumDogrulamasi(oturumlar))
+        register(OturumDogrulamasi(oturumlar, aktiflik))
     }
 }
 
 /** `Authorization: Bearer <oturum token'ı>`; geçersizse 401 ve `oturum_gerekli` gövdesi. */
-private class OturumDogrulamasi(private val oturumlar: Oturumlar) :
+private class OturumDogrulamasi(private val oturumlar: Oturumlar, private val aktiflik: Aktiflik) :
     AuthenticationProvider(object : AuthenticationProvider.Config(OTURUM) {}) {
     override suspend fun onAuthenticate(context: AuthenticationContext) {
         val baslik = context.call.request.headers[HttpHeaders.Authorization]
         val token = baslik?.takeIf { it.startsWith("Bearer ") }?.removePrefix("Bearer ")?.trim()
         val sahibi = token?.let { oturumlar.sahibi(it) }?.let { OturumSahibi(it, token) }
         if (sahibi != null) {
+            // Doğrulama metrikleri için kullanıcının bugün aktif olduğu yazılır (günde bir kez).
+            aktiflik.kaydet(sahibi.kullaniciId)
             context.principal(sahibi)
             return
         }
