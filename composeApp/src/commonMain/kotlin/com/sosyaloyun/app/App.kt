@@ -24,6 +24,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import com.sosyaloyun.app.onbellek.LocalYerelOnbellek
+import com.sosyaloyun.app.onbellek.AyarliOnbellek
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -161,17 +163,24 @@ fun App() {
         ImageLoader.Builder(baglam).components { add(KtorNetworkFetcherFactory()) }.build()
     }
 
+    val onbellek = remember { AyarliOnbellek() }
+    // Oturum kapalıyken önceki hesabın saklı ekranları kalmasın.
+    val oturumKapali = ekran is OturumEkrani.Giris
+    LaunchedEffect(oturumKapali) { if (oturumKapali) onbellek.temizle() }
+
     SosyalOyunTemasi {
-        Surface(modifier = Modifier.fillMaxSize()) {
-            when (val durum = ekran) {
-                is OturumEkrani.Giris -> GirisEkraniGorunumu(
-                    ekran = durum,
-                    saglayicilar = saglayiciIstemcisi.desteklenenler,
-                    girisYap = { saglayici -> oturum.girisYap(saglayici) { saglayiciIstemcisi.kimlikTokeniAl(saglayici) } },
-                    itirazMetniDegisti = oturum::itirazMetniDegisti,
-                    itirazGonder = oturum::itirazGonder,
-                )
-                OturumEkrani.Acik -> HesapAkisi(api, cikisYap = oturum::cikisYap, hesapSilindi = oturum::hesapSilindi)
+        CompositionLocalProvider(LocalYerelOnbellek provides onbellek) {
+            Surface(modifier = Modifier.fillMaxSize()) {
+                when (val durum = ekran) {
+                    is OturumEkrani.Giris -> GirisEkraniGorunumu(
+                        ekran = durum,
+                        saglayicilar = saglayiciIstemcisi.desteklenenler,
+                        girisYap = { saglayici -> oturum.girisYap(saglayici) { saglayiciIstemcisi.kimlikTokeniAl(saglayici) } },
+                        itirazMetniDegisti = oturum::itirazMetniDegisti,
+                        itirazGonder = oturum::itirazGonder,
+                    )
+                    OturumEkrani.Acik -> HesapAkisi(api, cikisYap = oturum::cikisYap, hesapSilindi = oturum::hesapSilindi)
+                }
             }
         }
     }
@@ -282,6 +291,7 @@ private const val VITRIN_OYUNU = "vitrinOyunu"
 internal fun UygulamaGezintisi(api: ApiIstemcisi, profil: KullaniciOzeti, cikisYap: () -> Unit, hesapSilindi: () -> Unit) {
     val aktifFaz = LocalAktifFaz.current
     val gezinti = rememberNavController()
+    val onbellek = LocalYerelOnbellek.current
     val girdi by gezinti.currentBackStackEntryAsState()
     val hedef = girdi?.destination
     /** [koru] false ise sekme önceki durumundan dönmez, yeniden yüklenir (bildirimler her açılışta tazelenip okundu sayılsın). */
@@ -314,7 +324,7 @@ internal fun UygulamaGezintisi(api: ApiIstemcisi, profil: KullaniciOzeti, cikisY
         NavHost(gezinti, startDestination = AnaRota, modifier = Modifier.padding(bosluk)) {
             composable<AnaRota> {
                 AkisEkrani(
-                    viewModel { AkisViewModel(api) },
+                    viewModel { AkisViewModel(api, onbellek) },
                     ustCubuk = {
                         Row(
                             Modifier.fillMaxWidth().padding(start = 20.dp, end = 12.dp, top = 16.dp, bottom = 4.dp),
@@ -375,7 +385,7 @@ internal fun UygulamaGezintisi(api: ApiIstemcisi, profil: KullaniciOzeti, cikisY
             }
             composable<KesifRota> {
                 KesifEkrani(
-                    viewModel { KesifViewModel(api) },
+                    viewModel { KesifViewModel(api, onbellek) },
                     oyunaGit = { gezinti.navigate(OyunRota(it)) },
                     turAc = { gezinti.navigate(OyunListesiRota(tur = it)) },
                     platformAc = { gezinti.navigate(OyunListesiRota(platform = it)) },
@@ -425,7 +435,7 @@ internal fun UygulamaGezintisi(api: ApiIstemcisi, profil: KullaniciOzeti, cikisY
                 )
             }
             composable<ProfilRota> { profilGirdisi ->
-                val profilVm = viewModel { ProfilSayfasiViewModel(api) }
+                val profilVm = viewModel { ProfilSayfasiViewModel(api, onbellek = onbellek) }
                 val degisti by profilGirdisi.savedStateHandle.getStateFlow(PROFIL_DEGISTI, false).collectAsStateWithLifecycle()
                 LaunchedEffect(degisti) {
                     if (degisti) {
@@ -465,7 +475,7 @@ internal fun UygulamaGezintisi(api: ApiIstemcisi, profil: KullaniciOzeti, cikisY
             composable<KullaniciRota> { kullaniciGirdisi ->
                 val ad = kullaniciGirdisi.toRoute<KullaniciRota>().kullaniciAdi
                 ProfilSayfasiEkrani(
-                    viewModel(key = "profil-$ad") { ProfilSayfasiViewModel(api, if (ad == profil.kullaniciAdi) null else ad) },
+                    viewModel(key = "profil-$ad") { ProfilSayfasiViewModel(api, if (ad == profil.kullaniciAdi) null else ad, onbellek = onbellek) },
                     profiliDuzenle = {
                         duzenlenenProfil = it
                         gezinti.navigate(ProfilDuzenleRota)

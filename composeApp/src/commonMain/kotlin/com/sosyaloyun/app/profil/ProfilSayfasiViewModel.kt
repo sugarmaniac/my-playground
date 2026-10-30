@@ -4,6 +4,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sosyaloyun.app.api.ApiIstemcisi
 import com.sosyaloyun.app.api.sunucuAdresi
+import com.sosyaloyun.app.onbellek.BosOnbellek
+import com.sosyaloyun.app.onbellek.OyunOzetiBellegi
+import com.sosyaloyun.app.onbellek.YerelOnbellek
+import com.sosyaloyun.app.onbellek.okuNesne
+import com.sosyaloyun.app.onbellek.yazNesne
 import com.sosyaloyun.shared.ArkadaslikDurumu
 import com.sosyaloyun.shared.GunlukOgesi
 import com.sosyaloyun.shared.KutuphaneOgesi
@@ -60,6 +65,8 @@ class ProfilSayfasiViewModel(
     private val api: ApiIstemcisi,
     private val kullaniciAdi: String? = null,
     private val webAdresi: String = sunucuAdresi(),
+    /** Yalnız kendi profilin başlığı saklanır: açılışta o gösterilir, arkadan tazelenir (#60). */
+    private val onbellek: YerelOnbellek = BosOnbellek,
 ) : ViewModel() {
     private val _ekran = MutableStateFlow(ProfilSayfasiDurumu())
     val ekran: StateFlow<ProfilSayfasiDurumu> = _ekran
@@ -73,12 +80,16 @@ class ProfilSayfasiViewModel(
 
     /** Başlığı ve açık sekmeyi baştan yükler (ör. profil ya da vitrin düzenlendikten sonra). */
     fun yenile() {
+        val sakli = if (kullaniciAdi == null && _ekran.value.baslik !is ProfilBasligi.Hazir) onbellek.okuNesne<ProfilSayfasi>(KENDI_PROFILIM) else null
+        sakli?.let { sayfa -> _ekran.update { it.copy(baslik = ProfilBasligi.Hazir(sayfa), paylasimLinki = PaylasimLinkleri.profil(webAdresi, sayfa.kullanici.kullaniciAdi)) } }
         viewModelScope.launch {
             val baslik = try {
-                ProfilBasligi.Hazir(api.profil(kullaniciAdi))
+                ProfilBasligi.Hazir(api.profil(kullaniciAdi).also { if (kullaniciAdi == null) onbellek.yazNesne(KENDI_PROFILIM, it) })
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
+                // Saklı başlık gösteriliyorsa o kalır.
+                if (sakli != null) return@launch
                 ProfilBasligi.Hata
             }
             val link = (baslik as? ProfilBasligi.Hazir)?.let { PaylasimLinkleri.profil(webAdresi, it.sayfa.kullanici.kullaniciAdi) }
@@ -237,6 +248,7 @@ class ProfilSayfasiViewModel(
             when (durum.sekme) {
                 ProfilSekmesi.GUNLUK, ProfilSekmesi.INCELEMELER -> {
                     val sayfa = api.profilGunlugu(kullaniciAdi, yalnizcaIncelemeler = durum.sekme == ProfilSekmesi.INCELEMELER, imlec = imlec)
+                    OyunOzetiBellegi.ekle(sayfa.ogeler.map { it.oyun })
                     sonrakiImlec = sayfa.sonrakiImlec
                     SekmeIcerigi.Gunluk(((onceki as? SekmeIcerigi.Gunluk)?.ogeler.orEmpty()) + sayfa.ogeler, sayfa.sonrakiImlec != null)
                 }
@@ -244,6 +256,7 @@ class ProfilSayfasiViewModel(
                     val istekListesi = durum.sekme == ProfilSekmesi.ISTEK_LISTESI
                     val filtre = if (istekListesi || durum.filtre == OyunFiltresi.HEPSI) null else durum.filtre.name.lowercase()
                     val sayfa = api.profilKutuphanesi(kullaniciAdi, istekListesi, filtre, imlec)
+                    OyunOzetiBellegi.ekle(sayfa.ogeler.map { it.oyun })
                     sonrakiImlec = sayfa.sonrakiImlec
                     SekmeIcerigi.Kutuphane(((onceki as? SekmeIcerigi.Kutuphane)?.ogeler.orEmpty()) + sayfa.ogeler, sayfa.sonrakiImlec != null)
                 }
@@ -260,5 +273,9 @@ class ProfilSayfasiViewModel(
             onceki ?: SekmeIcerigi.Hata
         }
         _ekran.update { it.copy(icerik = icerik) }
+    }
+
+    private companion object {
+        const val KENDI_PROFILIM = "profil.ben"
     }
 }

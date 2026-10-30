@@ -1,9 +1,13 @@
 package com.sosyaloyun.app.akis
 
+import com.sosyaloyun.app.onbellek.okuNesne
+import com.sosyaloyun.app.onbellek.yazNesne
+import com.sosyaloyun.app.test.BellekOnbellegi
 import com.sosyaloyun.app.test.SahteApiIstemcisi
 import com.sosyaloyun.app.test.viewModelTesti
 import com.sosyaloyun.shared.AkisOgesi
 import com.sosyaloyun.shared.AkisOlayTuru
+import com.sosyaloyun.shared.AkisSayfasi
 import com.sosyaloyun.shared.AkisSekmesi
 import com.sosyaloyun.shared.Avatar
 import com.sosyaloyun.shared.Gorunurluk
@@ -34,6 +38,32 @@ class AkisViewModelTest {
         assertEquals(AkisSekmesi.TAKIP, vm.ekran.value.sekme)
         assertEquals(AkisIcerigi.Ogeler(api.akisOgeleri, dahaVar = false), vm.ekran.value.icerik)
         assertEquals(listOf("akis:TAKIP:null"), api.akisIstekleri)
+    }
+
+    @Test
+    fun sakliIlkSayfaHemenGosterilirAgdanGelenleTazelenir() = viewModelTesti {
+        val onbellek = BellekOnbellegi()
+        onbellek.yazNesne("akis.TAKIP", AkisSayfasi(listOf(oge("eski")), sonrakiImlec = null, enYeniImlec = "e"))
+        api.akisOgeleri = listOf(oge("yeni"))
+
+        val vm = AkisViewModel(api, onbellek)
+        assertEquals(listOf(oge("eski")), ogeler(vm))
+        advanceUntilIdle()
+
+        assertEquals(listOf(oge("yeni")), ogeler(vm))
+        assertEquals(listOf(oge("yeni")), onbellek.okuNesne<AkisSayfasi>("akis.TAKIP")?.ogeler)
+    }
+
+    @Test
+    fun agHatasindaSakliSayfaKalir() = viewModelTesti {
+        val onbellek = BellekOnbellegi()
+        onbellek.yazNesne("akis.TAKIP", AkisSayfasi(listOf(oge("eski")), sonrakiImlec = null, enYeniImlec = null))
+        api.hata = IllegalStateException("bağlantı yok")
+
+        val vm = AkisViewModel(api, onbellek)
+        advanceUntilIdle()
+
+        assertEquals(listOf(oge("eski")), ogeler(vm))
     }
 
     @Test

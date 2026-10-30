@@ -37,7 +37,7 @@ fun VitrinDuzenleEkrani(viewModel: VitrinViewModel, oyunEkle: () -> Unit, geri: 
         Text(stringResource(Res.string.profil_vitrin_aciklama), style = MaterialTheme.typography.bodySmall)
         durum.oyunlar.forEach { oyun ->
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Kapak(oyun, Modifier.size(width = 48.dp, height = 64.dp))
+                Kapak(oyun, Modifier.size(width = 48.dp, height = 64.dp), kucuk = true)
                 Text(oyun.ad, modifier = Modifier.weight(1f))
                 TextButton(onClick = { viewModel.cikar(oyun.id) }) { Text(stringResource(Res.string.vitrin_cikar)) }
             }

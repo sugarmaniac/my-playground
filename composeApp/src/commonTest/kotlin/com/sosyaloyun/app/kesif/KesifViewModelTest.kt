@@ -1,5 +1,9 @@
 package com.sosyaloyun.app.kesif
 
+import com.sosyaloyun.app.onbellek.OyunOzetiBellegi
+import com.sosyaloyun.app.onbellek.okuNesne
+import com.sosyaloyun.app.onbellek.yazNesne
+import com.sosyaloyun.app.test.BellekOnbellegi
 import com.sosyaloyun.app.test.SahteApiIstemcisi
 import com.sosyaloyun.app.test.viewModelTesti
 import com.sosyaloyun.shared.Kesif
@@ -28,6 +32,35 @@ class KesifViewModelTest {
         vm.yenile()
         advanceUntilIdle()
         assertEquals(KesifEkrani.Hazir(api.kesifYaniti!!), vm.ekran.value)
+    }
+
+    @Test
+    fun sakliKesifHemenGosterilirAgdanGelenleTazelenir() = viewModelTesti {
+        val onbellek = BellekOnbellegi()
+        val eski = Kesif(emptyList(), listOf(oyun("eski")), Tur.entries, listOf("PC"))
+        onbellek.yazNesne("kesif", eski)
+        api.kesifYaniti = Kesif(emptyList(), listOf(oyun("yeni")), Tur.entries, listOf("PC"))
+
+        val vm = KesifViewModel(api, onbellek)
+        assertEquals(KesifEkrani.Hazir(eski), vm.ekran.value)
+        advanceUntilIdle()
+
+        assertEquals(KesifEkrani.Hazir(api.kesifYaniti!!), vm.ekran.value)
+        assertEquals(api.kesifYaniti, onbellek.okuNesne<Kesif>("kesif"))
+        assertEquals(oyun("yeni"), OyunOzetiBellegi.bul("yeni"))
+    }
+
+    @Test
+    fun agHatasindaSakliKesifKalir() = viewModelTesti {
+        val onbellek = BellekOnbellegi()
+        val eski = Kesif(emptyList(), listOf(oyun("eski")), Tur.entries, listOf("PC"))
+        onbellek.yazNesne("kesif", eski)
+        api.hata = IllegalStateException("bağlantı yok")
+
+        val vm = KesifViewModel(api, onbellek)
+        advanceUntilIdle()
+
+        assertEquals(KesifEkrani.Hazir(eski), vm.ekran.value)
     }
 
     @Test

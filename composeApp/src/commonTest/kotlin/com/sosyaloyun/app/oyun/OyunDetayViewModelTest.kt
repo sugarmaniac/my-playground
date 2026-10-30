@@ -1,5 +1,6 @@
 package com.sosyaloyun.app.oyun
 
+import com.sosyaloyun.app.onbellek.OyunOzetiBellegi
 import com.sosyaloyun.app.test.SahteApiIstemcisi
 import com.sosyaloyun.app.test.viewModelTesti
 import com.sosyaloyun.shared.Avatar
@@ -16,6 +17,7 @@ import com.sosyaloyun.shared.OyunTuru
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertIs
 import kotlin.time.Instant
 
 class OyunDetayViewModelTest {
@@ -35,7 +37,17 @@ class OyunDetayViewModelTest {
     fun oyunDetayiYuklenir() = viewModelTesti {
         api.oyunDetaylari = mapOf("o1" to detay)
         val vm = OyunDetayViewModel(api, "o1")
-        assertEquals(OyunDetayEkrani.Yukleniyor, vm.ekran.value)
+        assertIs<OyunDetayEkrani.Yukleniyor>(vm.ekran.value)
+        advanceUntilIdle()
+        assertEquals(OyunDetayEkrani.Hazir(detay), vm.ekran.value)
+    }
+
+    @Test
+    fun listelerdeGorulenOyununOzetiYuklenirkenGosterilir() = viewModelTesti {
+        OyunOzetiBellegi.ekle(listOf(detay.oyun))
+        api.oyunDetaylari = mapOf("o1" to detay)
+        val vm = OyunDetayViewModel(api, "o1")
+        assertEquals(OyunDetayEkrani.Yukleniyor(detay.oyun), vm.ekran.value)
         advanceUntilIdle()
         assertEquals(OyunDetayEkrani.Hazir(detay), vm.ekran.value)
     }

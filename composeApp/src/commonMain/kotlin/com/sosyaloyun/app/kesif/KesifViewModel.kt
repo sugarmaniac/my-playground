@@ -3,6 +3,11 @@ package com.sosyaloyun.app.kesif
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sosyaloyun.app.api.ApiIstemcisi
+import com.sosyaloyun.app.onbellek.BosOnbellek
+import com.sosyaloyun.app.onbellek.OyunOzetiBellegi
+import com.sosyaloyun.app.onbellek.YerelOnbellek
+import com.sosyaloyun.app.onbellek.okuNesne
+import com.sosyaloyun.app.onbellek.yazNesne
 import com.sosyaloyun.shared.Kesif
 import com.sosyaloyun.shared.OyunOzeti
 import com.sosyaloyun.shared.Tur
@@ -18,7 +23,8 @@ sealed interface KesifEkrani {
     data object Hata : KesifEkrani
 }
 
-class KesifViewModel(private val api: ApiIstemcisi) : ViewModel() {
+/** Son keşif cihazda saklanır: ekran açılır açılmaz o gösterilir, arkadan tazelenir (#60). */
+class KesifViewModel(private val api: ApiIstemcisi, private val onbellek: YerelOnbellek = BosOnbellek) : ViewModel() {
     private val _ekran = MutableStateFlow<KesifEkrani>(KesifEkrani.Yukleniyor)
     val ekran: StateFlow<KesifEkrani> = _ekran
 
@@ -27,16 +33,25 @@ class KesifViewModel(private val api: ApiIstemcisi) : ViewModel() {
     }
 
     fun yenile() {
-        _ekran.value = KesifEkrani.Yukleniyor
+        val sakli = onbellek.okuNesne<Kesif>(ONBELLEK_ANAHTARI)
+        _ekran.value = sakli?.let(KesifEkrani::Hazir) ?: KesifEkrani.Yukleniyor
         viewModelScope.launch {
-            _ekran.value = try {
-                KesifEkrani.Hazir(api.kesif())
+            try {
+                val kesif = api.kesif()
+                OyunOzetiBellegi.ekle(kesif.trend + kesif.takipEdilenlerde.map { it.oyun })
+                onbellek.yazNesne(ONBELLEK_ANAHTARI, kesif)
+                _ekran.value = KesifEkrani.Hazir(kesif)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                KesifEkrani.Hata
+                // Saklı keşif gösteriliyorsa o kalır.
+                if (sakli == null) _ekran.value = KesifEkrani.Hata
             }
         }
+    }
+
+    private companion object {
+        const val ONBELLEK_ANAHTARI = "kesif"
     }
 }
 
@@ -67,6 +82,7 @@ class OyunListesiViewModel(private val api: ApiIstemcisi, private val tur: Tur?,
         val onceki = (_ekran.value as? OyunListesiEkrani.Hazir)?.oyunlar.orEmpty()
         _ekran.value = try {
             val sayfa = api.oyunListesi(tur, platform, imlec)
+            OyunOzetiBellegi.ekle(sayfa.oyunlar)
             sonrakiImlec = sayfa.sonrakiImlec
             OyunListesiEkrani.Hazir(onceki + sayfa.oyunlar, sayfa.sonrakiImlec != null)
         } catch (e: CancellationException) {

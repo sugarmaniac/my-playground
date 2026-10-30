@@ -61,7 +61,7 @@ fun ListeOzetiSatiri(liste: ListeOzeti, tikla: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-            liste.onIzleme.take(3).forEach { Kapak(it, Modifier.size(width = 36.dp, height = 48.dp)) }
+            liste.onIzleme.take(3).forEach { Kapak(it, Modifier.size(width = 36.dp, height = 48.dp), kucuk = true) }
         }
         Column(Modifier.weight(1f)) {
             Text(liste.baslik, style = MaterialTheme.typography.titleSmall)
@@ -106,7 +106,7 @@ fun ListeDetayEkrani(viewModel: ListeDetayViewModel, oyunaGit: (String) -> Unit,
                     itemsIndexed(liste.oyunlar, key = { _, o -> o.id }) { i, oyun ->
                         Row(Modifier.fillMaxWidth().clickable { oyunaGit(oyun.id) }, horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
                             Text("${i + 1}.", style = MaterialTheme.typography.labelLarge)
-                            Kapak(oyun, Modifier.size(width = 48.dp, height = 64.dp))
+                            Kapak(oyun, Modifier.size(width = 48.dp, height = 64.dp), kucuk = true)
                             Text(oyun.ad, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
                         }
                     }

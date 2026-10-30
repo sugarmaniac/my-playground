@@ -3,9 +3,15 @@ package com.sosyaloyun.app.akis
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sosyaloyun.app.api.ApiIstemcisi
+import com.sosyaloyun.app.onbellek.BosOnbellek
+import com.sosyaloyun.app.onbellek.OyunOzetiBellegi
+import com.sosyaloyun.app.onbellek.YerelOnbellek
+import com.sosyaloyun.app.onbellek.okuNesne
+import com.sosyaloyun.app.onbellek.yazNesne
 import com.sosyaloyun.app.gunluk.begenisiCevrilmis
 import com.sosyaloyun.shared.AkisOgesi
 import com.sosyaloyun.shared.AkisSekmesi
+import com.sosyaloyun.shared.AkisSayfasi
 import com.sosyaloyun.shared.KullaniciOzeti
 import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.Job
@@ -31,7 +37,8 @@ data class AkisDurumu(
 )
 
 /** Ana ekrandaki akış: Takip ve Arkadaşlar sekmeleri, yeni olay uyarısı, boş akışta öneriler. */
-class AkisViewModel(private val api: ApiIstemcisi) : ViewModel() {
+/** Her sekmenin ilk sayfası cihazda saklanır: açılışta o gösterilir, arkadan tazelenir (#60). */
+class AkisViewModel(private val api: ApiIstemcisi, private val onbellek: YerelOnbellek = BosOnbellek) : ViewModel() {
     private val _ekran = MutableStateFlow(AkisDurumu())
     val ekran: StateFlow<AkisDurumu> = _ekran
     private var sayfaIsi: Job? = null
@@ -51,23 +58,35 @@ class AkisViewModel(private val api: ApiIstemcisi) : ViewModel() {
     /** Akışı baştan yükler; yeni olay uyarısı kalkar. */
     fun yenile() {
         sayfaIsi?.cancel()
-        sonrakiImlec = null
-        _ekran.update { it.copy(icerik = AkisIcerigi.Yukleniyor, yeniOlaySayisi = 0) }
+        val sekme = _ekran.value.sekme
+        val sakli = onbellek.okuNesne<AkisSayfasi>(onbellekAnahtari(sekme))?.takeIf { it.ogeler.isNotEmpty() }
+        sonrakiImlec = sakli?.sonrakiImlec
+        sakli?.let { enYeniImlec = it.enYeniImlec }
+        _ekran.update { it.copy(icerik = sakli?.let(::ogeler) ?: AkisIcerigi.Yukleniyor, yeniOlaySayisi = 0) }
         sayfaIsi = viewModelScope.launch {
-            val sekme = _ekran.value.sekme
             val icerik = try {
                 val sayfa = api.akis(sekme)
                 sonrakiImlec = sayfa.sonrakiImlec
                 enYeniImlec = sayfa.enYeniImlec
-                if (sayfa.ogeler.isEmpty()) AkisIcerigi.Bos(api.akisOnerileri()) else AkisIcerigi.Ogeler(sayfa.ogeler, sayfa.sonrakiImlec != null)
+                onbellek.yazNesne(onbellekAnahtari(sekme), sayfa)
+                if (sayfa.ogeler.isEmpty()) AkisIcerigi.Bos(api.akisOnerileri()) else ogeler(sayfa)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
+                // Saklı sayfa gösteriliyorsa o kalır.
+                if (sakli != null) return@launch
                 AkisIcerigi.Hata
             }
             _ekran.update { it.copy(icerik = icerik) }
         }
     }
+
+    private fun ogeler(sayfa: AkisSayfasi): AkisIcerigi.Ogeler {
+        OyunOzetiBellegi.ekle(sayfa.ogeler.mapNotNull { it.oyun })
+        return AkisIcerigi.Ogeler(sayfa.ogeler, sayfa.sonrakiImlec != null)
+    }
+
+    private fun onbellekAnahtari(sekme: AkisSekmesi) = "akis.${sekme.name}"
 
     fun dahaFazlaYukle() {
         val mevcut = _ekran.value.icerik as? AkisIcerigi.Ogeler ?: return
@@ -76,6 +95,7 @@ class AkisViewModel(private val api: ApiIstemcisi) : ViewModel() {
         sayfaIsi = viewModelScope.launch {
             try {
                 val sayfa = api.akis(_ekran.value.sekme, imlec)
+                OyunOzetiBellegi.ekle(sayfa.ogeler.mapNotNull { it.oyun })
                 sonrakiImlec = sayfa.sonrakiImlec
                 _ekran.update { it.copy(icerik = AkisIcerigi.Ogeler(mevcut.ogeler + sayfa.ogeler, sayfa.sonrakiImlec != null)) }
             } catch (e: CancellationException) {

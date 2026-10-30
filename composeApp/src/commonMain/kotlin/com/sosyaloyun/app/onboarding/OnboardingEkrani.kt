@@ -157,7 +157,7 @@ private fun DurumlarAdimi(adim: OnboardingAdimi.Durumlar, viewModel: OnboardingV
         }
         items(adim.oyunlar, key = { it.oyun.id }) { oge ->
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Kapak(oge.oyun, Modifier.size(width = 48.dp, height = 64.dp))
+                Kapak(oge.oyun, Modifier.size(width = 48.dp, height = 64.dp), kucuk = true)
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(oge.oyun.ad, style = MaterialTheme.typography.titleSmall)
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {

@@ -1,6 +1,13 @@
 package com.sosyaloyun.app.tema
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.ui.draw.clip
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -40,6 +47,26 @@ fun HapSekme(etiket: String, secili: Boolean, tikla: () -> Unit) {
     ) {
         Box(Modifier.padding(horizontal = 16.dp), contentAlignment = Alignment.Center) {
             Text(etiket, style = MaterialTheme.typography.labelLarge)
+        }
+    }
+}
+
+/** Yüklenen içeriğin yer tutucusu (#60). */
+@Composable
+fun Iskelet(modifier: Modifier = Modifier) {
+    Box(modifier.clip(MaterialTheme.shapes.small).background(Renk.YuzeyYuksek))
+}
+
+/**
+ * Lazy listenin sonuna konur: öğe görünür ya da önceden hazırlanır olunca sonraki sayfa istenir (#60).
+ * Anahtar yüklenen öğe sayısını taşır; sayfa gelince yeni öğe yeniden tetikler, istek başarısızsa aynı öğe tekrar istemez.
+ */
+fun LazyListScope.sayfaSonu(dahaVar: Boolean, yuklenen: Int, yukle: () -> Unit) {
+    if (!dahaVar) return
+    item(key = "sayfa-sonu-$yuklenen", contentType = "sayfa-sonu") {
+        LaunchedEffect(Unit) { yukle() }
+        Box(Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator(Modifier.size(24.dp), strokeWidth = 2.dp)
         }
     }
 }
