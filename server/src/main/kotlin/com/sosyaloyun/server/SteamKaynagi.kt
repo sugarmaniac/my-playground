@@ -5,6 +5,7 @@ import io.ktor.client.engine.cio.CIO
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import io.ktor.client.statement.bodyAsText
+import io.ktor.http.HttpStatusCode
 import io.ktor.http.isSuccess
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -18,6 +19,9 @@ interface SteamKaynagi {
 
     /** Hesabın sahip olduğu oyunlar; profil ya da oyun ayrıntıları gizliyse [SteamOyunlari.Gizli]. */
     suspend fun oyunlar(steamId: String): SteamOyunlari
+
+    /** Steam arkadaşlarının SteamID64'leri; arkadaş listesi gizliyse null. */
+    suspend fun arkadaslar(steamId: String): List<String>?
 }
 
 sealed interface SteamOyunlari {
@@ -71,13 +75,31 @@ class SteamWebApiKaynagi(private val anahtar: String, private val http: HttpClie
         return SteamOyunlari.Acik(sonuc.games.map { SteamOyunu(it.appid, it.playtimeForever) })
     }
 
-    private suspend fun istek(yol: String, vararg parametreler: Pair<String, String>): String {
+    override suspend fun arkadaslar(steamId: String): List<String>? {
+        // Gizli arkadaş listesinde Steam 401 döner.
+        val yanit = istek("ISteamUser/GetFriendList/v1/", "steamid" to steamId, "relationship" to "friend", gizliyseNull = true) ?: return null
+        return json.decodeFromString(ArkadasListesiYaniti.serializer(), yanit).friendslist.friends.map { it.steamid }
+    }
+
+    private suspend fun istek(yol: String, vararg parametreler: Pair<String, String>): String = istek(yol, *parametreler, gizliyseNull = false)!!
+
+    private suspend fun istek(yol: String, vararg parametreler: Pair<String, String>, gizliyseNull: Boolean): String? {
         val yanit = http.get("https://api.steampowered.com/$yol") {
             parameter("key", anahtar)
             parametreler.forEach { (ad, deger) -> parameter(ad, deger) }
         }
+        if (gizliyseNull && yanit.status == HttpStatusCode.Unauthorized) return null
         check(yanit.status.isSuccess()) { "Steam $yol isteği başarısız: ${yanit.status}" }
         return yanit.bodyAsText()
+    }
+
+    @Serializable
+    private data class ArkadasListesiYaniti(val friendslist: Liste = Liste()) {
+        @Serializable
+        data class Liste(val friends: List<Arkadas> = emptyList())
+
+        @Serializable
+        data class Arkadas(val steamid: String)
     }
 
     @Serializable

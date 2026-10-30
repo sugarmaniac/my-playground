@@ -8,6 +8,7 @@ import com.sosyaloyun.shared.AkisOgesi
 import com.sosyaloyun.shared.AkisSayfasi
 import com.sosyaloyun.shared.AkisSekmesi
 import com.sosyaloyun.shared.Avatar
+import com.sosyaloyun.shared.BulunanKisi
 import com.sosyaloyun.shared.BenYaniti
 import com.sosyaloyun.shared.DavetKodu
 import com.sosyaloyun.shared.GirisYaniti
@@ -315,6 +316,33 @@ class SahteApiIstemcisi : ApiIstemcisi {
     override suspend fun onboardingiTamamla() {
         onboardingHatasi?.let { throw it }
         onboardingIstekleri += "tamamla"
+    }
+
+    var rehberEslesmeleri = emptyList<BulunanKisi>()
+    var steamArkadaslari = emptyList<BulunanKisi>()
+    var arkadasBulmaHatasi: Exception? = null
+    val gonderilenHashler = mutableListOf<String>()
+    val topluTakipler = mutableListOf<List<String>>()
+
+    override suspend fun telefonumuKaydet(hash: String) {
+        arkadasBulmaHatasi?.let { throw it }
+        onboardingIstekleri += "telefon:$hash"
+    }
+
+    override suspend fun rehberdenBul(hashler: List<String>): List<BulunanKisi> {
+        arkadasBulmaHatasi?.let { throw it }
+        gonderilenHashler += hashler
+        return rehberEslesmeleri
+    }
+
+    override suspend fun steamdenBul(): List<BulunanKisi> {
+        arkadasBulmaHatasi?.let { throw it }
+        return steamArkadaslari
+    }
+
+    override suspend fun topluTakip(kullaniciAdlari: List<String>) {
+        arkadasBulmaHatasi?.let { throw it }
+        topluTakipler += kullaniciAdlari
     }
 
     /** Engel ve sessiz işlemleri sırayla: "engelle:ad", "sessiz:ad" gibi. */

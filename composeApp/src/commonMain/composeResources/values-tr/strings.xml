@@ -181,4 +181,17 @@
     <string name="steam_bagli">Bağlı: %1$s</string>
     <string name="steam_ice_aktarildi">%1$d oyun içe aktarıldı.</string>
     <string name="steam_kaldir">Steam bağlantısını kaldır</string>
+    <string name="kaydet">Kaydet</string>
+    <string name="takip_ediliyor">Takip ediliyor</string>
+    <string name="onboarding_devam">Devam</string>
+    <string name="onboarding_atla">Atla</string>
+    <string name="onboarding_arkadaslar_baslik">Arkadaşlarını bul</string>
+    <string name="onboarding_arkadaslar_aciklama">Rehberindekilerden ve Steam arkadaşlarından kimlerin burada olduğunu gör. Telefon numaraları cihazında şifrelenir; açık hali hiç gönderilmez.</string>
+    <string name="rehberde_ara">Rehberimde ara</string>
+    <string name="rehber_izni_yok">Rehber izni verilmedi. Ayarlar\'dan izin verebilirsin.</string>
+    <string name="arkadas_bulunamadi">Henüz arkadaş bulunamadı. Davet et!</string>
+    <string name="hepsini_takip_et">Hepsini takip et (%1$d)</string>
+    <string name="numaram_aciklama">Numaranı ekle ki seni rehberinde kayıtlı arkadaşların bulabilsin. Yalnızca şifrelenmiş bir parmak izi saklanır.</string>
+    <string name="numaram">Telefon numaram</string>
+    <string name="numaram_kaydedildi">Kaydedildi. Arkadaşların artık seni bulabilir.</string>
 </resources>

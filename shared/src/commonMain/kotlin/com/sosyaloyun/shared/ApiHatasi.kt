@@ -95,6 +95,10 @@ enum class HataKodu {
     STEAM_KULLANILAMIYOR,
 
     /** Steam bağlamadan onboarding'i bitirmek için en az [OnboardingKurallari.EN_AZ_OYUN] oyunun durumu seçilmeli. */
+    /** Hash biçimi geçersiz ya da istekte çok fazla hash var. */
+    @SerialName("rehber_gecersiz")
+    REHBER_GECERSIZ,
+
     @SerialName("onboarding_eksik")
     ONBOARDING_EKSIK,
 
