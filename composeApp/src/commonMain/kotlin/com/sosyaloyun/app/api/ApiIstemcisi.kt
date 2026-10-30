@@ -19,7 +19,10 @@ import com.sosyaloyun.shared.KutuphaneSayfasi
 import com.sosyaloyun.shared.OrtakOyunlar
 import com.sosyaloyun.shared.OyunAramaYaniti
 import com.sosyaloyun.shared.IncelemeListesi
+import com.sosyaloyun.shared.SteamBaglantisi
+import com.sosyaloyun.shared.SteamIceAktarmaSonucu
 import com.sosyaloyun.shared.OyunDetayi
+import com.sosyaloyun.shared.OyunOzeti
 import com.sosyaloyun.shared.ProfilIstegi
 import com.sosyaloyun.shared.ProfilSayfasi
 import com.sosyaloyun.shared.SaglikYaniti
@@ -33,6 +36,17 @@ interface ApiIstemcisi {
     suspend fun cikisYap()
 
     suspend fun ben(): BenYaniti
+
+    /** Bağlı değilse null. */
+    suspend fun steamBaglantisi(): SteamBaglantisi?
+
+    suspend fun steamBagla(girdi: String): SteamIceAktarmaSonucu
+
+    suspend fun steamBaglantisiniKaldir()
+
+    suspend fun populerOyunlar(): List<OyunOzeti>
+
+    suspend fun onboardingiTamamla()
 
     suspend fun davetKoduKullan(kod: String)
 

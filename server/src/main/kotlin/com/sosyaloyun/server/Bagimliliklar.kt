@@ -21,6 +21,10 @@ class Bagimliliklar(
     val igdbWebhookSirri: String? = null,
     /** Açılışta ve sonra günde bir tam içe aktarma ve popülerlik güncellemesi; testlerde kapalı. */
     val katalogZamanlayici: Boolean = false,
+    /** Steam Web API; null ise Steam bağlama kullanılamaz (anahtar henüz yok). */
+    val steamKaynagi: SteamKaynagi? = null,
+    /** Günde bir bağlı Steam hesaplarının süreleri güncellenir; testlerde kapalı. */
+    val steamZamanlayici: Boolean = false,
 ) {
     companion object {
         /** PostgreSQL bağlantısı standart `PG*` ortam değişkenlerinden okunur (Railway ve VDS aynı imajı kullanır, ADR 0009). */
@@ -40,6 +44,8 @@ class Bagimliliklar(
                 kurucuDavetKodlari = ortam("KURUCU_DAVET_KODLARI", "").split(",").map { it.trim() }.filter { it.isNotEmpty() },
                 katalogKaynagi = IgdbKatalogKaynagi.ortamdan(),
                 igdbWebhookSirri = System.getenv("IGDB_WEBHOOK_SIRRI")?.takeIf { it.isNotBlank() },
+                steamKaynagi = SteamWebApiKaynagi.ortamdan(),
+                steamZamanlayici = true,
                 katalogZamanlayici = true,
             )
         }

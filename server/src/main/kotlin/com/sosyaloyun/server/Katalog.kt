@@ -25,6 +25,7 @@ import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.JdbcTransaction
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.insert
+import org.jetbrains.exposed.v1.jdbc.select
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import org.jetbrains.exposed.v1.jdbc.update
@@ -100,6 +101,30 @@ class Katalog(private val veritabani: Database) {
                 oyunlar = sayfa.map { oyunlar.getValue(it[OyunTablosu.id]) },
                 sonrakiImlec = Imlec.sonraki(satirlar.size, baslangic, SAYFA),
             )
+        }
+    }
+
+    /** Steam uygulama kimliklerinin eşlendiği, kaynakta silinmemiş oyunlar; eşlenmeyenler haritada yok. */
+    suspend fun steamEslesmeleri(uygulamaIdleri: Collection<Long>): Map<Long, UUID> = withContext(Dispatchers.IO) {
+        if (uygulamaIdleri.isEmpty()) return@withContext emptyMap()
+        transaction(veritabani) {
+            OyunKaynagiTablosu.join(OyunTablosu, org.jetbrains.exposed.v1.core.JoinType.INNER, OyunKaynagiTablosu.oyunId, OyunTablosu.id)
+                .selectAll()
+                .where { (OyunKaynagiTablosu.kaynak eq STEAM) and (OyunKaynagiTablosu.kaynakId inList uygulamaIdleri) and (OyunTablosu.kaldirildi eq false) }
+                .associate { it[OyunKaynagiTablosu.kaynakId] to it[OyunKaynagiTablosu.oyunId] }
+        }
+    }
+
+    /** En popüler ana oyunlar; Steam bağlamayan kullanıcı onboarding'de bunlardan işaretler. */
+    suspend fun populerler(adet: Int): List<OyunOzeti> = withContext(Dispatchers.IO) {
+        transaction(veritabani) {
+            val idler = OyunTablosu.select(OyunTablosu.id)
+                .where { (OyunTablosu.kaldirildi eq false) and (OyunTablosu.tur eq OyunTuru.ANA_OYUN.name) }
+                .orderBy(OyunTablosu.populerlik to SortOrder.DESC, OyunTablosu.id to SortOrder.ASC)
+                .limit(adet)
+                .map { it[OyunTablosu.id] }
+            val oyunlar = ozetler(idler)
+            idler.mapNotNull(oyunlar::get)
         }
     }
 

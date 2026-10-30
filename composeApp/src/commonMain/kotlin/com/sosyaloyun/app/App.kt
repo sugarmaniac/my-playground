@@ -56,6 +56,9 @@ import com.sosyaloyun.app.hesap.HesapViewModel
 import com.sosyaloyun.app.hesap.ProfilEkrani
 import com.sosyaloyun.app.hesap.ProfilViewModel
 import com.sosyaloyun.app.hesap.YukleniyorGorunumu
+import com.sosyaloyun.app.onboarding.OnboardingEkrani
+import com.sosyaloyun.app.onboarding.OnboardingViewModel
+import com.sosyaloyun.app.onboarding.SteamAyariViewModel
 import com.sosyaloyun.app.oturum.AyarliOturumDeposu
 import com.sosyaloyun.app.oyun.OyunDetayEkrani
 import com.sosyaloyun.app.oyun.OyunDetayViewModel
@@ -125,6 +128,7 @@ private fun HesapAkisi(api: ApiIstemcisi, cikisYap: () -> Unit) {
         HesapEkrani.OturumGecersiz -> LaunchedEffect(Unit) { cikisYap() }
         HesapEkrani.DavetKodu -> DavetKoduEkrani(viewModel { DavetKoduViewModel(api, hesabiYenile = hesap::yenile) })
         HesapEkrani.Profil -> ProfilEkrani(viewModel { ProfilViewModel(api, hesabiYenile = hesap::yenile) })
+        HesapEkrani.Onboarding -> OnboardingEkrani(viewModel { OnboardingViewModel(api, hesabiYenile = hesap::yenile) })
         is HesapEkrani.Hazir -> UygulamaGezintisi(api, durum.profil, cikisYap)
     }
 }
@@ -246,6 +250,7 @@ private fun UygulamaGezintisi(api: ApiIstemcisi, profil: KullaniciOzeti, cikisYa
                     profil = profil,
                     davetKodlari = viewModel { DavetKodlarimViewModel(api) },
                     geri = { gezinti.popBackStack() },
+                    steamAyari = viewModel { SteamAyariViewModel(api) },
                     engelListesi = { gezinti.navigate(EngelListesiRota(it)) },
                     cikisYap = cikisYap,
                 )

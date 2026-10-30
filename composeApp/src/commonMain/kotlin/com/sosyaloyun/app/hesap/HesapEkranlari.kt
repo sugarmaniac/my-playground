@@ -65,6 +65,8 @@ import com.sosyaloyun.shared.Avatar
 import com.sosyaloyun.shared.DavetKodu
 import com.sosyaloyun.shared.KullaniciOzeti
 import com.sosyaloyun.app.api.EngelListesiTuru
+import com.sosyaloyun.app.onboarding.SteamAyariViewModel
+import com.sosyaloyun.app.onboarding.SteamBolumu
 import com.sosyaloyun.app.resources.engellenenler
 import com.sosyaloyun.app.resources.sessize_alinanlar
 import org.jetbrains.compose.resources.stringResource
@@ -194,6 +196,7 @@ fun AnaEkran(
     profil: KullaniciOzeti,
     davetKodlari: DavetKodlarimViewModel,
     geri: () -> Unit,
+    steamAyari: SteamAyariViewModel,
     engelListesi: (EngelListesiTuru) -> Unit,
     cikisYap: () -> Unit,
 ) {
@@ -221,6 +224,8 @@ fun AnaEkran(
                 }
             }
         }
+        HorizontalDivider()
+        SteamBolumu(steamAyari)
         HorizontalDivider()
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             TextButton(onClick = { engelListesi(EngelListesiTuru.ENGELLENENLER) }) { Text(stringResource(Res.string.engellenenler)) }

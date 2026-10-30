@@ -64,7 +64,16 @@ class Kullanicilar(private val veritabani: Database) {
                 kullaniciId = kullaniciId.toString(),
                 davetKabulEdildi = satir[KullaniciTablosu.davetKabulZamani] != null,
                 profil = satir.kullaniciOzeti(),
+                onboardingTamamlandi = satir[KullaniciTablosu.onboardingTamamlandi],
             )
+        }
+    }
+
+    suspend fun onboardingiTamamla(kullaniciId: UUID) {
+        withContext(Dispatchers.IO) {
+            transaction(veritabani) {
+                KullaniciTablosu.update({ KullaniciTablosu.id eq kullaniciId }) { it[onboardingTamamlandi] = true }
+            }
         }
     }
 
@@ -165,6 +174,7 @@ internal object KullaniciTablosu : Table("kullanici") {
     val sonPlatform = text("son_platform").nullable()
     val biyografi = text("biyografi").nullable()
     val aramaMetni = text("arama_metni").nullable()
+    val onboardingTamamlandi = bool("onboarding_tamamlandi").default(false)
     override val primaryKey = PrimaryKey(id)
 }
 

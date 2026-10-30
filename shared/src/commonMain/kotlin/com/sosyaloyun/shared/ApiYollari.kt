@@ -65,6 +65,13 @@ object ApiYollari {
     /** Kullanıcı araması (`/kullanicilar/ara` değil: `ara` geçerli bir kullanıcı adı). */
     const val KULLANICI_ARA = "/kullanici-ara"
     const val OYUN_ARA = "/oyunlar/ara"
+    const val POPULER_OYUNLAR = "/oyunlar/populer"
+
+    /** `GET` bağlantı, `PUT` bağla ve içe aktar, `DELETE` bağlantıyı kaldır. */
+    const val STEAM = "/steam"
+
+    /** `POST`: onboarding'in son adımı bitti. */
+    const val ONBOARDING_TAMAMLA = "/onboarding/tamamla"
 
     /** `GET /oyunlar/{id}`: oyun detayı; `PUT /oyunlar/{id}/kutuphane`: kütüphane girişi. */
     const val OYUNLAR = "/oyunlar"

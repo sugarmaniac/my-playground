@@ -164,4 +164,21 @@
     <string name="engellenenler">Blocked</string>
     <string name="sessize_alinanlar">Muted</string>
     <string name="engel_hatasi">Could not block. Try again.</string>
+    <string name="onboarding_steam_baslik">Connect Steam</string>
+    <string name="onboarding_steam_aciklama">Games you have opened at least once are added to your library with their play time. Statuses are not guessed and nothing is posted to your followers.</string>
+    <string name="onboarding_steam_atla">Continue without Steam</string>
+    <string name="onboarding_durumlar_baslik">What are you playing?</string>
+    <string name="onboarding_durumlar_steamli">Your most played games on Steam. Pick a status for the ones you like; you can do the rest later from your profile.</string>
+    <string name="onboarding_durumlar_steamsiz">Pick a status for at least %1$d games. Selected: %2$d</string>
+    <string name="onboarding_bitir">Done</string>
+    <string name="onboarding_hata">Could not save. Try again.</string>
+    <string name="steam_girdi">Steam profile link or name</string>
+    <string name="steam_bagla">Connect</string>
+    <string name="steam_gizli">Your Steam profile or game details are private. On Steam open Profile → Edit Profile → Privacy Settings, set \"My profile\" and \"Game details\" to Public, then try again.</string>
+    <string name="steam_bulunamadi">No Steam account found. Paste your profile link (steamcommunity.com/id/… or /profiles/…).</string>
+    <string name="steam_baska_kullanicida">This Steam account is connected to another user.</string>
+    <string name="steam_ulasilamiyor">Steam cannot be reached right now. Try again later.</string>
+    <string name="steam_bagli">Connected: %1$s</string>
+    <string name="steam_ice_aktarildi">%1$d games imported.</string>
+    <string name="steam_kaldir">Disconnect Steam</string>
 </resources>

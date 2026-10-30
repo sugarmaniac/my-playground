@@ -15,7 +15,6 @@ import kotlinx.datetime.toJavaLocalDate
 import kotlinx.datetime.toKotlinLocalDate
 import org.jetbrains.exposed.v1.core.ResultRow
 import org.jetbrains.exposed.v1.core.SortOrder
-import org.jetbrains.exposed.v1.core.Sum
 import org.jetbrains.exposed.v1.core.Table
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
@@ -110,8 +109,12 @@ class Gunluk(private val veritabani: Database, private val saat: Clock) {
                 .where(kosul)
                 .orderBy(GunlukKaydiTablosu.olusturulma to SortOrder.DESC, GunlukKaydiTablosu.id to SortOrder.DESC)
                 .map { it.gunlukKaydi() }
-            val toplam = Sum(GunlukKaydiTablosu.sureDakika, GunlukKaydiTablosu.sureDakika.columnType)
-            val toplamSure = GunlukKaydiTablosu.select(toplam).where(kosul).single()[toplam]
+            val steamSuresi = KutuphaneGirisiTablosu.select(KutuphaneGirisiTablosu.steamSureDakika)
+                .where { (KutuphaneGirisiTablosu.kullaniciId eq kullaniciId) and (KutuphaneGirisiTablosu.oyunId eq oyunId) }
+                .singleOrNull()?.get(KutuphaneGirisiTablosu.steamSureDakika)
+            // Steam süresi varken bilgisayarda girilen kayıtlar Steam'de oynanmış sayılır; ikinci kez eklenmez.
+            val kayitSureleri = kayitlar.filter { steamSuresi == null || !steamPlatformuMu(it.platform) }.mapNotNull { it.sureDakika }
+            val toplamSure = if (steamSuresi == null && kayitSureleri.isEmpty()) null else (steamSuresi ?: 0) + kayitSureleri.sum()
             val sonPlatform = KullaniciTablosu.select(KullaniciTablosu.sonPlatform)
                 .where { KullaniciTablosu.id eq kullaniciId }
                 .single()[KullaniciTablosu.sonPlatform]
@@ -179,6 +182,10 @@ internal object GunlukKaydiTablosu : Table("gunluk_kaydi") {
     val tarih = date("tarih")
     override val primaryKey = PrimaryKey(id)
 }
+
+/** Steam'in çalıştığı platformlar (IGDB adlarıyla); bu platformlardaki günlük kaydı süreleri Steam süresine dahildir. */
+internal fun steamPlatformuMu(platform: String?): Boolean =
+    platform != null && (platform.startsWith("PC") || platform in setOf("Mac", "Linux", "SteamOS"))
 
 /** Takvime bağlı hesaplar (günlük sırası, "bu yıl") Türkiye saatiyle yapılır; kullanıcılar Türkiye'de (ADR 0003). */
 internal val TURKIYE: java.time.ZoneId = java.time.ZoneId.of("Europe/Istanbul")

@@ -213,14 +213,14 @@ class Profiller(
     }
 }
 
-/** Oynandığı bilinen kütüphane girişi: yalnızca istek listesinde olmayan (durum, puan, beğeni ya da günlük kaydı var). */
+/** Oynandığı bilinen kütüphane girişi: yalnızca istek listesinde olmayan (durum, puan, beğeni, Steam süresi ya da günlük kaydı var). */
 private fun oynanmis(): Op<Boolean> {
     val t = KutuphaneGirisiTablosu
     val gunlukVar = exists(
         GunlukKaydiTablosu.select(GunlukKaydiTablosu.id)
             .where { (GunlukKaydiTablosu.kullaniciId eq t.kullaniciId) and (GunlukKaydiTablosu.oyunId eq t.oyunId) },
     )
-    return t.durum.isNotNull() or t.puan.isNotNull() or (t.begendim eq true) or gunlukVar
+    return t.durum.isNotNull() or t.puan.isNotNull() or (t.begendim eq true) or t.steamSureDakika.isNotNull() or gunlukVar
 }
 
 private object VitrinTablosu : Table("vitrin_oyunu") {
