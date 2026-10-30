@@ -27,7 +27,9 @@ fun Route.istatistikRotalari(istatistik: IstatistikServisi, paylasim: Paylasim, 
             }
             get(ApiYollari.PROFILIM_YILLIK_OZET) {
                 val ben = call.oturumSahibi.kullaniciId
-                call.respond(istatistik.yillikOzet(ben, istatistik.gorus(ben, ben), call.yil(istatistik) ?: return@get)!!)
+                val ozet = istatistik.yillikOzet(ben, istatistik.gorus(ben, ben), call.yil(istatistik) ?: return@get)
+                    ?: return@get call.hata(HttpStatusCode.NotFound, HataKodu.KULLANICI_BULUNAMADI)
+                call.respond(ozet)
             }
             get(ApiYollari.kullaniciSekmesi("{ad}", ApiYollari.SEKME_ISTATISTIK)) {
                 val sahip = call.parameters["ad"]?.let { kullanicilar.kullaniciAdindan(it) }
