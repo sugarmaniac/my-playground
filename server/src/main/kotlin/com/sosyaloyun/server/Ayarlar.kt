@@ -21,6 +21,9 @@ sealed class Ayar<T>(
     /** Açık faz (1–3); yönetim panelinden değişir (#46). */
     data object AktifFaz : Ayar<Int>("aktif_faz", 1, Int::toString, String::toInt)
 
+    /** Tam katalog içe aktarmanın son işlediği IGDB kimliği; server yeniden başlarsa buradan devam eder (0 = baştan). */
+    data object KatalogIceAktarmaKonumu : Ayar<Long>("katalog_ice_aktarma_konumu", 0L, Long::toString, String::toLong)
+
     /** Betaya katılan her kullanıcının dağıtabileceği davet kodu sayısı. */
     data object KisiBasiDavetKoduSayisi : Ayar<Int>("kisi_basi_davet_kodu_sayisi", 5, Int::toString, String::toInt)
 

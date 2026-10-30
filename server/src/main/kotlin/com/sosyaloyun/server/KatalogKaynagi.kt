@@ -15,6 +15,9 @@ interface KatalogKaynagi {
 
     /** Oyunların popülerlik (PopScore) değerleri, oyunun kaynak kimliğine göre artan sırada. */
     suspend fun populerlikSayfasi(sonKaynakId: Long, adet: Int): List<KaynakPopulerlik>
+
+    /** En popüler [adet] oyunun popülerliği, yüksekten düşüğe; içe aktarma bunları önce alır. */
+    suspend fun enPopulerler(adet: Int): List<KaynakPopulerlik>
 }
 
 /** Kaynağın kendi sınıflandırması; hangisinin ayrı oyun olacağına içe aktarma karar verir. */
