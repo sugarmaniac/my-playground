@@ -2,6 +2,7 @@ package com.sosyaloyun.app.oturum
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import com.sosyaloyun.app.api.DerlemeAyarlari
 import com.sosyaloyun.shared.KimlikSaglayici
 import kotlin.coroutines.resume
 import kotlinx.cinterop.BetaInteropApi
@@ -22,15 +23,25 @@ import platform.UIKit.UIApplication
 import platform.UIKit.UIWindow
 import platform.darwin.NSObject
 
-/** iOS'ta Apple ile giriş (AuthenticationServices). Google ile giriş iOS'ta henüz yok. */
-private class IosKimlikSaglayiciIstemcisi : KimlikSaglayiciIstemcisi {
-    override val desteklenenler: List<KimlikSaglayici> = listOf(KimlikSaglayici.APPLE)
+/** iOS'ta Apple ile giriş (AuthenticationServices) ve, iOS istemci kimliği tanımlıysa, Google ile giriş (GoogleSignIn). */
+private class IosKimlikSaglayiciIstemcisi(private val google: IosGoogleGirisi?) : KimlikSaglayiciIstemcisi {
+    override val desteklenenler: List<KimlikSaglayici> =
+        listOfNotNull(KimlikSaglayici.APPLE, KimlikSaglayici.GOOGLE.takeIf { google?.kullanilabilir == true })
 
     // Apple akışı sürerken temsilci canlı tutulmalı; denetleyici ona zayıf referans tutar.
     private var temsilci: AppleGirisTemsilcisi? = null
 
-    override suspend fun kimlikTokeniAl(saglayici: KimlikSaglayici): KimlikTokeniSonucu {
-        if (saglayici != KimlikSaglayici.APPLE) return KimlikTokeniSonucu.Hata
+    override suspend fun kimlikTokeniAl(saglayici: KimlikSaglayici): KimlikTokeniSonucu = when (saglayici) {
+        KimlikSaglayici.APPLE -> appleTokeni()
+        KimlikSaglayici.GOOGLE -> google?.let { googleTokeni(it) } ?: KimlikTokeniSonucu.Hata
+    }
+
+    /** Token web (server) istemci kimliğiyle istenir; backend aynı `GOOGLE_KIMLIK_KITLELERI` ile doğrular. */
+    private suspend fun googleTokeni(google: IosGoogleGirisi): KimlikTokeniSonucu = suspendCancellableCoroutine { devam ->
+        google.girisYap(DerlemeAyarlari.GOOGLE_SUNUCU_ISTEMCI_KIMLIGI, IosGoogleGirisSonucu { if (devam.isActive) devam.resume(it) })
+    }
+
+    private suspend fun appleTokeni(): KimlikTokeniSonucu {
         return suspendCancellableCoroutine { devam ->
             val istek = ASAuthorizationAppleIDProvider().createRequest()
             istek.requestedScopes = emptyList<Any?>()
@@ -71,4 +82,4 @@ private class AppleGirisTemsilcisi(
 }
 
 @Composable
-actual fun kimlikSaglayiciIstemcisi(): KimlikSaglayiciIstemcisi = remember { IosKimlikSaglayiciIstemcisi() }
+actual fun kimlikSaglayiciIstemcisi(): KimlikSaglayiciIstemcisi = remember { IosKimlikSaglayiciIstemcisi(iosGoogleGirisi) }

@@ -194,7 +194,7 @@ cd "$(dirname "$0")/.."
 
 RAILWAY_PROJE="https://railway.com/project/211ca30f-570f-489b-9a5f-7f42afd64bc4"
 
-TOTAL_STAGES=14
+TOTAL_STAGES=15
 
 # gradle_ayari_yaz AD DEGER: gradle.properties'teki bir derleme ayarını günceller (gizli olmayan değerler).
 gradle_ayari_yaz() {
@@ -414,6 +414,26 @@ step "'+ Create credentials' → 'OAuth client ID' → Application type: 'Androi
 step "Package name: com.sosyaloyun.app, SHA-1: yukarıdaki değer → Create."
 note "Mağaza (release) imzası için aynı şekilde ikinci bir Android istemcisi gerekir; o, mağaza yüklemesiyle birlikte yapılır."
 pause "Android istemcisi oluşturulunca Enter'a bas"
+
+stage "Google: iOS OAuth istemcisi (#32)"
+say "iOS'taki Google girişi GoogleSignIn SDK'sıyla bu istemci üzerinden yapılır; token'ın kitlesi bu iOS istemci kimliğidir."
+open_url "https://console.cloud.google.com/apis/credentials"
+step "'+ Create credentials' → 'OAuth client ID' → Application type: 'iOS' → Bundle ID: com.sosyaloyun.app → Create."
+step "Çıkan 'Client ID'yi ve 'iOS URL scheme'i (com.googleusercontent.apps.… ile başlar) kopyala."
+ask GOOGLE_IOS_ISTEMCI_KIMLIGI "iOS Client ID'yi yapıştır:"
+ask GOOGLE_IOS_URL_SEMASI "iOS URL scheme'i yapıştır:"
+write_env GOOGLE_IOS_ISTEMCI_KIMLIGI "$GOOGLE_IOS_ISTEMCI_KIMLIGI"
+write_env GOOGLE_IOS_URL_SEMASI "$GOOGLE_IOS_URL_SEMASI"
+tmp=$(mktemp)
+sed -e "s#^GOOGLE_IOS_ISTEMCI_KIMLIGI=.*#GOOGLE_IOS_ISTEMCI_KIMLIGI=$GOOGLE_IOS_ISTEMCI_KIMLIGI#" \
+    -e "s#^GOOGLE_IOS_URL_SEMASI=.*#GOOGLE_IOS_URL_SEMASI=$GOOGLE_IOS_URL_SEMASI#" \
+    iosApp/Configuration/Config.xcconfig > "$tmp"
+mv "$tmp" iosApp/Configuration/Config.xcconfig
+printf '  %s✓ wrote%s GOOGLE_IOS_* → iosApp/Configuration/Config.xcconfig\n' "$GREEN" "$RESET"
+open_url "$RAILWAY_PROJE"
+step "Railway → backend servisi → Variables → GOOGLE_KIMLIK_KITLELERI'ni iki kimliği virgülle içerecek şekilde güncelle:"
+note "    ${GOOGLE_WEB_ISTEMCI_KIMLIGI:-<web client id>},$GOOGLE_IOS_ISTEMCI_KIMLIGI"
+pause "Railway değişkeni güncellenip deploy edilince Enter'a bas"
 note "gradle.properties ve Config.xcconfig değişikliklerini commit'leyip main'e gönder (değerler gizli değil)."
 # ──────────────────────────────────────────────────────────────────────────
 

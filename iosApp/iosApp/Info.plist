@@ -7,6 +7,17 @@
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
+	<key>GIDClientID</key>
+	<string>$(GOOGLE_IOS_ISTEMCI_KIMLIGI)</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>$(GOOGLE_IOS_URL_SEMASI)</string>
+			</array>
+		</dict>
+	</array>
 	<key>NSContactsUsageDescription</key>
 	<string>Rehberindeki arkadaşlarını bulmak için. Numaralar cihazında şifrelenir; açık hali gönderilmez.</string>
 	<key>CFBundleDevelopmentRegion</key>

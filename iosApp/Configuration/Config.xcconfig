@@ -1,3 +1,7 @@
 TEAM_ID=
 BUNDLE_ID=com.sosyaloyun.app
 APP_NAME=Sosyal Oyun
+
+// iOS'ta Google ile giriş (#32): iOS OAuth istemci kimliği ve ters hali (URL şeması). Gizli değil; boşsa düğme gösterilmez.
+GOOGLE_IOS_ISTEMCI_KIMLIGI=
+GOOGLE_IOS_URL_SEMASI=
