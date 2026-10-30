@@ -53,6 +53,7 @@ class EkranGoruntuleri {
         )
 
     private fun sahteApi() = SahteApiIstemcisi().apply {
+        davetKodlari = listOf(com.sosyaloyun.shared.DavetKodu("K7Q2MX", null, false), com.sosyaloyun.shared.DavetKodu("P4ZR8T", ayse, true))
         profilSayfasi = profilSayfasi.copy(kullanici = ayse)
         akisYeni = 3
         val simdi = Clock.System.now()
@@ -111,18 +112,34 @@ class EkranGoruntuleri {
                     profiliDuzenle = {}, vitriniDuzenle = {}, oyunaGit = {}, kisiListesi = { _, _ -> }, gunlukKaydinaGit = {},
                 )
             }
+            ciz("5-ayarlar", yukseklik = 1900) {
+                com.sosyaloyun.app.hesap.AnaEkran(
+                    profil = ayse,
+                    davetKodlari = com.sosyaloyun.app.hesap.DavetKodlarimViewModel(api),
+                    geri = {},
+                    steamAyari = com.sosyaloyun.app.onboarding.SteamAyariViewModel(api),
+                    bildirimTercihleri = com.sosyaloyun.app.bildirim.BildirimTercihleriViewModel(api),
+                    engelListesi = {},
+                    cikisYap = {},
+                    hesapSilme = { error("açılmaz") },
+                    gizlilik = { com.sosyaloyun.app.gizlilik.GizlilikViewModel(api) },
+                    kurator = { com.sosyaloyun.app.kurator.KuratorViewModel(api) },
+                    itiraz = { com.sosyaloyun.app.itiraz.ItirazViewModel(api) },
+                    konsol = { com.sosyaloyun.app.konsol.KonsolViewModel(api) },
+                )
+            }
         } finally {
             Dispatchers.resetMain()
             java.util.Locale.setDefault(oncekiYerel)
         }
     }
 
-    private fun ciz(ad: String, icerik: @Composable () -> Unit) {
+    private fun ciz(ad: String, yukseklik: Int = 844, icerik: @Composable () -> Unit) {
         val sahip = object : ViewModelStoreOwner, LifecycleOwner {
             override val viewModelStore = ViewModelStore()
             override val lifecycle = LifecycleRegistry.createUnsafe(this).apply { currentState = Lifecycle.State.RESUMED }
         }
-        ImageComposeScene(width = 390 * 3, height = 844 * 3, density = Density(3f)) {
+        ImageComposeScene(width = 390 * 3, height = yukseklik * 3, density = Density(3f)) {
             CompositionLocalProvider(LocalViewModelStoreOwner provides sahip, LocalLifecycleOwner provides sahip, LocalAktifFaz provides Faz.FAZ_3) {
                 SosyalOyunTemasi { androidx.compose.material3.Surface(color = com.sosyaloyun.app.tema.Renk.Zemin, content = icerik) }
             }

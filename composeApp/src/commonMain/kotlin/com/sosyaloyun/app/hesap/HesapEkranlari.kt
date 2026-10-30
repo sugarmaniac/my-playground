@@ -9,8 +9,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -228,7 +226,9 @@ fun AnaEkran(
     var silmeAcik by remember { mutableStateOf(false) }
     if (silmeAcik) HesapSilmePenceresi(hesapSilme(), profil.kullaniciAdi, kapat = { silmeAcik = false })
     val paylas = paylasici()
-    Column(Modifier.fillMaxSize().padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    // Bölümler ekrana sığmaz: sayfa kaydırılır. Kaydırılmayan sütunda alttaki bölümler sıfır yüksekliğe sıkışıp
+    // üst üste biniyordu, davet kodları listesi hiç görünmüyordu.
+    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         TextButton(onClick = geri) { Text(stringResource(Res.string.geri)) }
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             AvatarGorunumu(profil.avatar, boyut = 56.dp)
@@ -244,11 +244,7 @@ fun AnaEkran(
         when (val durum = ekran) {
             DavetKodlarimEkrani.Yukleniyor -> CircularProgressIndicator()
             DavetKodlarimEkrani.Hata -> TextButton(onClick = davetKodlari::yenile) { Text(stringResource(Res.string.tekrar_dene)) }
-            is DavetKodlarimEkrani.Hazir -> LazyColumn(Modifier.weight(1f)) {
-                items(durum.kodlar, key = { it.kod }) { kod ->
-                    DavetKoduSatiri(kod, paylas)
-                }
-            }
+            is DavetKodlarimEkrani.Hazir -> Column { durum.kodlar.forEach { kod -> DavetKoduSatiri(kod, paylas) } }
         }
         HorizontalDivider()
         SteamBolumu(steamAyari)

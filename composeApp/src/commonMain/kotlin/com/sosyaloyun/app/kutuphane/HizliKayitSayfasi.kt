@@ -3,6 +3,8 @@ package com.sosyaloyun.app.kutuphane
 import com.sosyaloyun.app.tema.Renk
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -44,7 +46,7 @@ import org.jetbrains.compose.resources.stringResource
 fun HizliKayitSayfasi(oyunAdi: String, viewModel: HizliKayitViewModel) {
     val durum by viewModel.ekran.collectAsStateWithLifecycle()
     val giris = durum.giris
-    Column(Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = 24.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(oyunAdi, style = MaterialTheme.typography.titleLarge)
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Durum.entries.forEach { secenek ->
