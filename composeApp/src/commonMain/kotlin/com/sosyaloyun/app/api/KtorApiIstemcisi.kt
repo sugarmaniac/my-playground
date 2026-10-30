@@ -3,6 +3,8 @@ package com.sosyaloyun.app.api
 import com.sosyaloyun.app.oturum.OturumDeposu
 import com.sosyaloyun.shared.KuratorDurumu
 import com.sosyaloyun.shared.ListeSayfasi
+import com.sosyaloyun.shared.PuanGecmisi
+import com.sosyaloyun.shared.HaftalikPuanDegisimi
 import com.sosyaloyun.shared.ListeIstegi
 import com.sosyaloyun.shared.Liste
 import com.sosyaloyun.shared.GizlilikIstegi
@@ -473,6 +475,10 @@ class KtorApiIstemcisi(
     override suspend fun kuratorBasvur(): KuratorDurumu = istek { http.post(ApiYollari.KURATOR_BASVURU).body() }
 
     override suspend fun kuratorListeleri(): ListeSayfasi = istek { http.get(ApiYollari.KURATOR_LISTELERI).body() }
+
+    override suspend fun puanGecmisi(oyunId: String): PuanGecmisi = istek { http.get(ApiYollari.puanGecmisi(oyunId)).body() }
+
+    override suspend fun puanDegisimi(): HaftalikPuanDegisimi = istek { http.get(ApiYollari.PUAN_DEGISIMI).body() }
 
     private fun AkisSekmesi.parametre() = if (this == AkisSekmesi.ARKADASLAR) "arkadaslar" else "takip"
 

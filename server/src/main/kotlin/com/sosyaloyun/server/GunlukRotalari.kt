@@ -98,7 +98,7 @@ private suspend fun RoutingCall.erisim(gunluk: Gunluk, sosyalGraf: SosyalGraf): 
     return erisim
 }
 
-private fun RoutingCall.kimlik(): UUID? = parameters["id"]?.let { runCatching { UUID.fromString(it) }.getOrNull() }
+internal fun RoutingCall.kimlik(): UUID? = parameters["id"]?.let { runCatching { UUID.fromString(it) }.getOrNull() }
 
 /** İstek kurallara uymuyorsa 400 yanıtını verip null döner. */
 private suspend fun RoutingCall.gecerliIstek(): GunlukKaydiIstegi? {

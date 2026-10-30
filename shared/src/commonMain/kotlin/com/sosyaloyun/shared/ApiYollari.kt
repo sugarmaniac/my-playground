@@ -140,6 +140,10 @@ object ApiYollari {
     fun liste(listeId: String) = "$LISTELER/$listeId"
     fun listeBegenisi(listeId: String) = "$LISTELER/$listeId/begeni"
     fun oyunListeleri(oyunId: String) = "$OYUNLAR/$oyunId/listeler"
+
+    /** Faz 2 (#51): oyunun son 12 haftalık puan geçmişi ve Keşif'teki haftalık puan değişimi. */
+    fun puanGecmisi(oyunId: String) = "$OYUNLAR/$oyunId/puan-gecmisi"
+    const val PUAN_DEGISIMI = "/kesif/puan-degisimi"
     fun paylasilanListe(listeId: String) = "$PAYLASIM/liste/$listeId"
 
     /** `GET` / `PUT` / `DELETE /gunluk/{id}`: günlük kaydı detayı, düzenleme ve silme. */

@@ -34,7 +34,10 @@ class Bagimliliklar(
     val epostaGonderici: EpostaGonderici? = null,
     /** Moderasyon sayfasının şifresi; null ise sayfa kapalı. */
     val moderasyonSifresi: String? = null,
-    /** Haftalık doğrulama metrikleri e-postası; testlerde kapalı, test [Metrikler.haftalikRaporuGonder]'i kendisi çağırır. */
+    /**
+     * Haftalık işler: doğrulama metrikleri e-postası ve puan görüntüsü (#51). Testlerde kapalı; test
+     * [Metrikler.haftalikRaporuGonder] ve [PuanGecmisleri.anlikGoruntuAl]'ı kendisi çağırır.
+     */
     val metrikZamanlayici: Boolean = false,
     /** Statik web sitesinin dizini (`web/`); null ise server web sitesini sunmaz. */
     val webDizini: File? = null,

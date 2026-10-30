@@ -2,6 +2,8 @@ package com.sosyaloyun.app.api
 
 import com.sosyaloyun.shared.KuratorDurumu
 import com.sosyaloyun.shared.ListeSayfasi
+import com.sosyaloyun.shared.PuanGecmisi
+import com.sosyaloyun.shared.HaftalikPuanDegisimi
 import com.sosyaloyun.shared.ListeIstegi
 import com.sosyaloyun.shared.Liste
 import com.sosyaloyun.shared.YorumListesi
@@ -208,6 +210,12 @@ interface ApiIstemcisi {
     suspend fun kuratorBasvur(): KuratorDurumu
 
     suspend fun kuratorListeleri(): ListeSayfasi
+
+    /** Faz 2 (#51): oyunun son 12 haftalık puan geçmişi. */
+    suspend fun puanGecmisi(oyunId: String): PuanGecmisi
+
+    /** Faz 2 (#51): Keşif'teki haftalık puan değişimi kartı. */
+    suspend fun puanDegisimi(): HaftalikPuanDegisimi
 
     suspend fun kullaniciAra(sorgu: String, imlec: String? = null): KullaniciListesi
 

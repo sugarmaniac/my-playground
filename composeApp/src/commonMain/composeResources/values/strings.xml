@@ -324,4 +324,9 @@
     <string name="bildirim_kurator_reddedildi">Your curator application wasn't approved.</string>
     <string name="tercih_kurator_onaylandi">Curator approvals</string>
     <string name="tercih_kurator_reddedildi">Curator rejections</string>
+    <string name="puan_gecmisi_baslik">Score over the last 12 weeks</string>
+    <string name="puan_gecmisi_ozet">From %1$s to %2$s over the last 12 weeks.</string>
+    <string name="puan_degisimi_baslik">Biggest score changes this week</string>
+    <string name="puan_artanlar">Rising</string>
+    <string name="puan_azalanlar">Falling</string>
 </resources>
