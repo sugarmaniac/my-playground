@@ -273,4 +273,13 @@
     <string name="hesap_sil_onay">Kalıcı olarak sil</string>
     <string name="hesap_sil_hata">Hesabın silinemedi. Tekrar dene.</string>
     <string name="paylas">Paylaş</string>
+    <string name="yorumlar_baslik">Yorumlar (%1$d)</string>
+    <string name="yorum_yok">Henüz yorum yok.</string>
+    <string name="yorum_sil">Sil</string>
+    <string name="yorum_yaz">Yorum yaz</string>
+    <string name="yorum_gonder">Gönder</string>
+    <string name="yorum_hata">Yorum gönderilemedi. Tekrar dene.</string>
+    <string name="bildirim_yorum">%1$s günlük kaydına yorum yaptı.</string>
+    <string name="tercih_yorum">Yorumlar</string>
+    <string name="yorum_silme_hata">Yorum silinemedi. Tekrar dene.</string>
 </resources>

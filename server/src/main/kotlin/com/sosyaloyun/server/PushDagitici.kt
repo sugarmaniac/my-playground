@@ -124,6 +124,7 @@ class PushDagitici(
                 BildirimTuru.DAVET_KODU_KULLANILDI -> "Davet kodun kullanıldı${aktor?.let { ": $it aramıza katıldı." } ?: "."}"
                 BildirimTuru.SIKAYET_SONUCLANDI -> "Şikayetin incelendi. Bildirdiğin için teşekkürler."
                 BildirimTuru.ICERIK_KALDIRILDI -> "Bir içeriğin topluluk kurallarına aykırı bulunduğu için kaldırıldı."
+                BildirimTuru.YORUM -> "$kim günlük kaydına yorum yaptı."
             }
         }
     }

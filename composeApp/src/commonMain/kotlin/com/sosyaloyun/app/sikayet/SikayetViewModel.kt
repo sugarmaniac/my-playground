@@ -13,7 +13,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 /** Şikayet edilen: bir günlük kaydı ya da bir profil; her ikisinde de sahibinin kullanıcı adı bilinir. */
-data class SikayetHedefi(val kullaniciAdi: String, val gunlukKaydiId: String? = null)
+/** [yorumId]: Faz 2'de bir yorum şikayet edilirken (#47). */
+data class SikayetHedefi(val kullaniciAdi: String, val gunlukKaydiId: String? = null, val yorumId: String? = null)
 
 sealed interface SikayetEkrani {
     data class Form(
@@ -48,8 +49,9 @@ class SikayetViewModel(private val api: ApiIstemcisi, private val hedef: Sikayet
                 api.sikayetEt(
                     SikayetIstegi(
                         sebep = form.sebep!!,
-                        gunlukKaydiId = hedef.gunlukKaydiId,
-                        kullaniciAdi = hedef.kullaniciAdi.takeIf { hedef.gunlukKaydiId == null },
+                        gunlukKaydiId = hedef.gunlukKaydiId.takeIf { hedef.yorumId == null },
+                        kullaniciAdi = hedef.kullaniciAdi.takeIf { hedef.gunlukKaydiId == null && hedef.yorumId == null },
+                        yorumId = hedef.yorumId,
                         aciklama = form.aciklama.trim().ifEmpty { null },
                     ),
                 )

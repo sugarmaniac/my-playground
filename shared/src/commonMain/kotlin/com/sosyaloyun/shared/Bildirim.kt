@@ -5,7 +5,10 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-enum class BildirimTuru {
+enum class BildirimTuru(
+    /** Bu türün ait olduğu faz; faz kapalıyken bu türden bildirimler ve tercihleri görünmez (#46). */
+    val faz: Faz = Faz.FAZ_1,
+) {
     @SerialName("yeni_takipci") YENI_TAKIPCI,
     @SerialName("arkadaslik_istegi") ARKADASLIK_ISTEGI,
     @SerialName("arkadaslik_kabulu") ARKADASLIK_KABULU,
@@ -17,6 +20,9 @@ enum class BildirimTuru {
 
     /** Kalıp mesaj: içeriği kurallara aykırı bulunup kaldırılana. */
     @SerialName("icerik_kaldirildi") ICERIK_KALDIRILDI,
+
+    /** Günlük kaydına yorum yapıldı (#47). */
+    @SerialName("yorum") YORUM(Faz.FAZ_2),
 }
 
 /**

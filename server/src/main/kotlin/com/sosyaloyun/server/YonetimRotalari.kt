@@ -108,6 +108,8 @@ private val SEBEP_ADI = mapOf(
     SikayetSebebi.DIGER to "Diğer",
 )
 
+private val HEDEF_ADI = mapOf(SikayetHedefi.KAYIT to "Günlük kaydı", SikayetHedefi.PROFIL to "Profil", SikayetHedefi.YORUM to "Yorum")
+
 private val FAZ_ACIKLAMASI = mapOf(
     Faz.FAZ_1 to "Yalnızca MVP",
     Faz.FAZ_2 to "MVP + Faz 2 (yorumlar, listeler, küratörler, puan geçmişi, gizli profil, itirazlar…)",
@@ -133,7 +135,7 @@ private fun yonetimSayfasi(aktifFaz: Faz, sikayetler: List<AcikSikayet>, anahtar
     append("<section><h2>Açık şikayetler (${sikayetler.size})</h2>")
     if (sikayetler.isEmpty()) append("<p>Karar bekleyen şikayet yok.</p>")
     for (s in sikayetler) {
-        append("<article><p><strong>${SEBEP_ADI.getValue(s.sebep).html()}</strong> · ${if (s.gunlukKaydi) "Günlük kaydı" else "Profil"}")
+        append("<article><p><strong>${SEBEP_ADI.getValue(s.sebep).html()}</strong> · ${HEDEF_ADI.getValue(s.tur)}")
         append(" · @${s.hedef.orEmpty().html()} · ${s.zaman.toInstant()}</p>")
         append("<p>Şikayet eden: @${s.sikayetEden.orEmpty().html()}</p>")
         s.icerik?.let { append("<blockquote>${it.html()}</blockquote>") }

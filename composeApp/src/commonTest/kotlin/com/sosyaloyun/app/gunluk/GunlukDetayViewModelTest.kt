@@ -4,15 +4,20 @@ import com.sosyaloyun.app.api.sunucuAdresi
 import com.sosyaloyun.app.test.SahteApiIstemcisi
 import com.sosyaloyun.app.test.viewModelTesti
 import com.sosyaloyun.shared.Avatar
+import com.sosyaloyun.shared.Faz
 import com.sosyaloyun.shared.Gorunurluk
 import com.sosyaloyun.shared.GunlukKaydi
 import com.sosyaloyun.shared.GunlukKaydiDetayi
 import com.sosyaloyun.shared.KullaniciOzeti
 import com.sosyaloyun.shared.OyunOzeti
 import com.sosyaloyun.shared.OyunTuru
+import com.sosyaloyun.shared.Yorum
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 import kotlin.time.Instant
 
 class GunlukDetayViewModelTest {
@@ -89,5 +94,76 @@ class GunlukDetayViewModelTest {
         val vm = GunlukDetayViewModel(api, "gizli")
         advanceUntilIdle()
         assertEquals(GunlukDetayEkrani.Bulunamadi, vm.ekran.value)
+    }
+
+    private fun yorum(id: String, benim: Boolean) =
+        Yorum(id, ayse, "Yorum $id", Instant.parse("2026-01-05T09:30:00Z"), silebilirim = benim, benim = benim)
+
+    @Test
+    fun faz1deYorumlarYuklenmez() = viewModelTesti {
+        api.gunlukDetaylari = mapOf("g1" to detay)
+        val vm = GunlukDetayViewModel(api, "g1")
+        advanceUntilIdle()
+
+        assertNull((vm.ekran.value as GunlukDetayEkrani.Hazir).yorumlar)
+        assertEquals(emptyList(), api.yorumIstekleri)
+    }
+
+    @Test
+    fun faz2deYorumlarYuklenirYazilirVeSilinir() = viewModelTesti {
+        api.gunlukDetaylari = mapOf("g1" to detay)
+        api.yorumListesi = mutableListOf(yorum("a", benim = false))
+        val vm = GunlukDetayViewModel(api, "g1", aktifFaz = Faz.FAZ_2)
+        advanceUntilIdle()
+        fun hazir() = vm.ekran.value as GunlukDetayEkrani.Hazir
+        assertEquals(listOf("a"), hazir().yorumlar?.map { it.id })
+
+        assertFalse(hazir().yorumGonderilebilir)
+        vm.yorumMetniDegisti("  Güzel  ")
+        vm.yorumGonder()
+        advanceUntilIdle()
+        assertEquals(listOf("a", "y2"), hazir().yorumlar?.map { it.id })
+        assertEquals("", hazir().yorumMetni)
+        assertEquals("yaz:g1:Güzel", api.yorumIstekleri.last())
+
+        // Başkasının yorumu silinemez; kendi yorumu hemen kalkar.
+        vm.yorumSil("a")
+        vm.yorumSil("y2")
+        advanceUntilIdle()
+        assertEquals(listOf("a"), hazir().yorumlar?.map { it.id })
+        assertEquals("sil:y2", api.yorumIstekleri.last())
+    }
+
+    @Test
+    fun yorumGonderilemezseMetinKalirHataGorunur() = viewModelTesti {
+        api.gunlukDetaylari = mapOf("g1" to detay)
+        val vm = GunlukDetayViewModel(api, "g1", aktifFaz = Faz.FAZ_3)
+        advanceUntilIdle()
+        api.yorumHatasi = IllegalStateException("bağlantı yok")
+        vm.yorumMetniDegisti("Merhaba")
+        vm.yorumGonder()
+        advanceUntilIdle()
+
+        val hazir = vm.ekran.value as GunlukDetayEkrani.Hazir
+        assertEquals("Merhaba", hazir.yorumMetni)
+        assertTrue(hazir.yorumHatasi)
+        assertEquals(emptyList(), hazir.yorumlar)
+    }
+
+    @Test
+    fun yorumSilinemezseYalnizcaOGeriGelirSilmeHatasiGorunur() = viewModelTesti {
+        api.gunlukDetaylari = mapOf("g1" to detay)
+        api.yorumListesi = mutableListOf(yorum("a", benim = true))
+        val vm = GunlukDetayViewModel(api, "g1", aktifFaz = Faz.FAZ_2)
+        advanceUntilIdle()
+        api.yorumHatasi = IllegalStateException("bağlantı yok")
+
+        vm.yorumSil("a")
+        advanceUntilIdle()
+
+        val hazir = vm.ekran.value as GunlukDetayEkrani.Hazir
+        assertEquals(listOf("a"), hazir.yorumlar?.map { it.id })
+        assertTrue(hazir.yorumSilmeHatasi)
+        assertFalse(hazir.yorumHatasi)
     }
 }

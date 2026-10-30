@@ -34,7 +34,14 @@ import org.jetbrains.exposed.v1.jdbc.upsert
 
 /** Bildirimler kaynak olayı yazan işlemin içinde yazılır ve geri alınınca (beğeni, takip, istek) silinir. */
 internal object BildirimOlaylari {
-    fun JdbcTransaction.bildir(alici: UUID, tur: BildirimTuru, aktor: UUID, zaman: OffsetDateTime, gunlukKaydiId: UUID? = null) {
+    fun JdbcTransaction.bildir(
+        alici: UUID,
+        tur: BildirimTuru,
+        aktor: UUID,
+        zaman: OffsetDateTime,
+        gunlukKaydiId: UUID? = null,
+        yorumId: UUID? = null,
+    ) {
         if (alici == aktor) return
         BildirimTablosu.insert {
             it[id] = UUID.randomUUID()
@@ -42,6 +49,7 @@ internal object BildirimOlaylari {
             it[BildirimTablosu.tur] = tur.name
             it[BildirimTablosu.aktor] = aktor
             it[BildirimTablosu.gunlukKaydiId] = gunlukKaydiId
+            it[BildirimTablosu.yorumId] = yorumId
             it[olusturulma] = zaman
         }
     }
@@ -70,14 +78,17 @@ internal object BildirimOlaylari {
     }
 }
 
-class Bildirimler(private val veritabani: Database, private val saat: Clock) {
+class Bildirimler(private val veritabani: Database, private val saat: Clock, private val fazlar: Fazlar) {
     /** Son [SON_BILDIRIM] bildirim, yeniden eskiye; beğeniler günlük kaydı başına gruplanır. Engelliler ve henüz profili olmayanlar görünmez. */
-    suspend fun liste(alici: UUID): BildirimListesi = withContext(Dispatchers.IO) {
-        transaction(veritabani) {
+    suspend fun liste(alici: UUID): BildirimListesi {
+        val kapali = kapaliTurler()
+        return withContext(Dispatchers.IO) { transaction(veritabani) {
             val b = BildirimTablosu
             val satirlar = b.join(KullaniciTablosu, JoinType.LEFT, b.aktor, KullaniciTablosu.id)
                 .selectAll()
-                .where { (b.alici eq alici) and (b.aktor.isNull() or (b.aktor notInList engellileri(alici))) }
+                .where {
+                    (b.alici eq alici) and (b.aktor.isNull() or (b.aktor notInList engellileri(alici))) and (b.tur notInList kapali)
+                }
                 .orderBy(b.olusturulma to SortOrder.DESC, b.id to SortOrder.DESC)
                 .limit(SON_BILDIRIM)
                 // Kişisi olan ama henüz ad seçmemiş aktörün bildirimi, adını seçince görünür.
@@ -98,7 +109,13 @@ class Bildirimler(private val veritabani: Database, private val saat: Clock) {
                 )
             }
             BildirimListesi(bildirimler, okunmamisSayisi = bildirimler.count { !it.okundu })
-        }
+        } }
+    }
+
+    /** Kapalı fazın türleri (ör. Faz 1'de yorum) ne listede ne tercihlerde görünür; veri silinmez. */
+    private suspend fun kapaliTurler(): List<String> {
+        val aktif = fazlar.aktif()
+        return BildirimTuru.entries.filterNot { aktif.kapsar(it.faz) }.map { it.name }
     }
 
     suspend fun okunmamisSayisi(alici: UUID): Int = liste(alici).okunmamisSayisi
@@ -109,8 +126,11 @@ class Bildirimler(private val veritabani: Database, private val saat: Clock) {
         }
     }
 
-    suspend fun tercihler(kullaniciId: UUID): BildirimTercihleri = withContext(Dispatchers.IO) {
-        transaction(veritabani) { BildirimTercihleri(pushTercihleri(kullaniciId)) }
+    suspend fun tercihler(kullaniciId: UUID): BildirimTercihleri {
+        val kapali = kapaliTurler()
+        return withContext(Dispatchers.IO) {
+            transaction(veritabani) { BildirimTercihleri(pushTercihleri(kullaniciId).filterKeys { it.name !in kapali }) }
+        }
     }
 
     suspend fun tercihleriKaydet(kullaniciId: UUID, tercihler: BildirimTercihleri) {
@@ -160,6 +180,7 @@ internal object BildirimTablosu : Table("bildirim") {
     val tur = text("tur")
     val aktor = javaUUID("aktor").nullable()
     val gunlukKaydiId = javaUUID("gunluk_kaydi_id").nullable()
+    val yorumId = javaUUID("yorum_id").nullable()
     val olusturulma = timestampWithTimeZone("olusturulma")
     val okundu = bool("okundu").default(false)
     val pushDurumu = text("push_durumu").default(PushDurumu.BEKLIYOR.name)

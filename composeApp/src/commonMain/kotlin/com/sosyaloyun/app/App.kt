@@ -213,6 +213,7 @@ private const val VITRIN_OYUNU = "vitrinOyunu"
 /** Onboarding bittikten sonraki ekranlar: alt gezinme çubuğu (Ana sayfa, ortada Kaydet, Profil). */
 @Composable
 private fun UygulamaGezintisi(api: ApiIstemcisi, profil: KullaniciOzeti, cikisYap: () -> Unit, hesapSilindi: () -> Unit) {
+    val aktifFaz = LocalAktifFaz.current
     val gezinti = rememberNavController()
     val girdi by gezinti.currentBackStackEntryAsState()
     val hedef = girdi?.destination
@@ -279,7 +280,7 @@ private fun UygulamaGezintisi(api: ApiIstemcisi, profil: KullaniciOzeti, cikisYa
             composable<GunlukDetayRota> { detayGirdisi ->
                 val kayitId = detayGirdisi.toRoute<GunlukDetayRota>().kayitId
                 GunlukDetayGorunumu(
-                    viewModel(key = "gunluk-detay-$kayitId") { GunlukDetayViewModel(api, kayitId) },
+                    viewModel(key = "gunluk-detay-$kayitId") { GunlukDetayViewModel(api, kayitId, aktifFaz = aktifFaz) },
                     api = api,
                     oyunaGit = { gezinti.navigate(OyunRota(it)) },
                     kullaniciyaGit = { gezinti.navigate(KullaniciRota(it)) },

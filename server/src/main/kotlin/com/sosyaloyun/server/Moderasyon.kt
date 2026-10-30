@@ -29,6 +29,9 @@ import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import org.jetbrains.exposed.v1.jdbc.update
 import org.slf4j.LoggerFactory
 
+/** Şikayet edilen şey; kayıt ya da yorum silinse de şikayetin hedefinin türü bilinir. */
+enum class SikayetHedefi { KAYIT, PROFIL, YORUM }
+
 /** Şikayetin moderatör kararı; [ACIK] karar bekleyen. */
 enum class SikayetDurumu { ACIK, REDDEDILDI, ICERIK_KALDIRILDI, ASKIYA_ALINDI, BANLANDI }
 
@@ -40,7 +43,7 @@ data class AcikSikayet(
     val aciklama: String?,
     val sikayetEden: String?,
     val hedef: String?,
-    val gunlukKaydi: Boolean,
+    val tur: SikayetHedefi,
     val icerik: String?,
 )
 
@@ -60,16 +63,19 @@ class Moderasyon(
     suspend fun sikayetEt(sikayetEden: UUID, istek: SikayetIstegi): HataKodu? {
         val aciklama = istek.aciklama?.trim()?.takeIf { it.isNotEmpty() }
         if (aciklama != null && aciklama.length > SikayetKurallari.ACIKLAMA_EN_FAZLA) return HataKodu.SIKAYET_GECERSIZ
-        if ((istek.gunlukKaydiId == null) == (istek.kullaniciAdi == null)) return HataKodu.SIKAYET_GECERSIZ
+        if (listOfNotNull(istek.gunlukKaydiId, istek.kullaniciAdi, istek.yorumId).size != 1) return HataKodu.SIKAYET_GECERSIZ
         val sonuc = withContext(Dispatchers.IO) {
             transaction(veritabani) {
                 val hedef = hedefiBul(sikayetEden, istek) ?: return@transaction HataKodu.SIKAYET_GECERSIZ to null
                 if (hedef.kullanici == sikayetEden) return@transaction HataKodu.SIKAYET_GECERSIZ to null
                 val zatenAcik = SikayetTablosu.selectAll().where {
-                    var kosul = (SikayetTablosu.sikayetEden eq sikayetEden) and (SikayetTablosu.hedefKullanici eq hedef.kullanici) and
-                        (SikayetTablosu.durum eq SikayetDurumu.ACIK.name)
-                    kosul = if (hedef.gunlukKaydi != null) kosul and (SikayetTablosu.gunlukKaydiId eq hedef.gunlukKaydi) else kosul and SikayetTablosu.gunlukKaydiId.isNull()
-                    kosul
+                    val kosul = (SikayetTablosu.sikayetEden eq sikayetEden) and (SikayetTablosu.hedefKullanici eq hedef.kullanici) and
+                        (SikayetTablosu.durum eq SikayetDurumu.ACIK.name) and (SikayetTablosu.hedefTuru eq hedef.tur.name)
+                    when (hedef.tur) {
+                        SikayetHedefi.KAYIT -> kosul and (SikayetTablosu.gunlukKaydiId eq hedef.gunlukKaydi!!)
+                        SikayetHedefi.YORUM -> kosul and (SikayetTablosu.yorumId eq hedef.yorum!!)
+                        SikayetHedefi.PROFIL -> kosul
+                    }
                 }.any()
                 if (zatenAcik) return@transaction null to null
                 SikayetTablosu.insert {
@@ -77,6 +83,8 @@ class Moderasyon(
                     it[SikayetTablosu.sikayetEden] = sikayetEden
                     it[hedefKullanici] = hedef.kullanici
                     it[gunlukKaydiId] = hedef.gunlukKaydi
+                    it[yorumId] = hedef.yorum
+                    it[hedefTuru] = hedef.tur.name
                     it[sebep] = istek.sebep.name
                     it[SikayetTablosu.aciklama] = aciklama
                     it[icerikOzeti] = hedef.ozet
@@ -87,7 +95,7 @@ class Moderasyon(
         }
         sonuc.second?.let { metin ->
             try {
-                eposta?.gonder("Yeni şikayet", "$metin\n\nModerasyon sayfası: /moderasyon")
+                eposta?.gonder("Yeni şikayet", "$metin\n\nYönetim paneli: /yonetim")
             } catch (e: Exception) {
                 if (e is kotlinx.coroutines.CancellationException) throw e
                 log.warn("Şikayet e-postası gönderilemedi", e)
@@ -96,7 +104,7 @@ class Moderasyon(
         return sonuc.first
     }
 
-    private class Hedef(val kullanici: UUID, val gunlukKaydi: UUID?, val ozet: String?)
+    private class Hedef(val tur: SikayetHedefi, val kullanici: UUID, val gunlukKaydi: UUID?, val yorum: UUID?, val ozet: String?)
 
     /** Şikayet edenin göremediği içerik şikayet edilemez; görebildiği her şey edilebilir. */
     private fun JdbcTransaction.hedefiBul(sikayetEden: UUID, istek: SikayetIstegi): Hedef? {
@@ -105,13 +113,20 @@ class Moderasyon(
             val satir = GunlukKaydiTablosu.selectAll().where { GunlukKaydiTablosu.id eq id }.singleOrNull() ?: return null
             val sahip = satir[GunlukKaydiTablosu.kullaniciId]
             if (sahip in engellileri(sikayetEden)) return null
-            return Hedef(sahip, id, satir[GunlukKaydiTablosu.inceleme])
+            return Hedef(SikayetHedefi.KAYIT, sahip, id, null, satir[GunlukKaydiTablosu.inceleme])
+        }
+        istek.yorumId?.let { ham ->
+            val id = runCatching { UUID.fromString(ham) }.getOrNull() ?: return null
+            val satir = YorumTablosu.selectAll().where { YorumTablosu.id eq id }.singleOrNull() ?: return null
+            val yazar = satir[YorumTablosu.kullaniciId]
+            if (yazar in engellileri(sikayetEden)) return null
+            return Hedef(SikayetHedefi.YORUM, yazar, satir[YorumTablosu.gunlukKaydiId], id, satir[YorumTablosu.metin])
         }
         val ad = istek.kullaniciAdi ?: return null
         val satir = KullaniciTablosu.selectAll().where { KullaniciTablosu.kullaniciAdi eq ad }.singleOrNull() ?: return null
         val kullanici = satir[KullaniciTablosu.id]
         if (kullanici in engellileri(sikayetEden)) return null
-        return Hedef(kullanici, null, "${satir[KullaniciTablosu.gorunenAd]} (@$ad): ${satir[KullaniciTablosu.biyografi].orEmpty()}")
+        return Hedef(SikayetHedefi.PROFIL, kullanici, null, null, "${satir[KullaniciTablosu.gorunenAd]} (@$ad): ${satir[KullaniciTablosu.biyografi].orEmpty()}")
     }
 
     suspend fun acikSikayetler(): List<AcikSikayet> = withContext(Dispatchers.IO) {
@@ -127,7 +142,7 @@ class Moderasyon(
                         aciklama = satir[SikayetTablosu.aciklama],
                         sikayetEden = ad(satir[SikayetTablosu.sikayetEden]),
                         hedef = ad(satir[SikayetTablosu.hedefKullanici]),
-                        gunlukKaydi = satir[SikayetTablosu.gunlukKaydiId] != null,
+                        tur = SikayetHedefi.valueOf(satir[SikayetTablosu.hedefTuru]),
                         icerik = satir[SikayetTablosu.icerikOzeti],
                     )
                 }
@@ -148,24 +163,28 @@ class Moderasyon(
                     .where { (SikayetTablosu.id eq sikayetId) and (SikayetTablosu.durum eq SikayetDurumu.ACIK.name) }
                     .singleOrNull() ?: return@transaction false
                 val hedef = sikayet[SikayetTablosu.hedefKullanici]
+                val tur = SikayetHedefi.valueOf(sikayet[SikayetTablosu.hedefTuru])
                 val kayit = sikayet[SikayetTablosu.gunlukKaydiId]
+                val yorum = sikayet[SikayetTablosu.yorumId]
                 val simdi = simdi()
                 // Aynı hedefle ilgili açık şikayetler aynı kararla kapanır; her şikayet edene mesaj gider. Kayıt silinince
                 // gunluk_kaydi_id boşaldığından kayıt şikayetleri silmeden önce toplanır, yoksa profil şikayeti gibi görünürler.
                 val ilgili = SikayetTablosu.selectAll().where {
                     val acik = (SikayetTablosu.hedefKullanici eq hedef) and (SikayetTablosu.durum eq SikayetDurumu.ACIK.name)
                     when {
-                        karar == SikayetDurumu.ICERIK_KALDIRILDI && kayit != null -> acik and (SikayetTablosu.gunlukKaydiId eq kayit)
+                        karar == SikayetDurumu.ICERIK_KALDIRILDI && tur == SikayetHedefi.YORUM && yorum != null -> acik and (SikayetTablosu.yorumId eq yorum)
+                        karar == SikayetDurumu.ICERIK_KALDIRILDI && tur == SikayetHedefi.KAYIT && kayit != null ->
+                            acik and (SikayetTablosu.hedefTuru eq SikayetHedefi.KAYIT.name) and (SikayetTablosu.gunlukKaydiId eq kayit)
                         karar == SikayetDurumu.ICERIK_KALDIRILDI || karar == SikayetDurumu.REDDEDILDI -> acik and (SikayetTablosu.id eq sikayetId)
                         else -> acik
                     }
                 }.toList()
                 when (karar) {
                     SikayetDurumu.ICERIK_KALDIRILDI -> {
-                        if (kayit != null) {
-                            GunlukKaydiTablosu.deleteWhere { GunlukKaydiTablosu.id eq kayit }
-                        } else {
-                            KullaniciTablosu.update({ KullaniciTablosu.id eq hedef }) {
+                        when (tur) {
+                            SikayetHedefi.KAYIT -> kayit?.let { k -> GunlukKaydiTablosu.deleteWhere { GunlukKaydiTablosu.id eq k } }
+                            SikayetHedefi.YORUM -> yorum?.let { y -> YorumTablosu.deleteWhere { YorumTablosu.id eq y } }
+                            SikayetHedefi.PROFIL -> KullaniciTablosu.update({ KullaniciTablosu.id eq hedef }) {
                                 it[biyografi] = null
                                 it[gorunenAd] = KullaniciTablosu.kullaniciAdi
                             }
@@ -216,6 +235,8 @@ internal object SikayetTablosu : Table("sikayet") {
     val sikayetEden = javaUUID("sikayet_eden")
     val hedefKullanici = javaUUID("hedef_kullanici")
     val gunlukKaydiId = javaUUID("gunluk_kaydi_id").nullable()
+    val yorumId = javaUUID("yorum_id").nullable()
+    val hedefTuru = text("hedef_turu")
     val sebep = text("sebep")
     val aciklama = text("aciklama").nullable()
     val icerikOzeti = text("icerik_ozeti").nullable()
