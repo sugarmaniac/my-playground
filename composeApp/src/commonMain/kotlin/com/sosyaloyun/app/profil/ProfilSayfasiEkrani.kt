@@ -45,7 +45,9 @@ import com.sosyaloyun.app.resources.Res
 import com.sosyaloyun.app.resources.profil_sekme_listeler
 import com.sosyaloyun.app.resources.liste_yeni
 import com.sosyaloyun.app.resources.takip_istegi_gonderildi
+import com.sosyaloyun.app.istatistik.IstatistikGorunumu
 import com.sosyaloyun.app.resources.profil_gizli
+import com.sosyaloyun.app.resources.profil_sekme_istatistik
 import com.sosyaloyun.app.resources.kurator_rozet
 import com.sosyaloyun.app.resources.paylas
 import com.sosyaloyun.app.hesap.paylasici
@@ -111,6 +113,8 @@ fun ProfilSayfasiEkrani(
     /** Faz 2 (#49): listeye git; kendi profilinde yeni liste. */
     listeyeGit: (String) -> Unit = {},
     yeniListe: (() -> Unit)? = null,
+    /** Faz 3 (#55): istatistik sekmesinden yıllık özete. */
+    yillikOzeteGit: (Int) -> Unit = {},
     /** Başkasının profilinde şikayet penceresi: kullanıcı adı ve kapatma işlevi alır. */
     sikayetPenceresi: @Composable (kullaniciAdi: String, kapat: () -> Unit) -> Unit = { _, _ -> },
 ) {
@@ -130,7 +134,13 @@ fun ProfilSayfasiEkrani(
             }
         }
         item {
-            val sekmeler = ProfilSekmesi.entries.filter { it != ProfilSekmesi.LISTELER || aktifFaz.kapsar(Faz.FAZ_2) }
+            val sekmeler = ProfilSekmesi.entries.filter {
+                when (it) {
+                    ProfilSekmesi.LISTELER -> aktifFaz.kapsar(Faz.FAZ_2)
+                    ProfilSekmesi.ISTATISTIK -> aktifFaz.kapsar(Faz.FAZ_3)
+                    else -> true
+                }
+            }
             PrimaryScrollableTabRow(selectedTabIndex = sekmeler.indexOf(durum.sekme).coerceAtLeast(0), edgePadding = 16.dp) {
                 sekmeler.forEach { sekme ->
                     Tab(selected = durum.sekme == sekme, onClick = { viewModel.sekmeSecildi(sekme) }, text = { Text(sekmeAdi(sekme)) })
@@ -165,6 +175,7 @@ fun ProfilSayfasiEkrani(
                 items(icerik.ogeler, key = { "liste-${it.id}" }) { ListeOzetiSatiri(it) { listeyeGit(it.id) } }
                 if (icerik.dahaVar) item { DahaFazla(viewModel::dahaFazlaYukle) }
             }
+            is SekmeIcerigi.Istatistik -> item { IstatistikGorunumu(icerik.istatistikler, yillikOzeteGit) }
         }
     }
 }
@@ -364,6 +375,7 @@ private fun sekmeAdi(sekme: ProfilSekmesi): String = stringResource(
         ProfilSekmesi.INCELEMELER -> Res.string.profil_sekme_incelemeler
         ProfilSekmesi.ISTEK_LISTESI -> Res.string.profil_sekme_istek_listesi
         ProfilSekmesi.LISTELER -> Res.string.profil_sekme_listeler
+        ProfilSekmesi.ISTATISTIK -> Res.string.profil_sekme_istatistik
     },
 )
 

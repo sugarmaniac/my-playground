@@ -51,6 +51,16 @@ class Paylasim(
         return GunlukKaydiDetayi(begeniler.ekle(BEGENMEYEN, kayit), katalog.ozetleri(listOf(oyunId)).getValue(oyunId), sahip)
     }
 
+    /** Profil ve ondan türeyen sayfalar (yıllık özet) paylaşılabilir mi: gizli değil, yaptırımsız. */
+    suspend fun profilPaylasilabilir(kullaniciId: UUID): Boolean {
+        if (sosyalGraf.gizliMi(kullaniciId)) return false
+        return withContext(Dispatchers.IO) {
+            transaction(veritabani) {
+                KullaniciTablosu.selectAll().where { KullaniciTablosu.id eq kullaniciId }.singleOrNull()?.paylasilabilir(simdi()) == true
+            }
+        }
+    }
+
     suspend fun profil(kullaniciId: UUID): PaylasilanProfil? {
         if (sosyalGraf.gizliMi(kullaniciId)) return null
         val kayitlar = withContext(Dispatchers.IO) {

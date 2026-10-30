@@ -5,6 +5,8 @@ import com.sosyaloyun.shared.ListeSayfasi
 import com.sosyaloyun.shared.PuanGecmisi
 import com.sosyaloyun.shared.HaftalikPuanDegisimi
 import com.sosyaloyun.shared.ItirazDurumu
+import com.sosyaloyun.shared.Istatistikler
+import com.sosyaloyun.shared.YillikOzet
 import com.sosyaloyun.shared.ListeIstegi
 import com.sosyaloyun.shared.Liste
 import com.sosyaloyun.shared.YorumListesi
@@ -220,6 +222,11 @@ interface ApiIstemcisi {
 
     /** Faz 2 (#53): son yaptırım ve itirazı; itiraz bir kez yapılır. */
     suspend fun itirazDurumu(): ItirazDurumu
+
+    /** Faz 3 (#55): [kullaniciAdi] null ise kendi istatistiklerin; [yil] null ise bu yıl. */
+    suspend fun istatistikler(kullaniciAdi: String?, yil: Int? = null): Istatistikler
+
+    suspend fun yillikOzet(kullaniciAdi: String?, yil: Int): YillikOzet
 
     suspend fun itirazEt(metin: String): ItirazDurumu
 

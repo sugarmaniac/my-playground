@@ -17,6 +17,8 @@ object PaylasimLinkleri {
 
     fun liste(webAdresi: String, listeId: String) = "${webAdresi.trimEnd('/')}/liste.html?id=$listeId"
 
+    fun yillikOzet(webAdresi: String, kullaniciAdi: String, yil: Int) = "${webAdresi.trimEnd('/')}/yillik.html?ad=$kullaniciAdi&yil=$yil"
+
     /** Herkes görünürlüğündeki son kayıtlardan profil sayfasında gösterilenler. */
     const val PROFILDEKI_KAYIT_SAYISI = 20
 }

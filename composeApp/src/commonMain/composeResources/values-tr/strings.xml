@@ -350,4 +350,18 @@
     <string name="tercih_yorum_yasagi">Yorum yasakları</string>
     <string name="tercih_itiraz_kabul">Kabul edilen itirazlar</string>
     <string name="tercih_itiraz_red">Reddedilen itirazlar</string>
+    <string name="profil_sekme_istatistik">İstatistik</string>
+    <string name="istatistik_sure">Toplam oyun süresi: %1$d saat</string>
+    <string name="istatistik_puanlar">Puanlar</string>
+    <string name="istatistik_puanlar_ozet">%1$d oyunun puan dağılımı, yarım yıldızdan beş yıldıza.</string>
+    <string name="istatistik_aylar">%1$d yılında aylara göre bitirilenler</string>
+    <string name="istatistik_aylar_ozet">%1$d yılında aylara göre %2$d oyun bitirildi.</string>
+    <string name="istatistik_turler">En çok oynanan türler</string>
+    <string name="istatistik_platformlar">En çok kullanılan platformlar</string>
+    <string name="istatistik_yillik_ozet">%1$d özeti</string>
+    <string name="yillik_baslik">%1$d · %2$s</string>
+    <string name="yillik_ozet_satiri">%1$d oyun bitirildi · %2$d saat oynandı</string>
+    <string name="yillik_en_cok_tur">En çok oynanan tür: %1$s</string>
+    <string name="yillik_en_yuksek">En yüksek puanlılar</string>
+    <string name="yillik_bitirilenler">Bitirilenler</string>
 </resources>

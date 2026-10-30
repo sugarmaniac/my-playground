@@ -16,6 +16,10 @@ object ApiYollari {
     const val PROFILIM_INCELEMELER = "/profilim/incelemeler"
     const val PROFILIM_ISTEK_LISTESI = "/profilim/istek-listesi"
     const val PROFILIM_LISTELER = "/profilim/listeler"
+
+    /** Faz 3 (#55): istatistikler ve yıllık özet; `?yil=` verilmezse bu yıl. */
+    const val PROFILIM_ISTATISTIK = "/profilim/istatistik"
+    const val PROFILIM_YILLIK_OZET = "/profilim/yillik-ozet"
     const val PROFILIM_VITRIN = "/profilim/vitrin"
 
     /** Başkasının profili: `/kullanicilar/{kullaniciAdi}` ve aynı sekmeler; takip için `/takip`. */
@@ -28,6 +32,8 @@ object ApiYollari {
     const val SEKME_GUNLUK = "gunluk"
     const val SEKME_OYUNLAR = "oyunlar"
     const val SEKME_LISTELER = "listeler"
+    const val SEKME_ISTATISTIK = "istatistik"
+    const val SEKME_YILLIK_OZET = "yillik-ozet"
     const val SEKME_INCELEMELER = "incelemeler"
     const val SEKME_ISTEK_LISTESI = "istek-listesi"
     const val SEKME_TAKIPCILER = "takipciler"
@@ -81,6 +87,7 @@ object ApiYollari {
     const val PAYLASIM = "/paylasim"
     fun paylasilanKayit(kayitId: String) = "$PAYLASIM/gunluk/$kayitId"
     fun paylasilanProfil(kullaniciAdi: String) = "$PAYLASIM/profil/$kullaniciAdi"
+    fun paylasilanYillikOzet(kullaniciAdi: String) = "$PAYLASIM/yillik-ozet/$kullaniciAdi"
 
     const val SIKAYETLER = "/sikayetler"
 

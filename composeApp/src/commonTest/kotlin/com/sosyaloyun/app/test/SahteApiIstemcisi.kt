@@ -11,6 +11,8 @@ import com.sosyaloyun.shared.ListeSayfasi
 import com.sosyaloyun.shared.PuanGecmisi
 import com.sosyaloyun.shared.HaftalikPuanDegisimi
 import com.sosyaloyun.shared.ItirazDurumu
+import com.sosyaloyun.shared.Istatistikler
+import com.sosyaloyun.shared.YillikOzet
 import com.sosyaloyun.shared.ItirazSonucu
 import com.sosyaloyun.shared.ListeIstegi
 import com.sosyaloyun.shared.Liste
@@ -603,6 +605,22 @@ class SahteApiIstemcisi : ApiIstemcisi {
     override suspend fun puanDegisimi(): HaftalikPuanDegisimi {
         hata?.let { throw it }
         return puanDegisimi
+    }
+
+    var istatistik = Istatistikler(2026, emptyList(), 0, List(10) { 0 }, emptyList(), emptyList(), List(12) { 0 })
+    var yillikOzetler = mutableMapOf<Int, YillikOzet>()
+    val istatistikIstekleri = mutableListOf<String>()
+
+    override suspend fun istatistikler(kullaniciAdi: String?, yil: Int?): Istatistikler {
+        hata?.let { throw it }
+        istatistikIstekleri += "istatistik:$kullaniciAdi:$yil"
+        return istatistik
+    }
+
+    override suspend fun yillikOzet(kullaniciAdi: String?, yil: Int): YillikOzet {
+        hata?.let { throw it }
+        istatistikIstekleri += "yillik:$kullaniciAdi:$yil"
+        return yillikOzetler.getValue(yil)
     }
 
     var itirazDurumu = ItirazDurumu()
