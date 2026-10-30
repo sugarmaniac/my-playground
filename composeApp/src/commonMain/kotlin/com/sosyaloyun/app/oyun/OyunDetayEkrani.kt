@@ -1,5 +1,6 @@
 package com.sosyaloyun.app.oyun
 
+import com.sosyaloyun.app.tema.SigdirilanYazi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Spacer
@@ -184,7 +185,8 @@ private fun Bant(oyun: OyunOzeti, detay: OyunDetayi?, geri: () -> Unit, oyunaGit
             verticalAlignment = Alignment.Bottom,
         ) {
             Kapak(oyun, Modifier.size(width = 96.dp, height = 128.dp).border(3.dp, Renk.Zemin, RoundedCornerShape(10.dp)))
-            Column(verticalArrangement = Arrangement.spacedBy(3.dp), modifier = Modifier.padding(bottom = 4.dp)) {
+            // Kalan genişliği kullanır: uzun künye kapağın yanında alt satıra geçer, ekrandan taşmaz.
+            Column(verticalArrangement = Arrangement.spacedBy(3.dp), modifier = Modifier.weight(1f).padding(bottom = 4.dp)) {
                 Text(oyun.ad, style = MaterialTheme.typography.headlineMedium)
                 val kunye = listOfNotNull(oyun.cikisYili?.toString(), detay?.gelistiriciler?.firstOrNull()).joinToString(" · ")
                 if (kunye.isNotEmpty()) Text(kunye, style = MaterialTheme.typography.bodySmall, color = Renk.Soluk)
@@ -288,8 +290,8 @@ private fun PuanKutusu(baslik: String, deger: String, modifier: Modifier, yildiz
         modifier.clip(MaterialTheme.shapes.medium).background(Renk.Yuzey).border(1.dp, Renk.Cizgi, MaterialTheme.shapes.medium).padding(horizontal = 12.dp, vertical = 10.dp),
         verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {
-        Text(deger, style = MaterialTheme.typography.titleMedium, color = if (yildiz) Renk.Yildiz else Renk.Yazi)
-        Text(baslik, style = MaterialTheme.typography.labelSmall, color = Renk.Soluk)
+        SigdirilanYazi(deger, MaterialTheme.typography.titleMedium, renk = if (yildiz) Renk.Yildiz else Renk.Yazi)
+        SigdirilanYazi(baslik, MaterialTheme.typography.labelSmall, renk = Renk.Soluk)
     }
 }
 
@@ -348,12 +350,12 @@ private fun KutuphaneOzeti(giris: KutuphaneGirisi?, kaydet: () -> Unit) {
                     border = if (secili) null else BorderStroke(1.dp, Renk.Cizgi),
                     modifier = Modifier.weight(1f).height(44.dp),
                 ) {
-                    Row(horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+                    Row(Modifier.padding(horizontal = 6.dp), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
                         if (secili) {
-                            Icon(Ikonlar.Onay, contentDescription = null, modifier = Modifier.size(16.dp))
-                            Spacer(Modifier.width(6.dp))
+                            Icon(Ikonlar.Onay, contentDescription = null, modifier = Modifier.size(14.dp))
+                            Spacer(Modifier.width(4.dp))
                         }
-                        Text(durumAdi(d), style = MaterialTheme.typography.labelLarge, maxLines = 1)
+                        SigdirilanYazi(durumAdi(d), MaterialTheme.typography.labelLarge)
                     }
                 }
             }
@@ -366,7 +368,7 @@ private fun KutuphaneOzeti(giris: KutuphaneGirisi?, kaydet: () -> Unit) {
             modifier = Modifier.fillMaxWidth().height(48.dp),
         ) {
             Row(Modifier.padding(horizontal = 14.dp), verticalAlignment = Alignment.CenterVertically) {
-                Text(stringResource(Res.string.oyun_senin_puanin), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+                SigdirilanYazi(stringResource(Res.string.oyun_senin_puanin), MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
                 if (giris?.puan != null) {
                     YildizPuani(giris.puan, boyut = 18)
                     Spacer(Modifier.width(8.dp))

@@ -1,5 +1,7 @@
 package com.sosyaloyun.app
 
+import androidx.compose.ui.unit.sp
+import com.sosyaloyun.app.tema.SigdirilanYazi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -673,7 +675,7 @@ private fun AltMenuOgesi(ikon: ImageVector, etiket: String, secili: Boolean, roz
         }) {
             Icon(ikon, contentDescription = null, tint = renk, modifier = Modifier.size(24.dp))
         }
-        Text(etiket, color = renk, style = MaterialTheme.typography.labelSmall, maxLines = 1)
+        SigdirilanYazi(etiket, MaterialTheme.typography.labelSmall, renk = renk, enKucuk = 8.sp)
     }
 }
 

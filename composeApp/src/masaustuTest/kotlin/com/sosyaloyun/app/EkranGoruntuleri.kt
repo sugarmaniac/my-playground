@@ -86,6 +86,13 @@ class EkranGoruntuleri {
                 kutuphaneGirisi = com.sosyaloyun.shared.KutuphaneGirisi(durum = com.sosyaloyun.shared.Durum.BITIRDIM, puan = 9),
                 puanlar = com.sosyaloyun.shared.OyunPuanlari(toplulukPuani = 8.6, arkadasOrtalamasi = 8.4),
             ),
+            // Telefondan gelen ekran görüntüsündeki gibi uzun künye, puansız, Oynuyorum seçili (#61).
+            "o6" to com.sosyaloyun.shared.OyunDetayi(
+                oyun = OyunOzeti("o6", "War Thunder", OyunTuru.ANA_OYUN, 2013, null, listOf("PC (Microsoft Windows)", "Xbox Series X|S", "PlayStation 4", "Linux", "Mac"), null),
+                aciklama = "Araç savaşı MMO'su.", gelistiriciler = listOf("Gaijin Entertainment"), yayincilar = emptyList(),
+                turler = listOf("Shooter", "Simulator"), magazaLinkleri = emptyList(), eklentiler = emptyList(), kaynakUrl = "https://www.igdb.com",
+                kutuphaneGirisi = com.sosyaloyun.shared.KutuphaneGirisi(durum = com.sosyaloyun.shared.Durum.OYNUYORUM, puan = 7, begendim = true),
+            ),
         )
         profilSayfasi = profilSayfasi.copy(biyografi = "Roguelike bağımlısı, metroidvania avcısı. Backlog'um benden uzun.", buYilBitirilen = 23, vitrin = listOf(hades, hollow, bg3, eldenRing), takipciSayisi = 1240, takipEdilenSayisi = 186)
     }
@@ -128,18 +135,35 @@ class EkranGoruntuleri {
                     konsol = { com.sosyaloyun.app.konsol.KonsolViewModel(api) },
                 )
             }
+            // Büyük yazı boyutu ayarlı telefonlar (Honor varsayılanı gibi) ve uzun adlar: taşma denetimi (#61).
+            val uzunAdli = sahteApi().apply { profilSayfasi = profilSayfasi.copy(kullanici = profilSayfasi.kullanici.copy(gorunenAd = "Sugarmaniac")) }
+            ciz("6-oyun-detay-buyuk-yazi", yaziOlcegi = 1.3f) {
+                com.sosyaloyun.app.oyun.OyunDetayEkrani(
+                    com.sosyaloyun.app.oyun.OyunDetayViewModel(api, "o6"), api, geri = {}, oyunaGit = {}, gunlugeYaz = {}, kullaniciyaGit = {}, gunlukKaydinaGit = {},
+                )
+            }
+            ciz("7-profil-buyuk-yazi", yaziOlcegi = 1.3f) {
+                com.sosyaloyun.app.profil.ProfilSayfasiEkrani(
+                    com.sosyaloyun.app.profil.ProfilSayfasiViewModel(uzunAdli, webAdresi = "https://ornek.app"),
+                    profiliDuzenle = {}, vitriniDuzenle = {}, oyunaGit = {}, kisiListesi = { _, _ -> }, gunlukKaydinaGit = {},
+                )
+            }
+            ciz("8-akis-buyuk-yazi", yaziOlcegi = 1.3f) { UygulamaGezintisi(api, ayse, cikisYap = {}, hesapSilindi = {}) }
+            ciz("9-kesif-buyuk-yazi", yaziOlcegi = 1.3f) {
+                com.sosyaloyun.app.kesif.KesifEkrani(com.sosyaloyun.app.kesif.KesifViewModel(api), oyunaGit = {}, turAc = {}, platformAc = {})
+            }
         } finally {
             Dispatchers.resetMain()
             java.util.Locale.setDefault(oncekiYerel)
         }
     }
 
-    private fun ciz(ad: String, yukseklik: Int = 844, icerik: @Composable () -> Unit) {
+    private fun ciz(ad: String, yukseklik: Int = 844, yaziOlcegi: Float = 1f, icerik: @Composable () -> Unit) {
         val sahip = object : ViewModelStoreOwner, LifecycleOwner {
             override val viewModelStore = ViewModelStore()
             override val lifecycle = LifecycleRegistry.createUnsafe(this).apply { currentState = Lifecycle.State.RESUMED }
         }
-        ImageComposeScene(width = 390 * 3, height = yukseklik * 3, density = Density(3f)) {
+        ImageComposeScene(width = 390 * 3, height = yukseklik * 3, density = Density(3f, yaziOlcegi)) {
             CompositionLocalProvider(LocalViewModelStoreOwner provides sahip, LocalLifecycleOwner provides sahip, LocalAktifFaz provides Faz.FAZ_3) {
                 SosyalOyunTemasi { androidx.compose.material3.Surface(color = com.sosyaloyun.app.tema.Renk.Zemin, content = icerik) }
             }

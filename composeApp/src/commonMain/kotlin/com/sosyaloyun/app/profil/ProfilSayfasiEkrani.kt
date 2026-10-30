@@ -1,5 +1,8 @@
 package com.sosyaloyun.app.profil
 
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalDensity
+import com.sosyaloyun.app.tema.SigdirilanYazi
 import androidx.compose.ui.text.font.FontWeight
 import com.sosyaloyun.app.tema.Kart
 import com.sosyaloyun.app.tema.Renk
@@ -198,7 +201,7 @@ private fun Baslik(
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             AvatarGorunumu(kullanici.avatar, boyut = 72.dp)
             Column(Modifier.weight(1f)) {
-                Text(kullanici.gorunenAd, style = MaterialTheme.typography.headlineMedium)
+                SigdirilanYazi(kullanici.gorunenAd, MaterialTheme.typography.headlineMedium, enKucuk = 18.sp)
                 Text("@${kullanici.kullaniciAdi}", style = MaterialTheme.typography.bodyMedium, color = Renk.Soluk)
                 if (sayfa.kurator) Text(stringResource(Res.string.kurator_rozet), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
             }
@@ -265,8 +268,8 @@ private fun Istatistik(sayi: Int, etiket: String, modifier: Modifier, vurgulu: B
         modifier.then(if (tikla != null) Modifier.clickable(onClick = tikla) else Modifier),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text(sayi.toString(), style = MaterialTheme.typography.titleLarge, color = if (vurgulu) Renk.Vurgu else Renk.Yazi)
-        Text(etiket, style = MaterialTheme.typography.labelSmall, color = Renk.Soluk, maxLines = 1)
+        SigdirilanYazi(sayi.toString(), MaterialTheme.typography.titleLarge, renk = if (vurgulu) Renk.Vurgu else Renk.Yazi)
+        SigdirilanYazi(etiket, MaterialTheme.typography.labelSmall, renk = Renk.Soluk)
     }
 }
 
@@ -316,7 +319,10 @@ private fun EngelVeSessiz(sayfa: ProfilSayfasi, viewModel: ProfilSayfasiViewMode
 }
 
 @Composable
+private fun yerTutucuYazisi(dp: Int) = with(LocalDensity.current) { dp.dp.toSp() }
+
 /** [kucuk] dar kapaklar içindir (64 dp altı): ad sığmaz, yer tutucuda baş harf yazılır. */
+@Composable
 fun Kapak(oyun: OyunOzeti?, modifier: Modifier = Modifier, kucuk: Boolean = false) {
     Box(
         modifier
@@ -329,9 +335,19 @@ fun Kapak(oyun: OyunOzeti?, modifier: Modifier = Modifier, kucuk: Boolean = fals
             // Tasarımdaki yer tutucu: renkli zemin üstünde büyük harfli ad. Görsel yoksa, yüklenirken ya da yüklenemezse
             // görünür; görsel gelince yumuşak geçişle üstüne biner (#61).
             if (kucuk) {
-                Text(oyun.ad.take(1).uppercase(), style = MaterialTheme.typography.titleLarge, modifier = Modifier.align(Alignment.Center))
+                Text(oyun.ad.take(1).uppercase(), style = MaterialTheme.typography.titleLarge, fontSize = yerTutucuYazisi(20), modifier = Modifier.align(Alignment.Center))
             } else {
-                Text(oyun.ad.uppercase(), style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.ExtraBold, maxLines = 3, modifier = Modifier.padding(6.dp))
+                // Yer tutucu bir görsel: yazı boyutu ayarıyla büyümez, yoksa dar kapakta kelimeler bölünür.
+                Text(
+                    oyun.ad.uppercase(),
+                    style = MaterialTheme.typography.labelSmall,
+                    fontSize = yerTutucuYazisi(10),
+                    lineHeight = yerTutucuYazisi(12),
+                    fontWeight = FontWeight.ExtraBold,
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.padding(5.dp),
+                )
             }
             if (oyun.kapakUrl != null) AsyncImage(model = oyun.kapakUrl, contentDescription = oyun.ad, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
         }
