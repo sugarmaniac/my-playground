@@ -20,6 +20,8 @@ import io.ktor.http.encodeURLPathPart
 import io.ktor.http.isSuccess
 import io.ktor.http.parameters
 import java.time.Duration
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -95,7 +97,9 @@ class OpenXblKaynagi(private val anahtar: String, private val http: HttpClient =
 class PsnKaynagi(private val npsso: String, private val http: HttpClient = HttpClient(CIO)) : KonsolKaynagi {
     override val ag = KonsolAgi.PLAYSTATION
     private val json = Json { ignoreUnknownKeys = true }
-    private val yonlendirmesiz = HttpClient(CIO) { followRedirects = false }
+    /** Yetkilendirme kodu yönlendirme adresinde döner; yönlendirme izlenmez. */
+    private val yonlendirmesiz = http.config { followRedirects = false }
+    private val tokenKilidi = Mutex()
     private var token: Pair<String, Long>? = null
 
     override suspend fun hesapBul(ad: String): KonsolHesabi? {
@@ -131,8 +135,9 @@ class PsnKaynagi(private val npsso: String, private val http: HttpClient = HttpC
         return KonsolOyunlari.Acik(adlar)
     }
 
-    private suspend fun erisimTokeni(): String {
-        token?.let { (deger, bitis) -> if (System.currentTimeMillis() < bitis) return deger }
+    /** Aynı anda gelen istekler token'ı bir kez yeniler. */
+    private suspend fun erisimTokeni(): String = tokenKilidi.withLock {
+        token?.let { (deger, bitis) -> if (System.currentTimeMillis() < bitis) return@withLock deger }
         // NPSSO çerezli yetkilendirme isteği, yönlendirme adresinde bir kod döner; kod erişim token'ına çevrilir.
         val yetki = yonlendirmesiz.get("https://ca.account.sony.com/api/authz/v3/oauth/authorize") {
             header(HttpHeaders.Cookie, "npsso=$npsso")
@@ -156,7 +161,7 @@ class PsnKaynagi(private val npsso: String, private val http: HttpClient = HttpC
         check(yanit.status.isSuccess()) { "PSN token alınamadı: ${yanit.status}" }
         val sonuc = json.decodeFromString(TokenYaniti.serializer(), yanit.bodyAsText())
         token = sonuc.accessToken to System.currentTimeMillis() + Duration.ofSeconds(sonuc.expiresIn - 60L).toMillis()
-        return sonuc.accessToken
+        sonuc.accessToken
     }
 
     @Serializable
