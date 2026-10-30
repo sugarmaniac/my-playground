@@ -154,4 +154,14 @@
     <string name="oyun_oynayan_arkadas">Oynayan arkadaş: %1$d</string>
     <string name="oyun_incelemeler">İncelemeler</string>
     <string name="oyun_arkadasin">Arkadaşın</string>
+    <string name="sessize_al">Sessize al</string>
+    <string name="sessizden_cikar">Sessizden çıkar</string>
+    <string name="engelle">Engelle</string>
+    <string name="engeli_kaldir">Engeli kaldır</string>
+    <string name="engelle_onay_baslik">%1$s engellensin mi?</string>
+    <string name="engelle_onay_metin">Aranızdaki takip, arkadaşlık ve beğeniler iki yönde de silinir; birbirinizi hiçbir yerde göremezsiniz. %1$s bundan haberdar edilmez.</string>
+    <string name="vazgec">Vazgeç</string>
+    <string name="engellenenler">Engellenenler</string>
+    <string name="sessize_alinanlar">Sessize alınanlar</string>
+    <string name="engel_hatasi">Engellenemedi. Tekrar dene.</string>
 </resources>

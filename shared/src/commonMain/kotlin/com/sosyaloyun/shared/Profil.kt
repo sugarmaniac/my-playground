@@ -92,6 +92,8 @@ data class ProfilSayfasi(
     val arkadasSayisi: Int = 0,
     /** İsteyenle bu kullanıcı arasındaki arkadaşlık; kendi profilinde null. */
     val arkadaslik: ArkadaslikDurumu? = null,
+    /** İsteyen bu kullanıcıyı sessize aldı mı; kendi profilinde null. */
+    val sessizeAldim: Boolean? = null,
 )
 
 @Serializable

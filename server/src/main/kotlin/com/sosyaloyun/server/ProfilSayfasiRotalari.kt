@@ -35,35 +35,35 @@ fun Route.profilSayfasiRotalari(profiller: Profiller, kullanicilar: Kullanicilar
         get(ApiYollari.PROFILIM_ISTEK_LISTESI) { call.kutuphaneSekmesi(profiller, call.oturumSahibi.kullaniciId, istekListesi = true) }
 
         get(ApiYollari.KULLANICI_ARA) {
-            call.respond(kullanicilar.ara(call.request.queryParameters["q"].orEmpty(), call.request.queryParameters["imlec"]))
+            call.respond(kullanicilar.ara(call.request.queryParameters["q"].orEmpty(), call.oturumSahibi.kullaniciId, call.request.queryParameters["imlec"]))
         }
 
         get(ApiYollari.kullanici("{ad}")) {
-            val sahip = call.sahip(kullanicilar) ?: return@get
+            val sahip = call.sahip(kullanicilar, sosyalGraf) ?: return@get
             call.respond(profiller.sayfa(sahip, izleyen = call.oturumSahibi.kullaniciId)!!)
         }
         get(ApiYollari.kullaniciSekmesi("{ad}", ApiYollari.SEKME_GUNLUK)) {
-            call.gunlukSekmesi(profiller, call.sahip(kullanicilar) ?: return@get, yalnizcaIncelemeler = false)
+            call.gunlukSekmesi(profiller, call.sahip(kullanicilar, sosyalGraf) ?: return@get, yalnizcaIncelemeler = false)
         }
         get(ApiYollari.kullaniciSekmesi("{ad}", ApiYollari.SEKME_INCELEMELER)) {
-            call.gunlukSekmesi(profiller, call.sahip(kullanicilar) ?: return@get, yalnizcaIncelemeler = true)
+            call.gunlukSekmesi(profiller, call.sahip(kullanicilar, sosyalGraf) ?: return@get, yalnizcaIncelemeler = true)
         }
         get(ApiYollari.kullaniciSekmesi("{ad}", ApiYollari.SEKME_OYUNLAR)) {
-            call.kutuphaneSekmesi(profiller, call.sahip(kullanicilar) ?: return@get, istekListesi = false)
+            call.kutuphaneSekmesi(profiller, call.sahip(kullanicilar, sosyalGraf) ?: return@get, istekListesi = false)
         }
         get(ApiYollari.kullaniciSekmesi("{ad}", ApiYollari.SEKME_ISTEK_LISTESI)) {
-            call.kutuphaneSekmesi(profiller, call.sahip(kullanicilar) ?: return@get, istekListesi = true)
+            call.kutuphaneSekmesi(profiller, call.sahip(kullanicilar, sosyalGraf) ?: return@get, istekListesi = true)
         }
         get(ApiYollari.kullaniciSekmesi("{ad}", ApiYollari.SEKME_TAKIPCILER)) {
-            val sahip = call.sahip(kullanicilar) ?: return@get
-            call.respond(sosyalGraf.takipciler(sahip, call.request.queryParameters["imlec"]))
+            val sahip = call.sahip(kullanicilar, sosyalGraf) ?: return@get
+            call.respond(sosyalGraf.takipciler(sahip, call.oturumSahibi.kullaniciId, call.request.queryParameters["imlec"]))
         }
         get(ApiYollari.kullaniciSekmesi("{ad}", ApiYollari.SEKME_TAKIP_EDILENLER)) {
-            val sahip = call.sahip(kullanicilar) ?: return@get
-            call.respond(sosyalGraf.takipEdilenler(sahip, call.request.queryParameters["imlec"]))
+            val sahip = call.sahip(kullanicilar, sosyalGraf) ?: return@get
+            call.respond(sosyalGraf.takipEdilenler(sahip, call.oturumSahibi.kullaniciId, call.request.queryParameters["imlec"]))
         }
         post(ApiYollari.kullaniciSekmesi("{ad}", ApiYollari.TAKIP)) {
-            val hedef = call.sahip(kullanicilar) ?: return@post
+            val hedef = call.sahip(kullanicilar, sosyalGraf) ?: return@post
             if (hedef == call.oturumSahibi.kullaniciId) {
                 call.hata(HttpStatusCode.BadRequest, HataKodu.KENDINI_TAKIP_EDEMEZSIN)
                 return@post
@@ -72,7 +72,7 @@ fun Route.profilSayfasiRotalari(profiller: Profiller, kullanicilar: Kullanicilar
             call.respond(HttpStatusCode.NoContent)
         }
         delete(ApiYollari.kullaniciSekmesi("{ad}", ApiYollari.TAKIP)) {
-            val hedef = call.sahip(kullanicilar) ?: return@delete
+            val hedef = call.sahip(kullanicilar, sosyalGraf) ?: return@delete
             if (sosyalGraf.birak(call.oturumSahibi.kullaniciId, hedef)) {
                 call.respond(HttpStatusCode.NoContent)
             } else {
@@ -81,11 +81,11 @@ fun Route.profilSayfasiRotalari(profiller: Profiller, kullanicilar: Kullanicilar
         }
 
         get(ApiYollari.kullaniciSekmesi("{ad}", ApiYollari.SEKME_ARKADASLAR)) {
-            val sahip = call.sahip(kullanicilar) ?: return@get
-            call.respond(sosyalGraf.arkadaslar(sahip, call.request.queryParameters["imlec"]))
+            val sahip = call.sahip(kullanicilar, sosyalGraf) ?: return@get
+            call.respond(sosyalGraf.arkadaslar(sahip, call.oturumSahibi.kullaniciId, call.request.queryParameters["imlec"]))
         }
         get(ApiYollari.kullaniciSekmesi("{ad}", ApiYollari.SEKME_ORTAK)) {
-            val sahip = call.sahip(kullanicilar) ?: return@get
+            val sahip = call.sahip(kullanicilar, sosyalGraf) ?: return@get
             if (!sosyalGraf.arkadasMi(call.oturumSahibi.kullaniciId, sahip)) {
                 call.hata(HttpStatusCode.Forbidden, HataKodu.ARKADAS_DEGIL)
                 return@get
@@ -93,7 +93,7 @@ fun Route.profilSayfasiRotalari(profiller: Profiller, kullanicilar: Kullanicilar
             call.respond(profiller.ortakOyunlar(sahip, izleyen = call.oturumSahibi.kullaniciId))
         }
         post(ApiYollari.kullaniciSekmesi("{ad}", ApiYollari.ARKADASLIK)) {
-            val hedef = call.sahip(kullanicilar) ?: return@post
+            val hedef = call.sahip(kullanicilar, sosyalGraf) ?: return@post
             if (hedef == call.oturumSahibi.kullaniciId) {
                 call.hata(HttpStatusCode.BadRequest, HataKodu.KENDINE_ISTEK_GONDEREMEZSIN)
                 return@post
@@ -102,15 +102,43 @@ fun Route.profilSayfasiRotalari(profiller: Profiller, kullanicilar: Kullanicilar
             call.respond(HttpStatusCode.NoContent)
         }
         delete(ApiYollari.kullaniciSekmesi("{ad}", ApiYollari.ARKADASLIK)) {
-            val hedef = call.sahip(kullanicilar) ?: return@delete
+            val hedef = call.sahip(kullanicilar, sosyalGraf) ?: return@delete
             sosyalGraf.arkadasligiBitir(call.oturumSahibi.kullaniciId, hedef)
             call.respond(HttpStatusCode.NoContent)
+        }
+        put(ApiYollari.kullaniciSekmesi("{ad}", ApiYollari.ENGEL)) {
+            val hedef = call.adinSahibi(kullanicilar) ?: return@put
+            if (hedef == call.oturumSahibi.kullaniciId) return@put call.hata(HttpStatusCode.BadRequest, HataKodu.KENDINI_ENGELLEYEMEZSIN)
+            sosyalGraf.engelle(call.oturumSahibi.kullaniciId, hedef)
+            call.respond(HttpStatusCode.NoContent)
+        }
+        delete(ApiYollari.kullaniciSekmesi("{ad}", ApiYollari.ENGEL)) {
+            val hedef = call.adinSahibi(kullanicilar) ?: return@delete
+            sosyalGraf.engeliKaldir(call.oturumSahibi.kullaniciId, hedef)
+            call.respond(HttpStatusCode.NoContent)
+        }
+        put(ApiYollari.kullaniciSekmesi("{ad}", ApiYollari.SESSIZ)) {
+            val hedef = call.sahip(kullanicilar, sosyalGraf) ?: return@put
+            if (hedef == call.oturumSahibi.kullaniciId) return@put call.hata(HttpStatusCode.BadRequest, HataKodu.KENDINI_SESSIZE_ALAMAZSIN)
+            sosyalGraf.sessizeAl(call.oturumSahibi.kullaniciId, hedef)
+            call.respond(HttpStatusCode.NoContent)
+        }
+        delete(ApiYollari.kullaniciSekmesi("{ad}", ApiYollari.SESSIZ)) {
+            val hedef = call.adinSahibi(kullanicilar) ?: return@delete
+            sosyalGraf.sessizdenCikar(call.oturumSahibi.kullaniciId, hedef)
+            call.respond(HttpStatusCode.NoContent)
+        }
+        get(ApiYollari.ENGELLENENLER) {
+            call.respond(sosyalGraf.engellediklerim(call.oturumSahibi.kullaniciId, call.request.queryParameters["imlec"]))
+        }
+        get(ApiYollari.SESSIZE_ALINANLAR) {
+            call.respond(sosyalGraf.sessizeAldiklarim(call.oturumSahibi.kullaniciId, call.request.queryParameters["imlec"]))
         }
         get(ApiYollari.ARKADASLIK_ISTEKLERI) {
             call.respond(sosyalGraf.gelenIstekler(call.oturumSahibi.kullaniciId, call.request.queryParameters["imlec"]))
         }
         post(ApiYollari.arkadaslikIstegiKabul("{ad}")) {
-            val gonderen = call.sahip(kullanicilar) ?: return@post
+            val gonderen = call.sahip(kullanicilar, sosyalGraf) ?: return@post
             if (sosyalGraf.kabulEt(call.oturumSahibi.kullaniciId, gonderen)) {
                 call.respond(HttpStatusCode.NoContent)
             } else {
@@ -118,7 +146,7 @@ fun Route.profilSayfasiRotalari(profiller: Profiller, kullanicilar: Kullanicilar
             }
         }
         delete(ApiYollari.arkadaslikIstegi("{ad}")) {
-            val gonderen = call.sahip(kullanicilar) ?: return@delete
+            val gonderen = call.sahip(kullanicilar, sosyalGraf) ?: return@delete
             if (sosyalGraf.reddet(call.oturumSahibi.kullaniciId, gonderen)) {
                 call.respond(HttpStatusCode.NoContent)
             } else {
@@ -128,8 +156,18 @@ fun Route.profilSayfasiRotalari(profiller: Profiller, kullanicilar: Kullanicilar
     }
 }
 
-/** Yoldaki kullanıcı adının sahibi; yoksa 404 yanıtını verip null döner. */
-private suspend fun RoutingCall.sahip(kullanicilar: Kullanicilar): UUID? {
+/** Yoldaki kullanıcı adının sahibi; yoksa ya da aralarında engel varsa 404 yanıtını verip null döner. */
+private suspend fun RoutingCall.sahip(kullanicilar: Kullanicilar, sosyalGraf: SosyalGraf): UUID? {
+    val id = adinSahibi(kullanicilar) ?: return null
+    if (sosyalGraf.engelliMi(oturumSahibi.kullaniciId, id)) {
+        hata(HttpStatusCode.NotFound, HataKodu.KULLANICI_BULUNAMADI)
+        return null
+    }
+    return id
+}
+
+/** Engel denetimi olmadan: engellediğin kişi sana görünmez ama engelini kaldırabilmelisin. */
+private suspend fun RoutingCall.adinSahibi(kullanicilar: Kullanicilar): UUID? {
     val id = parameters["ad"]?.let { kullanicilar.kullaniciAdindan(it) }
     if (id == null) hata(HttpStatusCode.NotFound, HataKodu.KULLANICI_BULUNAMADI)
     return id

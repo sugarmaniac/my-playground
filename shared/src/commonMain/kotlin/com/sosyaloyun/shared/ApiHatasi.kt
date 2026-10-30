@@ -76,6 +76,12 @@ enum class HataKodu {
     @SerialName("kendine_istek_gonderemezsin")
     KENDINE_ISTEK_GONDEREMEZSIN,
 
+    @SerialName("kendini_engelleyemezsin")
+    KENDINI_ENGELLEYEMEZSIN,
+
+    @SerialName("kendini_sessize_alamazsin")
+    KENDINI_SESSIZE_ALAMAZSIN,
+
     /** Arkadaşlık takibi kapsar; arkadaşlık sürerken takipten çıkılamaz (CONTEXT.md: Arkadaşlık). */
     @SerialName("arkadaskan_takipten_cikilamaz")
     ARKADASKEN_TAKIPTEN_CIKILAMAZ,

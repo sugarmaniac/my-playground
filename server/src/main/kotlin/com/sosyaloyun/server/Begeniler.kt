@@ -15,6 +15,7 @@ import org.jetbrains.exposed.v1.core.Table
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.inList
+import org.jetbrains.exposed.v1.core.notInList
 import org.jetbrains.exposed.v1.core.java.javaUUID
 import org.jetbrains.exposed.v1.javatime.timestampWithTimeZone
 import org.jetbrains.exposed.v1.jdbc.Database
@@ -46,12 +47,13 @@ class Begeniler(private val veritabani: Database, private val saat: Clock) {
         }
     }
 
-    suspend fun begenenler(kayitId: UUID, imlec: String?): KullaniciListesi = withContext(Dispatchers.IO) {
+    /** [izleyen]'le arasında engel olanlar listede görünmez. */
+    suspend fun begenenler(kayitId: UUID, izleyen: UUID, imlec: String?): KullaniciListesi = withContext(Dispatchers.IO) {
         val baslangic = Imlec.baslangic(imlec)
         transaction(veritabani) {
             val kisiler = BegeniTablosu.join(KullaniciTablosu, JoinType.INNER, BegeniTablosu.kullaniciId, KullaniciTablosu.id)
                 .selectAll()
-                .where { BegeniTablosu.gunlukKaydiId eq kayitId }
+                .where { (BegeniTablosu.gunlukKaydiId eq kayitId) and (BegeniTablosu.kullaniciId notInList engellileri(izleyen)) }
                 .orderBy(BegeniTablosu.olusturulma to SortOrder.DESC)
                 .limit(SAYFA + 1)
                 .offset(baslangic.toLong())
@@ -90,7 +92,7 @@ class Begeniler(private val veritabani: Database, private val saat: Clock) {
     }
 }
 
-private object BegeniTablosu : Table("begeni") {
+internal object BegeniTablosu : Table("begeni") {
     val kullaniciId = javaUUID("kullanici_id")
     val gunlukKaydiId = javaUUID("gunluk_kaydi_id")
     val olusturulma = timestampWithTimeZone("olusturulma")

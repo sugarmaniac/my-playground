@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.sosyaloyun.app.api.EngelListesiTuru
 import com.sosyaloyun.app.api.KisiListesiTuru
 import com.sosyaloyun.app.arama.KullaniciSatiri
 import com.sosyaloyun.app.resources.Res
@@ -29,6 +30,10 @@ import com.sosyaloyun.app.resources.arkadaslik_istekleri
 import com.sosyaloyun.app.resources.kabul_et
 import com.sosyaloyun.app.resources.reddet
 import com.sosyaloyun.app.resources.durum_hata
+import com.sosyaloyun.app.resources.engeli_kaldir
+import com.sosyaloyun.app.resources.engellenenler
+import com.sosyaloyun.app.resources.sessize_alinanlar
+import com.sosyaloyun.app.resources.sessizden_cikar
 import com.sosyaloyun.app.resources.geri
 import com.sosyaloyun.app.resources.profil_bos_sekme
 import com.sosyaloyun.app.resources.takip_edilenler
@@ -50,6 +55,24 @@ fun TakipListesiEkrani(viewModel: TakipListesiViewModel, tur: KisiListesiTuru, k
         kullaniciyaGit = kullaniciyaGit,
         dahaFazla = viewModel::dahaFazlaYukle,
         geri = geri,
+    )
+}
+
+/** Ayarlar: engellenenler ya da sessize alınanlar; her kişinin yanında geri alma. Engellenenin profili açılmaz. */
+@Composable
+fun EngelListesiEkrani(viewModel: EngelListesiViewModel, tur: EngelListesiTuru, kullaniciyaGit: (String) -> Unit, geri: () -> Unit) {
+    val ekran by viewModel.ekran.collectAsStateWithLifecycle()
+    KisiListesi(
+        baslik = stringResource(if (tur == EngelListesiTuru.ENGELLENENLER) Res.string.engellenenler else Res.string.sessize_alinanlar),
+        ekran = ekran,
+        kullaniciyaGit = if (tur == EngelListesiTuru.ENGELLENENLER) ({}) else kullaniciyaGit,
+        dahaFazla = viewModel::dahaFazlaYukle,
+        geri = geri,
+        islemler = { ad ->
+            TextButton(onClick = { viewModel.kaldir(ad) }) {
+                Text(stringResource(if (tur == EngelListesiTuru.ENGELLENENLER) Res.string.engeli_kaldir else Res.string.sessizden_cikar))
+            }
+        },
     )
 }
 

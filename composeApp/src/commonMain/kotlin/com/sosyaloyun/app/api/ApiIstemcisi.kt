@@ -68,6 +68,16 @@ interface ApiIstemcisi {
 
     suspend fun takipEt(kullaniciAdi: String)
 
+    suspend fun engelle(kullaniciAdi: String)
+
+    suspend fun engeliKaldir(kullaniciAdi: String)
+
+    suspend fun sessizeAl(kullaniciAdi: String)
+
+    suspend fun sessizdenCikar(kullaniciAdi: String)
+
+    suspend fun engelListesi(tur: EngelListesiTuru, imlec: String? = null): KullaniciListesi
+
     suspend fun takibiBirak(kullaniciAdi: String)
 
     suspend fun kisiListesi(kullaniciAdi: String, tur: KisiListesiTuru, imlec: String? = null): KullaniciListesi
@@ -110,6 +120,9 @@ interface ApiIstemcisi {
 }
 
 enum class KisiListesiTuru { TAKIPCILER, TAKIP_EDILENLER, ARKADASLAR }
+
+/** Ayarlardaki listeler: engellediklerin ve sessize aldıkların. */
+enum class EngelListesiTuru { ENGELLENENLER, SESSIZE_ALINANLAR }
 
 /** Backend'in `ApiHatasi` gövdesiyle reddettiği istek. Bağlantı hataları bu değil, başka istisnalardır. */
 class ApiHatasiIstisnasi(val kod: HataKodu) : Exception(kod.name)

@@ -36,6 +36,7 @@ import coil3.network.ktor3.KtorNetworkFetcherFactory
 import com.sosyaloyun.app.akis.AkisEkrani
 import com.sosyaloyun.app.akis.AkisViewModel
 import com.sosyaloyun.app.api.ApiIstemcisi
+import com.sosyaloyun.app.api.EngelListesiTuru
 import com.sosyaloyun.app.api.KisiListesiTuru
 import com.sosyaloyun.app.arama.AramaEkrani
 import com.sosyaloyun.app.arama.AramaViewModel
@@ -62,6 +63,8 @@ import com.sosyaloyun.app.profil.ProfilSayfasiEkrani
 import com.sosyaloyun.app.profil.ProfilSayfasiViewModel
 import com.sosyaloyun.app.profil.VitrinDuzenleEkrani
 import com.sosyaloyun.app.profil.VitrinViewModel
+import com.sosyaloyun.app.sosyal.EngelListesiEkrani
+import com.sosyaloyun.app.sosyal.EngelListesiViewModel
 import com.sosyaloyun.app.sosyal.GelenIsteklerEkrani
 import com.sosyaloyun.app.sosyal.GelenIsteklerViewModel
 import com.sosyaloyun.app.sosyal.TakipListesiEkrani
@@ -155,6 +158,9 @@ private data class KullaniciRota(val kullaniciAdi: String)
 private data class TakipListesiRota(val kullaniciAdi: String, val tur: KisiListesiTuru)
 
 @Serializable
+private data class EngelListesiRota(val tur: EngelListesiTuru)
+
+@Serializable
 private data object GelenIsteklerRota
 
 @Serializable
@@ -240,7 +246,17 @@ private fun UygulamaGezintisi(api: ApiIstemcisi, profil: KullaniciOzeti, cikisYa
                     profil = profil,
                     davetKodlari = viewModel { DavetKodlarimViewModel(api) },
                     geri = { gezinti.popBackStack() },
+                    engelListesi = { gezinti.navigate(EngelListesiRota(it)) },
                     cikisYap = cikisYap,
+                )
+            }
+            composable<EngelListesiRota> { listeGirdisi ->
+                val tur = listeGirdisi.toRoute<EngelListesiRota>().tur
+                EngelListesiEkrani(
+                    viewModel(key = "engel-$tur") { EngelListesiViewModel(api, tur) },
+                    tur = tur,
+                    kullaniciyaGit = { gezinti.navigate(KullaniciRota(it)) },
+                    geri = { gezinti.popBackStack() },
                 )
             }
             composable<ProfilRota> { profilGirdisi ->

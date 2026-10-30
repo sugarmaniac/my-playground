@@ -64,6 +64,9 @@ import com.sosyaloyun.app.resources.tekrar_dene
 import com.sosyaloyun.shared.Avatar
 import com.sosyaloyun.shared.DavetKodu
 import com.sosyaloyun.shared.KullaniciOzeti
+import com.sosyaloyun.app.api.EngelListesiTuru
+import com.sosyaloyun.app.resources.engellenenler
+import com.sosyaloyun.app.resources.sessize_alinanlar
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -191,6 +194,7 @@ fun AnaEkran(
     profil: KullaniciOzeti,
     davetKodlari: DavetKodlarimViewModel,
     geri: () -> Unit,
+    engelListesi: (EngelListesiTuru) -> Unit,
     cikisYap: () -> Unit,
 ) {
     val ekran by davetKodlari.ekran.collectAsStateWithLifecycle()
@@ -216,6 +220,11 @@ fun AnaEkran(
                     DavetKoduSatiri(kod, paylas)
                 }
             }
+        }
+        HorizontalDivider()
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            TextButton(onClick = { engelListesi(EngelListesiTuru.ENGELLENENLER) }) { Text(stringResource(Res.string.engellenenler)) }
+            TextButton(onClick = { engelListesi(EngelListesiTuru.SESSIZE_ALINANLAR) }) { Text(stringResource(Res.string.sessize_alinanlar)) }
         }
         TextButton(onClick = cikisYap, modifier = Modifier.align(Alignment.CenterHorizontally)) {
             Text(stringResource(Res.string.cikis_yap))

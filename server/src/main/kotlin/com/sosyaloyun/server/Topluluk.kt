@@ -18,6 +18,7 @@ import org.jetbrains.exposed.v1.core.inList
 import org.jetbrains.exposed.v1.core.intLiteral
 import org.jetbrains.exposed.v1.core.isNotNull
 import org.jetbrains.exposed.v1.core.neq
+import org.jetbrains.exposed.v1.core.notInList
 import org.jetbrains.exposed.v1.core.or
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.JdbcTransaction
@@ -50,7 +51,7 @@ class Topluluk(private val veritabani: Database, private val ayarlar: Ayarlar) {
 
     /**
      * Oyunun incelemeleri (metni olan günlük kayıtları): önce arkadaşlarınki, sonra diğerleri, her grupta yeniden eskiye.
-     * İzleyenin kendi kayıtları detayda ayrıca gösterildiği için dahil değil; görünürlük uygulanır.
+     * İzleyenin kendi kayıtları detayda ayrıca gösterildiği için dahil değil; görünürlük ve engeller uygulanır.
      */
     suspend fun incelemeler(izleyen: UUID, oyunId: UUID, imlec: String?): IncelemeListesi = withContext(Dispatchers.IO) {
         val baslangic = Imlec.baslangic(imlec)
@@ -65,7 +66,7 @@ class Topluluk(private val veritabani: Database, private val ayarlar: Ayarlar) {
             val arkadasOnce = Case().When(g.kullaniciId inList arkadaslar, intLiteral(0)).Else(intLiteral(1))
             val satirlar = g.join(KullaniciTablosu, JoinType.INNER, g.kullaniciId, KullaniciTablosu.id)
                 .selectAll()
-                .where { (g.oyunId eq oyunId) and g.inceleme.isNotNull() and (g.kullaniciId neq izleyen) and gorunur }
+                .where { (g.oyunId eq oyunId) and g.inceleme.isNotNull() and (g.kullaniciId neq izleyen) and (g.kullaniciId notInList engellileri(izleyen)) and gorunur }
                 .orderBy(arkadasOnce to SortOrder.ASC, g.olusturulma to SortOrder.DESC, g.id to SortOrder.ASC)
                 .limit(SAYFA + 1)
                 .offset(baslangic.toLong())

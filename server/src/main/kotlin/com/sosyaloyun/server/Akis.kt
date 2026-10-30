@@ -118,13 +118,14 @@ class Akis(private val veritabani: Database, private val katalog: Katalog, priva
     /** Boş akış için takip önerileri: izleyenin takip etmediği, en çok takipçisi olan kullanıcılar. */
     suspend fun oneriler(izleyen: UUID): KullaniciListesi = withContext(Dispatchers.IO) {
         transaction(veritabani) {
-            val takipEttikleri = TakipTablosu.select(TakipTablosu.takipEdilen).where { TakipTablosu.takipEden eq izleyen }
-                .map { it[TakipTablosu.takipEdilen] } + izleyen
+            // Zaten takip edilenler, kendisi ve aralarında engel olanlar önerilmez.
+            val haric = TakipTablosu.select(TakipTablosu.takipEdilen).where { TakipTablosu.takipEden eq izleyen }
+                .map { it[TakipTablosu.takipEdilen] } + izleyen + engellileri(izleyen)
             val sayi = Count(TakipTablosu.takipEden)
             val takipciSayilari = TakipTablosu.select(TakipTablosu.takipEdilen, sayi).groupBy(TakipTablosu.takipEdilen)
                 .associate { it[TakipTablosu.takipEdilen] to it[sayi] }
             val adaylar = KullaniciTablosu.selectAll()
-                .where { KullaniciTablosu.kullaniciAdi.isNotNull() and (KullaniciTablosu.id notInList takipEttikleri) }
+                .where { KullaniciTablosu.kullaniciAdi.isNotNull() and (KullaniciTablosu.id notInList haric) }
                 .mapNotNull { satir -> satir.kullaniciOzeti()?.let { satir[KullaniciTablosu.id] to it } }
             KullaniciListesi(
                 kullanicilar = adaylar
@@ -152,13 +153,16 @@ class Akis(private val veritabani: Database, private val katalog: Katalog, priva
         val g = GunlukKaydiTablosu
         val kimin = (o.kullaniciId inList aktorler) or ((o.tur eq AkisOlayTuru.ARKADAS_OLDU.name) and (o.digerKullaniciId inList aktorler))
         val kendisiDegil = (o.kullaniciId neq izleyen) and (o.digerKullaniciId.isNull() or (o.digerKullaniciId neq izleyen))
+        // Engellilerin ve sessize alınanların olayları, arkadaş olduğu olaylar dahil, görünmez.
+        val gizli = engellileri(izleyen) + sessizeAldiklari(izleyen)
+        val gizliDegil = (o.kullaniciId notInList gizli) and (o.digerKullaniciId.isNull() or (o.digerKullaniciId notInList gizli))
         val gorunur = (o.tur neq AkisOlayTuru.GUNLUK_KAYDI.name) or (
             (g.sessiz eq false) and (
                 (g.gorunurluk inList listOf(Gorunurluk.HERKES.name, Gorunurluk.TAKIPCILER.name)) or
                     ((g.gorunurluk eq Gorunurluk.ARKADASLAR.name) and (o.kullaniciId inList arkadaslar))
                 )
             )
-        return kimin and kendisiDegil and gorunur
+        return kimin and kendisiDegil and gizliDegil and gorunur
     }
 
     private data class Satir(

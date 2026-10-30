@@ -68,6 +68,7 @@ class Profiller(
             takipEdiyorum = if (izleyen == kullaniciId) null else sosyalGraf.takipEdiyorMu(izleyen, kullaniciId),
             arkadasSayisi = sayaclar.arkadas,
             arkadaslik = if (izleyen == kullaniciId) null else sosyalGraf.arkadaslikDurumu(izleyen, kullaniciId),
+            sessizeAldim = if (izleyen == kullaniciId) null else sosyalGraf.sessizeAldiMi(izleyen, kullaniciId),
         )
     }
 
