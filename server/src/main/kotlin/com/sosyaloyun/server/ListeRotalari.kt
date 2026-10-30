@@ -69,4 +69,3 @@ private suspend fun RoutingCall.sonuc(sonuc: Listeler.Sonuc, basari: HttpStatusC
 
 private suspend fun RoutingCall.bulunamadi() = hata(HttpStatusCode.NotFound, HataKodu.LISTE_BULUNAMADI)
 
-private fun RoutingCall.kimlik(): UUID? = parameters["id"]?.let { runCatching { UUID.fromString(it) }.getOrNull() }

@@ -8,6 +8,8 @@ import com.sosyaloyun.shared.KuratorDurumu
 import com.sosyaloyun.shared.KuratorBasvuruDurumu
 import com.sosyaloyun.shared.OyunTuru
 import com.sosyaloyun.shared.ListeSayfasi
+import com.sosyaloyun.shared.PuanGecmisi
+import com.sosyaloyun.shared.HaftalikPuanDegisimi
 import com.sosyaloyun.shared.ListeIstegi
 import com.sosyaloyun.shared.Liste
 import com.sosyaloyun.shared.YorumListesi
@@ -586,6 +588,19 @@ class SahteApiIstemcisi : ApiIstemcisi {
     override suspend fun kuratorListeleri(): ListeSayfasi {
         hata?.let { throw it }
         return kuratorListeSayfasi
+    }
+
+    var puanGecmisi = PuanGecmisi(emptyList())
+    var puanDegisimi = HaftalikPuanDegisimi(emptyList(), emptyList())
+
+    override suspend fun puanGecmisi(oyunId: String): PuanGecmisi {
+        hata?.let { throw it }
+        return puanGecmisi
+    }
+
+    override suspend fun puanDegisimi(): HaftalikPuanDegisimi {
+        hata?.let { throw it }
+        return puanDegisimi
     }
 
     fun ornekListe(id: String, istek: ListeIstegi, begeniSayisi: Int = 0, begendim: Boolean = false, benim: Boolean = true) = Liste(

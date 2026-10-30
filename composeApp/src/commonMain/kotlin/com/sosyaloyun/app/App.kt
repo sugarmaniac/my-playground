@@ -73,6 +73,10 @@ import com.sosyaloyun.app.gizlilik.GizlilikViewModel
 import com.sosyaloyun.app.kurator.KuratorListeleriBolumu
 import com.sosyaloyun.app.kurator.KuratorListeleriViewModel
 import com.sosyaloyun.app.kurator.KuratorViewModel
+import com.sosyaloyun.app.puan.PuanDegisimiBolumu
+import com.sosyaloyun.app.puan.PuanDegisimiViewModel
+import com.sosyaloyun.app.puan.PuanGecmisiBolumu
+import com.sosyaloyun.app.puan.PuanGecmisiViewModel
 import com.sosyaloyun.app.hesap.AnaEkran
 import com.sosyaloyun.app.hesap.DavetKodlarimViewModel
 import com.sosyaloyun.app.hesap.DavetKoduEkrani
@@ -347,6 +351,7 @@ private fun UygulamaGezintisi(api: ApiIstemcisi, profil: KullaniciOzeti, cikisYa
                     platformAc = { gezinti.navigate(OyunListesiRota(platform = it)) },
                     ekBolumler = {
                         if (aktifFaz.kapsar(Faz.FAZ_2)) {
+                            PuanDegisimiBolumu(viewModel { PuanDegisimiViewModel(api) }) { gezinti.navigate(OyunRota(it)) }
                             KuratorListeleriBolumu(viewModel { KuratorListeleriViewModel(api) }) { gezinti.navigate(ListeRota(it)) }
                         }
                     },
@@ -498,6 +503,7 @@ private fun UygulamaGezintisi(api: ApiIstemcisi, profil: KullaniciOzeti, cikisYa
                     kullaniciyaGit = { gezinti.navigate(KullaniciRota(it)) },
                     ekBolumler = {
                         if (aktifFaz.kapsar(Faz.FAZ_2)) {
+                            PuanGecmisiBolumu(viewModel(key = "puan-gecmisi-${rota.oyunId}") { PuanGecmisiViewModel(api, rota.oyunId) })
                             OyunListeleriBolumu(viewModel(key = "oyun-listeleri-${rota.oyunId}") { OyunListeleriViewModel(api, rota.oyunId) }) {
                                 gezinti.navigate(ListeRota(it))
                             }

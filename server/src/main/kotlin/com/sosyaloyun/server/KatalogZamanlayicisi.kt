@@ -56,3 +56,13 @@ fun Application.metrikZamanlayicisiniBaslat(metrikler: Metrikler) {
         }
     }
 }
+
+/** Saatte bir bakılır; haftanın puan görüntüsü henüz alınmadıysa alınır (#51). Faz kapalıyken de çalışır. */
+fun Application.puanGecmisiZamanlayicisiniBaslat(puanGecmisleri: PuanGecmisleri) {
+    launch {
+        while (true) {
+            runCatching { puanGecmisleri.anlikGoruntuAl() }.onFailure { log.error("Puan görüntüsü alınamadı", it) }
+            delay(1.hours)
+        }
+    }
+}

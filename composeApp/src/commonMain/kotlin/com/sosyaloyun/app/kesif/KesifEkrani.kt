@@ -64,7 +64,7 @@ fun KesifEkrani(
             TextButton(onClick = viewModel::yenile) { Text(stringResource(Res.string.tekrar_dene)) }
         }
         is KesifEkrani.Hazir -> LazyColumn(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            item { ekBolumler() }
+            item { Column(Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) { ekBolumler() } }
             val kesif = durum.kesif
             item { Text(stringResource(Res.string.kesif_baslik), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(start = 16.dp, top = 16.dp)) }
             item {

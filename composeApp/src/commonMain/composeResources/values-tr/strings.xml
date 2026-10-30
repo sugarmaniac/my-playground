@@ -324,4 +324,9 @@
     <string name="bildirim_kurator_reddedildi">Küratör başvurun onaylanmadı.</string>
     <string name="tercih_kurator_onaylandi">Küratör onayları</string>
     <string name="tercih_kurator_reddedildi">Küratör retleri</string>
+    <string name="puan_gecmisi_baslik">Son 12 haftanın puanı</string>
+    <string name="puan_gecmisi_ozet">Son 12 haftada %1$s puandan %2$s puana.</string>
+    <string name="puan_degisimi_baslik">Bu hafta puanı en çok değişen oyunlar</string>
+    <string name="puan_artanlar">Yükselenler</string>
+    <string name="puan_azalanlar">Düşenler</string>
 </resources>

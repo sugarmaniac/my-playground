@@ -6,6 +6,7 @@ import com.sosyaloyun.server.Katalog
 import com.sosyaloyun.server.KatalogIceAktarici
 import com.sosyaloyun.server.Kutuphane
 import com.sosyaloyun.server.Metrikler
+import com.sosyaloyun.server.PuanGecmisleri
 import com.sosyaloyun.server.PushDagitici
 import com.sosyaloyun.server.Steam
 import com.sosyaloyun.server.Bagimliliklar
@@ -56,6 +57,8 @@ class ApiTestOrtami(
     val eposta: SahteEpostaGonderici,
     /** Haftalık rapor gerçekte saatlik bakan bir zamanlayıcıyla gider; testte [Metrikler.haftalikRaporuGonder] elle çağrılır. */
     val metrikler: Metrikler,
+    /** Haftalık puan görüntüsü gerçekte saatlik bakan bir zamanlayıcıyla alınır; testte elle çağrılır. */
+    val puanGecmisleri: PuanGecmisleri,
     /** Yalnızca API'nin gösteremediğini doğrulamak için (ör. silinen hesaptan hiçbir satır kalmadığı). */
     val veritabani: Database,
 ) {
@@ -158,6 +161,7 @@ fun apiTesti(ekRotalar: Route.() -> Unit = {}, blok: suspend ApiTestOrtami.() ->
         pushDagitici = PushDagitici(veritabani, Ayarlar(veritabani), pushGonderici, saat),
         eposta = eposta,
         metrikler = Metrikler(veritabani, eposta, saat),
+        puanGecmisleri = PuanGecmisleri(veritabani, Ayarlar(veritabani), Katalog(veritabani), saat),
         veritabani = veritabani,
     ).blok()
 }
