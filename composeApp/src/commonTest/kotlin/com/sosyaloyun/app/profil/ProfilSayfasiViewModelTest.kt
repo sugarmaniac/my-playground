@@ -302,4 +302,23 @@ class ArkadaslikViewModelTest {
         assertEquals(false, vm.ekran.value.engelHatasi)
         assertEquals(listOf("engelle:mehmet"), api.engelIstekleri)
     }
+
+    @Test
+    fun gizliProfildeTakipIstegeDonusurVeGeriAlinabilir() = viewModelTesti {
+        api.profilSayfasi = api.profilSayfasi.copy(gizli = true, takipEdiyorum = false, takipIstegiGonderdim = false, icerikGizli = true)
+        val vm = ProfilSayfasiViewModel(api, "ayse")
+        advanceUntilIdle()
+        fun sayfa() = (vm.ekran.value.baslik as ProfilBasligi.Hazir).sayfa
+
+        vm.takipDegistir()
+        advanceUntilIdle()
+        assertEquals(true, sayfa().takipIstegiGonderdim)
+        assertEquals(false, sayfa().takipEdiyorum)
+        assertEquals(api.profilSayfasi.takipciSayisi, sayfa().takipciSayisi)
+
+        vm.takipDegistir()
+        advanceUntilIdle()
+        assertEquals(false, sayfa().takipIstegiGonderdim)
+        assertEquals(listOf("takip:ayse", "birak:ayse"), api.takipIstekleri)
+    }
 }

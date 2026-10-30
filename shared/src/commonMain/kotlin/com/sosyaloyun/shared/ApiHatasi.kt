@@ -123,6 +123,9 @@ enum class HataKodu {
     @SerialName("yorum_bulunamadi")
     YORUM_BULUNAMADI,
 
+    @SerialName("takip_istegi_yok")
+    TAKIP_ISTEGI_YOK,
+
     /** Hesap silme isteğindeki onay metni kullanıcı adıyla eşleşmiyor. */
     @SerialName("hesap_silme_onayi_gecersiz")
     HESAP_SILME_ONAYI_GECERSIZ,

@@ -58,17 +58,24 @@ class Profiller(
         }
         val ozetler = katalog.ozetleri(vitrinIdleri)
         val sayaclar = sosyalGraf.sayaclar(kullaniciId)
+        val kendisi = izleyen == kullaniciId
+        val gizli = sosyalGraf.gizliMi(kullaniciId)
+        // Gizli profilin takipçisi olmayan başlığı görür (ad, biyografi, sayaçlar) ama içeriği görmez (#48).
+        val icerikGizli = !kendisi && gizli && !sosyalGraf.takipEdiyorMu(izleyen, kullaniciId)
         return ProfilSayfasi(
             kullanici = profil,
             biyografi = biyografi,
-            buYilBitirilen = buYil,
-            vitrin = vitrinIdleri.mapNotNull(ozetler::get),
+            buYilBitirilen = if (icerikGizli) 0 else buYil,
+            vitrin = if (icerikGizli) emptyList() else vitrinIdleri.mapNotNull(ozetler::get),
             takipciSayisi = sayaclar.takipci,
             takipEdilenSayisi = sayaclar.takipEdilen,
             takipEdiyorum = if (izleyen == kullaniciId) null else sosyalGraf.takipEdiyorMu(izleyen, kullaniciId),
             arkadasSayisi = sayaclar.arkadas,
             arkadaslik = if (izleyen == kullaniciId) null else sosyalGraf.arkadaslikDurumu(izleyen, kullaniciId),
             sessizeAldim = if (izleyen == kullaniciId) null else sosyalGraf.sessizeAldiMi(izleyen, kullaniciId),
+            gizli = gizli,
+            takipIstegiGonderdim = if (kendisi || !gizli) null else sosyalGraf.takipIstegiGonderdiMi(izleyen, kullaniciId),
+            icerikGizli = icerikGizli,
         )
     }
 

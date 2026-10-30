@@ -49,7 +49,7 @@ fun Application.modul(bagimliliklar: Bagimliliklar) {
         val gunluk = Gunluk(veritabani, bagimliliklar.saat)
         val kutuphane = Kutuphane(veritabani, bagimliliklar.saat)
         val begeniler = Begeniler(veritabani, bagimliliklar.saat)
-        val sosyalGraf = SosyalGraf(veritabani, bagimliliklar.saat)
+        val sosyalGraf = SosyalGraf(veritabani, bagimliliklar.saat, fazlar)
         val steam = Steam(veritabani, katalog, kutuphane, bagimliliklar.steamKaynagi, bagimliliklar.saat)
         if (bagimliliklar.steamZamanlayici) steamZamanlayicisiniBaslat(steam)
         steamRotalari(steam, katalog, kutuphane, kullanicilar)
@@ -57,12 +57,12 @@ fun Application.modul(bagimliliklar: Bagimliliklar) {
         if (bagimliliklar.pushZamanlayici) pushZamanlayicisiniBaslat(PushDagitici(veritabani, ayarlar, bagimliliklar.pushGonderici, bagimliliklar.saat))
         kesifRotalari(KesifServisi(veritabani, katalog, bagimliliklar.saat), katalog)
         arkadasBulmaRotalari(ArkadasBulma(veritabani, bagimliliklar.steamKaynagi), kullanicilar, sosyalGraf)
-        katalogRotalari(katalog, kutuphane, gunluk, begeniler, Topluluk(veritabani, ayarlar), katalogIceAktarici, bagimliliklar.igdbWebhookSirri)
+        katalogRotalari(katalog, kutuphane, gunluk, begeniler, Topluluk(veritabani, ayarlar, fazlar), katalogIceAktarici, bagimliliklar.igdbWebhookSirri)
         akisRotalari(Akis(veritabani, katalog, begeniler), kutuphane, katalog)
         gunlukRotalari(gunluk, katalog, begeniler, sosyalGraf, kullanicilar, Yorumlar(veritabani, bagimliliklar.saat), fazlar)
         val profiller = Profiller(veritabani, katalog, kullanicilar, sosyalGraf, begeniler, bagimliliklar.saat)
-        profilSayfasiRotalari(profiller, kullanicilar, sosyalGraf)
-        paylasimRotalari(Paylasim(veritabani, katalog, profiller, begeniler, bagimliliklar.saat), kullanicilar, bagimliliklar.webDizini)
+        profilSayfasiRotalari(profiller, kullanicilar, sosyalGraf, fazlar)
+        paylasimRotalari(Paylasim(veritabani, katalog, profiller, begeniler, bagimliliklar.saat, sosyalGraf), kullanicilar, bagimliliklar.webDizini)
         get(ApiYollari.SAGLIK) {
             val durum = if (ayarlar.oku(Ayar.BakimModu)) SunucuDurumu.BAKIMDA else SunucuDurumu.AYAKTA
             call.respond(

@@ -1,6 +1,7 @@
 package com.sosyaloyun.app.api
 
 import com.sosyaloyun.app.oturum.OturumDeposu
+import com.sosyaloyun.shared.GizlilikIstegi
 import com.sosyaloyun.shared.YorumListesi
 import com.sosyaloyun.shared.YorumIstegi
 import com.sosyaloyun.shared.Yorum
@@ -399,6 +400,26 @@ class KtorApiIstemcisi(
 
     override suspend fun yorumSil(yorumId: String) {
         istek { http.delete("${ApiYollari.YORUMLAR}/$yorumId") }
+    }
+
+    override suspend fun gizlilikAyarla(gizli: Boolean) {
+        istek {
+            http.put(ApiYollari.GIZLILIK) {
+                contentType(ContentType.Application.Json)
+                setBody(GizlilikIstegi(gizli))
+            }
+        }
+    }
+
+    override suspend fun takipIstekleri(): List<KullaniciOzeti> =
+        istek { http.get(ApiYollari.TAKIP_ISTEKLERI).body<KullaniciListesi>().kullanicilar }
+
+    override suspend fun takipIsteginiKabulEt(kullaniciAdi: String) {
+        istek { http.post(ApiYollari.takipIstegiKabul(kullaniciAdi)) }
+    }
+
+    override suspend fun takipIsteginiReddet(kullaniciAdi: String) {
+        istek { http.delete(ApiYollari.takipIstegi(kullaniciAdi)) }
     }
 
     private fun AkisSekmesi.parametre() = if (this == AkisSekmesi.ARKADASLAR) "arkadaslar" else "takip"

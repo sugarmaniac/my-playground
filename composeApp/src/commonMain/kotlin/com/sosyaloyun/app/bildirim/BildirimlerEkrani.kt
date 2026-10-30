@@ -23,6 +23,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sosyaloyun.app.hesap.AvatarGorunumu
 import com.sosyaloyun.app.resources.Res
+import com.sosyaloyun.app.resources.tercih_takip_istegi_kabulu
+import com.sosyaloyun.app.resources.tercih_takip_istegi
+import com.sosyaloyun.app.resources.bildirim_takip_istegi_kabulu
+import com.sosyaloyun.app.resources.bildirim_takip_istegi
 import com.sosyaloyun.app.resources.tercih_yorum
 import com.sosyaloyun.app.resources.bildirim_yorum
 import com.sosyaloyun.app.resources.bildirim_arkadaslik_istegi
@@ -108,6 +112,8 @@ private fun BildirimSatiri(bildirim: Bildirim, tikla: () -> Unit) {
                 BildirimTuru.SIKAYET_SONUCLANDI -> stringResource(Res.string.bildirim_sikayet_sonuclandi)
                 BildirimTuru.ICERIK_KALDIRILDI -> stringResource(Res.string.bildirim_icerik_kaldirildi)
                 BildirimTuru.YORUM -> stringResource(Res.string.bildirim_yorum, ad)
+                BildirimTuru.TAKIP_ISTEGI -> stringResource(Res.string.bildirim_takip_istegi, ad)
+                BildirimTuru.TAKIP_ISTEGI_KABULU -> stringResource(Res.string.bildirim_takip_istegi_kabulu, ad)
             },
             style = MaterialTheme.typography.bodyMedium,
         )
@@ -135,6 +141,8 @@ fun BildirimTercihleriBolumu(viewModel: BildirimTercihleriViewModel) {
                             BildirimTuru.SIKAYET_SONUCLANDI -> Res.string.tercih_sikayet
                             BildirimTuru.ICERIK_KALDIRILDI -> Res.string.tercih_icerik_kaldirildi
                             BildirimTuru.YORUM -> Res.string.tercih_yorum
+                            BildirimTuru.TAKIP_ISTEGI -> Res.string.tercih_takip_istegi
+                            BildirimTuru.TAKIP_ISTEGI_KABULU -> Res.string.tercih_takip_istegi_kabulu
                         },
                     ),
                     modifier = Modifier.weight(1f),

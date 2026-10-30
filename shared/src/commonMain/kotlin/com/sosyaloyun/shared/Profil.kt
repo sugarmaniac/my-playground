@@ -94,7 +94,17 @@ data class ProfilSayfasi(
     val arkadaslik: ArkadaslikDurumu? = null,
     /** İsteyen bu kullanıcıyı sessize aldı mı; kendi profilinde null. */
     val sessizeAldim: Boolean? = null,
+    /** Faz 2 (#48): profil gizli mi (kendi profilinde ayarın değeri). */
+    val gizli: Boolean = false,
+    /** Gizli profilde takip isteği bekliyor mu; kendi profilinde null. */
+    val takipIstegiGonderdim: Boolean? = null,
+    /** İsteyen bu gizli profilin içeriğini göremiyor (takipçi değil): sekmeler ve vitrin boş gelir. */
+    val icerikGizli: Boolean = false,
 )
+
+/** `PUT /gizlilik` (Faz 2, #48). Gizliden açığa geçince bekleyen takip istekleri kabul edilir. */
+@Serializable
+data class GizlilikIstegi(val gizli: Boolean)
 
 @Serializable
 enum class ArkadaslikDurumu {

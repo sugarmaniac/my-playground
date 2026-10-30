@@ -42,6 +42,12 @@ object ApiYollari {
 
     /** Ayarlar: engellediklerin ve sessize aldıkların. */
     const val ENGELLENENLER = "/engellenenler"
+
+    /** Faz 2 (#48): gizli profil ayarı ve gelen takip istekleri. */
+    const val GIZLILIK = "/gizlilik"
+    const val TAKIP_ISTEKLERI = "/takip-istekleri"
+    fun takipIstegi(kullaniciAdi: String) = "$TAKIP_ISTEKLERI/$kullaniciAdi"
+    fun takipIstegiKabul(kullaniciAdi: String) = "$TAKIP_ISTEKLERI/$kullaniciAdi/kabul"
     const val SESSIZE_ALINANLAR = "/sessize-alinanlar"
 
     /** Arkadaşın profilinde ortak oyunlar ve istek listesi eşleşmeleri; yalnızca arkadaşlara açık. */

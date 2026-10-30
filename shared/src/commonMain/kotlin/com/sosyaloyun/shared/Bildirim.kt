@@ -23,6 +23,10 @@ enum class BildirimTuru(
 
     /** Günlük kaydına yorum yapıldı (#47). */
     @SerialName("yorum") YORUM(Faz.FAZ_2),
+
+    /** Gizli profile takip isteği geldi ve isteğin kabul edildi (#48). */
+    @SerialName("takip_istegi") TAKIP_ISTEGI(Faz.FAZ_2),
+    @SerialName("takip_istegi_kabulu") TAKIP_ISTEGI_KABULU(Faz.FAZ_2),
 }
 
 /**

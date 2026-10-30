@@ -196,6 +196,7 @@ internal object KullaniciTablosu : Table("kullanici") {
     /** Moderasyon yaptırımları: askının bittiği an ve kalıcı ban. */
     val askininBitisi = timestampWithTimeZone("askinin_bitisi").nullable()
     val banli = bool("banli").default(false)
+    val gizli = bool("gizli").default(false)
     override val primaryKey = PrimaryKey(id)
 }
 
