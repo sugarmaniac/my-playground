@@ -23,7 +23,7 @@ import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 
 /** Keşif ekranı: takip edilenler arasında bu hafta kaydedilenler, PopScore'a göre trend oyunlar, tür ve platform kısayolları. */
-class Kesif(private val veritabani: Database, private val katalog: Katalog, private val saat: Clock) {
+class KesifServisi(private val veritabani: Database, private val katalog: Katalog, private val saat: Clock) {
     suspend fun kesif(izleyen: UUID): Kesif {
         val populer = takipEdilenlerdePopuler(izleyen)
         val ozetler = katalog.ozetleri(populer.map { it.first })

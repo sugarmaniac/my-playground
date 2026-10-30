@@ -98,5 +98,6 @@ class KesifTest {
         assertEquals(listOf("Ejder Diyarı"), liste("tur" to Tur.ROL_YAPMA.name))
         assertEquals(listOf("Küçük Bulmaca", "Ejder Diyarı"), liste("platform" to "PC (Microsoft Windows)"))
         assertEquals(listOf("Küçük Bulmaca"), liste("platform" to "Nintendo Switch"))
+        assertEquals(emptyList(), liste("tur" to "OLMAYAN"))
     }
 }
