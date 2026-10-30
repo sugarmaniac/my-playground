@@ -38,6 +38,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.minutes
 
 class ModerasyonTest {
     private val tokenler = mutableMapOf<String, String>()
@@ -125,6 +126,8 @@ class ModerasyonTest {
         sikayetEt("ayse", SikayetIstegi(SikayetSebebi.TACIZ, gunlukKaydiId = kayit.id))
         // Aynı kaydı başkası da şikayet etti: tek kararla ikisi de kapanır, profil şikayetine dönüşmez.
         sikayetEt("zeynep", SikayetIstegi(SikayetSebebi.SPAM, gunlukKaydiId = kayit.id))
+        // Bildirimler zamana göre sıralanır; takip bildirimiyle aynı ana düşmesin.
+        saat.ilerlet(1.minutes)
 
         karar(SikayetDurumu.ICERIK_KALDIRILDI)
 
