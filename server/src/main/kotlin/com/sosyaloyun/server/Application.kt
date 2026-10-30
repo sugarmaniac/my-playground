@@ -71,7 +71,8 @@ fun Application.modul(bagimliliklar: Bagimliliklar) {
         val kuratorler = Kuratorler(veritabani, ayarlar, listeler, bagimliliklar.saat)
         kuratorRotalari(kuratorler, fazlar)
         yonetimRotalari(moderasyon, fazlar, kuratorler, itirazlar, Denetim(veritabani, bagimliliklar.saat), bagimliliklar.moderasyonSifresi)
-        paylasimRotalari(Paylasim(veritabani, katalog, profiller, begeniler, bagimliliklar.saat, sosyalGraf), kullanicilar, bagimliliklar.webDizini)
+        val paylasim = Paylasim(veritabani, katalog, profiller, begeniler, bagimliliklar.saat, sosyalGraf)
+        paylasimRotalari(paylasim, kullanicilar, Onizlemeler(veritabani, paylasim, listeler, kullanicilar, fazlar, bagimliliklar.saat), bagimliliklar.webDizini)
         get(ApiYollari.SAGLIK) {
             val durum = if (ayarlar.oku(Ayar.BakimModu)) SunucuDurumu.BAKIMDA else SunucuDurumu.AYAKTA
             call.respond(
