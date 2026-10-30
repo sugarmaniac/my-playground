@@ -13,6 +13,7 @@ import com.sosyaloyun.shared.HaftalikPuanDegisimi
 import com.sosyaloyun.shared.ItirazDurumu
 import com.sosyaloyun.shared.Istatistikler
 import com.sosyaloyun.shared.YillikOzet
+import com.sosyaloyun.shared.OneriListesi
 import com.sosyaloyun.shared.ItirazSonucu
 import com.sosyaloyun.shared.ListeIstegi
 import com.sosyaloyun.shared.Liste
@@ -621,6 +622,20 @@ class SahteApiIstemcisi : ApiIstemcisi {
         hata?.let { throw it }
         istatistikIstekleri += "yillik:$kullaniciAdi:$yil"
         return yillikOzetler.getValue(yil)
+    }
+
+    var oneriListesi = OneriListesi(emptyList())
+    var ilgilenmiyorumHatasi: Exception? = null
+    val ilgilenilmeyenler = mutableListOf<String>()
+
+    override suspend fun oneriler(): OneriListesi {
+        hata?.let { throw it }
+        return oneriListesi
+    }
+
+    override suspend fun ilgilenmiyorum(oyunId: String) {
+        ilgilenmiyorumHatasi?.let { throw it }
+        ilgilenilmeyenler += oyunId
     }
 
     var itirazDurumu = ItirazDurumu()

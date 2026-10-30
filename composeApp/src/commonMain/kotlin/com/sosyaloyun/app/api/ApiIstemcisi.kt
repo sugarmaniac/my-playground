@@ -7,6 +7,7 @@ import com.sosyaloyun.shared.HaftalikPuanDegisimi
 import com.sosyaloyun.shared.ItirazDurumu
 import com.sosyaloyun.shared.Istatistikler
 import com.sosyaloyun.shared.YillikOzet
+import com.sosyaloyun.shared.OneriListesi
 import com.sosyaloyun.shared.ListeIstegi
 import com.sosyaloyun.shared.Liste
 import com.sosyaloyun.shared.YorumListesi
@@ -227,6 +228,11 @@ interface ApiIstemcisi {
     suspend fun istatistikler(kullaniciAdi: String?, yil: Int? = null): Istatistikler
 
     suspend fun yillikOzet(kullaniciAdi: String?, yil: Int): YillikOzet
+
+    /** Faz 3 (#56): kişisel öneriler ve kalıcı "ilgilenmiyorum". */
+    suspend fun oneriler(): OneriListesi
+
+    suspend fun ilgilenmiyorum(oyunId: String)
 
     suspend fun itirazEt(metin: String): ItirazDurumu
 

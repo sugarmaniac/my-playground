@@ -155,6 +155,10 @@ object ApiYollari {
     /** Faz 2 (#53): son yaptırım ve itirazı; giriş ekranından itiraz oturumsuzdur. */
     const val ITIRAZ = "/itiraz"
     const val ITIRAZ_GIRIS = "/itiraz/giris"
+
+    /** Faz 3 (#56): kişisel öneriler; `PUT /oneriler/{oyunId}/ilgilenmiyorum` kalıcıdır. */
+    const val ONERILER = "/oneriler"
+    fun ilgilenmiyorum(oyunId: String) = "$ONERILER/$oyunId/ilgilenmiyorum"
     fun paylasilanListe(listeId: String) = "$PAYLASIM/liste/$listeId"
 
     /** `GET` / `PUT` / `DELETE /gunluk/{id}`: günlük kaydı detayı, düzenleme ve silme. */
