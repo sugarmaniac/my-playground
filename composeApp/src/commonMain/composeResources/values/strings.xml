@@ -364,4 +364,10 @@
     <string name="yillik_en_cok_tur">Top genre: %1$s</string>
     <string name="yillik_en_yuksek">Highest rated</string>
     <string name="yillik_bitirilenler">Finished</string>
+    <string name="oneri_baslik">Recommended for you</string>
+    <string name="oneri_ilgilenmiyorum">Not interested</string>
+    <string name="oneri_neden_benzer">Players who rate like you loved it</string>
+    <string name="oneri_neden_tur">Like the %1$s games you love</string>
+    <string name="oneri_neden_platform">Popular on %1$s</string>
+    <string name="oneri_neden_populer">Popular right now</string>
 </resources>

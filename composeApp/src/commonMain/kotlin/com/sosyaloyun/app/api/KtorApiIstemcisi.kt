@@ -8,6 +8,7 @@ import com.sosyaloyun.shared.HaftalikPuanDegisimi
 import com.sosyaloyun.shared.ItirazDurumu
 import com.sosyaloyun.shared.Istatistikler
 import com.sosyaloyun.shared.YillikOzet
+import com.sosyaloyun.shared.OneriListesi
 import com.sosyaloyun.shared.ItirazIstegi
 import com.sosyaloyun.shared.GirisItirazIstegi
 import com.sosyaloyun.shared.ListeIstegi
@@ -490,6 +491,12 @@ class KtorApiIstemcisi(
     override suspend fun istatistikler(kullaniciAdi: String?, yil: Int?): Istatistikler = istek {
         val yol = kullaniciAdi?.let { ApiYollari.kullaniciSekmesi(it, ApiYollari.SEKME_ISTATISTIK) } ?: ApiYollari.PROFILIM_ISTATISTIK
         http.get(yol) { yil?.let { parameter("yil", it) } }.body()
+    }
+
+    override suspend fun oneriler(): OneriListesi = istek { http.get(ApiYollari.ONERILER).body() }
+
+    override suspend fun ilgilenmiyorum(oyunId: String) {
+        istek { http.put(ApiYollari.ilgilenmiyorum(oyunId)) }
     }
 
     override suspend fun yillikOzet(kullaniciAdi: String?, yil: Int): YillikOzet = istek {

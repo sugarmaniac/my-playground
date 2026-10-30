@@ -364,4 +364,10 @@
     <string name="yillik_en_cok_tur">En çok oynanan tür: %1$s</string>
     <string name="yillik_en_yuksek">En yüksek puanlılar</string>
     <string name="yillik_bitirilenler">Bitirilenler</string>
+    <string name="oneri_baslik">Sana önerilenler</string>
+    <string name="oneri_ilgilenmiyorum">İlgilenmiyorum</string>
+    <string name="oneri_neden_benzer">Senin gibi puanlayanlar çok sevdi</string>
+    <string name="oneri_neden_tur">Sevdiğin %1$s oyunlarına benziyor</string>
+    <string name="oneri_neden_platform">%1$s'de popüler</string>
+    <string name="oneri_neden_populer">Şu sıralar popüler</string>
 </resources>

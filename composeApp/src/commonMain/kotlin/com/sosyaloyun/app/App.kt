@@ -76,6 +76,8 @@ import com.sosyaloyun.app.istatistik.YillikOzetGorunumu
 import com.sosyaloyun.app.istatistik.YillikOzetViewModel
 import com.sosyaloyun.app.itiraz.ItirazViewModel
 import com.sosyaloyun.app.kurator.KuratorViewModel
+import com.sosyaloyun.app.oneri.OnerilerBolumu
+import com.sosyaloyun.app.oneri.OnerilerViewModel
 import com.sosyaloyun.app.puan.PuanDegisimiBolumu
 import com.sosyaloyun.app.puan.PuanDegisimiViewModel
 import com.sosyaloyun.app.puan.PuanGecmisiBolumu
@@ -359,6 +361,9 @@ private fun UygulamaGezintisi(api: ApiIstemcisi, profil: KullaniciOzeti, cikisYa
                     turAc = { gezinti.navigate(OyunListesiRota(tur = it)) },
                     platformAc = { gezinti.navigate(OyunListesiRota(platform = it)) },
                     ekBolumler = {
+                        if (aktifFaz.kapsar(Faz.FAZ_3)) {
+                            OnerilerBolumu(viewModel { OnerilerViewModel(api) }) { gezinti.navigate(OyunRota(it)) }
+                        }
                         if (aktifFaz.kapsar(Faz.FAZ_2)) {
                             PuanDegisimiBolumu(viewModel { PuanDegisimiViewModel(api) }) { gezinti.navigate(OyunRota(it)) }
                             KuratorListeleriBolumu(viewModel { KuratorListeleriViewModel(api) }) { gezinti.navigate(ListeRota(it)) }

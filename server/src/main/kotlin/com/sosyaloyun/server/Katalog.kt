@@ -22,6 +22,8 @@ import org.jetbrains.exposed.v1.core.inSubQuery
 import org.jetbrains.exposed.v1.core.stringLiteral
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.inList
+import org.jetbrains.exposed.v1.core.notInList
+import org.jetbrains.exposed.v1.core.or
 import org.jetbrains.exposed.v1.core.java.javaUUID
 import org.jetbrains.exposed.v1.core.like
 import org.jetbrains.exposed.v1.javatime.date
@@ -139,6 +141,28 @@ class Katalog(private val veritabani: Database) {
             val sayfa = idler.take(SAYFA)
             val oyunlar = ozetler(sayfa)
             OyunAramaYaniti(sayfa.mapNotNull(oyunlar::get), Imlec.sonraki(idler.size, baslangic, SAYFA))
+        }
+    }
+
+    /**
+     * Öneri adayları (#56): bir türdeki (IGDB adı) ve/veya platformlardan birindeki ana oyunlar, popüler önce; [haric]
+     * dışında en fazla [adet] oyun.
+     */
+    suspend fun populerAdaylar(tur: String?, platformlar: Collection<String>, haric: Set<UUID>, adet: Int): List<UUID> = withContext(Dispatchers.IO) {
+        transaction(veritabani) {
+            var kosul: Op<Boolean> = (OyunTablosu.kaldirildi eq false) and (OyunTablosu.tur eq OyunTuru.ANA_OYUN.name)
+            tur?.let { kosul = kosul and (stringLiteral(it) eq anyFrom(OyunTablosu.turler)) }
+            if (platformlar.isNotEmpty()) {
+                val platformdakiler = OyunKaynagiTablosu.select(OyunKaynagiTablosu.oyunId).where {
+                    (OyunKaynagiTablosu.kaynak eq IGDB) and platformlar.map { stringLiteral(it) eq anyFrom(OyunKaynagiTablosu.platformlar) }.reduce { a, b -> a or b }
+                }
+                kosul = kosul and (OyunTablosu.id inSubQuery platformdakiler)
+            }
+            if (haric.isNotEmpty()) kosul = kosul and (OyunTablosu.id notInList haric)
+            OyunTablosu.select(OyunTablosu.id).where(kosul)
+                .orderBy(OyunTablosu.populerlik to SortOrder.DESC, OyunTablosu.id to SortOrder.ASC)
+                .limit(adet)
+                .map { it[OyunTablosu.id] }
         }
     }
 
