@@ -146,4 +146,6 @@
     <string name="akis_istek_listemde">İstek listende</string>
     <string name="akis_spoiler">Spoiler içeriyor</string>
     <string name="akis_spoiler_goster">Göster</string>
+    <string name="begenenler">Beğenenler</string>
+    <string name="gunluk_kaydi_bulunamadi">Bu günlük kaydı bulunamadı.</string>
 </resources>

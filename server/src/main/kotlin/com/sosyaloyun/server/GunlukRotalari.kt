@@ -1,6 +1,7 @@
 package com.sosyaloyun.server
 
 import com.sosyaloyun.shared.ApiYollari
+import com.sosyaloyun.shared.GunlukKaydiDetayi
 import com.sosyaloyun.shared.GunlukKaydiIstegi
 import com.sosyaloyun.shared.GunlukKurallari
 import com.sosyaloyun.shared.HataKodu
@@ -10,12 +11,42 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.RoutingCall
 import io.ktor.server.routing.delete
+import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.put
 import java.util.UUID
 
-fun Route.gunlukRotalari(gunluk: Gunluk, katalog: Katalog) {
+fun Route.gunlukRotalari(
+    gunluk: Gunluk,
+    katalog: Katalog,
+    begeniler: Begeniler,
+    sosyalGraf: SosyalGraf,
+    kullanicilar: Kullanicilar,
+) {
     oturumGerekli {
+        get("${ApiYollari.GUNLUK}/{id}") {
+            val erisim = call.erisim(gunluk, sosyalGraf) ?: return@get
+            val oyunId = UUID.fromString(erisim.kayit.oyunId)
+            val oyun = katalog.ozetleri(listOf(oyunId)).getValue(oyunId)
+            // Sahibinin profili yoksa detay gösterilemez; kayıt yokmuş gibi davranılır.
+            val sahip = kullanicilar.ben(erisim.sahip).profil
+                ?: return@get call.hata(HttpStatusCode.NotFound, HataKodu.GUNLUK_KAYDI_BULUNAMADI)
+            call.respond(GunlukKaydiDetayi(begeniler.ekle(call.oturumSahibi.kullaniciId, erisim.kayit), oyun, sahip))
+        }
+        put(ApiYollari.begeni("{id}")) {
+            val erisim = call.erisim(gunluk, sosyalGraf) ?: return@put
+            begeniler.begen(call.oturumSahibi.kullaniciId, UUID.fromString(erisim.kayit.id))
+            call.respond(HttpStatusCode.NoContent)
+        }
+        delete(ApiYollari.begeni("{id}")) {
+            val erisim = call.erisim(gunluk, sosyalGraf) ?: return@delete
+            begeniler.geriAl(call.oturumSahibi.kullaniciId, UUID.fromString(erisim.kayit.id))
+            call.respond(HttpStatusCode.NoContent)
+        }
+        get(ApiYollari.begenenler("{id}")) {
+            val erisim = call.erisim(gunluk, sosyalGraf) ?: return@get
+            call.respond(begeniler.begenenler(UUID.fromString(erisim.kayit.id), call.request.queryParameters["imlec"]))
+        }
         post(ApiYollari.oyunGunlugu("{id}")) {
             val oyunId = call.kimlik()
             if (oyunId == null || !katalog.varMi(oyunId)) {
@@ -36,6 +67,13 @@ fun Route.gunlukRotalari(gunluk: Gunluk, katalog: Katalog) {
             if (silindi) call.respond(HttpStatusCode.NoContent) else call.hata(HttpStatusCode.NotFound, HataKodu.GUNLUK_KAYDI_BULUNAMADI)
         }
     }
+}
+
+/** Görme yetkisi olmayan kaydın varlığı da sızmaz: ikisi de 404. */
+private suspend fun RoutingCall.erisim(gunluk: Gunluk, sosyalGraf: SosyalGraf): Gunluk.Erisim? {
+    val erisim = kimlik()?.let { gunluk.gorebilecegiKayit(oturumSahibi.kullaniciId, it, sosyalGraf) }
+    if (erisim == null) hata(HttpStatusCode.NotFound, HataKodu.GUNLUK_KAYDI_BULUNAMADI)
+    return erisim
 }
 
 private fun RoutingCall.kimlik(): UUID? = parameters["id"]?.let { runCatching { UUID.fromString(it) }.getOrNull() }

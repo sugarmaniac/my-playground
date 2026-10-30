@@ -64,8 +64,13 @@ object ApiYollari {
     /** `POST /oyunlar/{id}/gunluk`: yeni günlük kaydı. */
     fun oyunGunlugu(oyunId: String) = "$OYUNLAR/$oyunId/gunluk"
 
-    /** `PUT` / `DELETE /gunluk/{id}`: günlük kaydını düzenleme ve silme. */
+    /** `GET` / `PUT` / `DELETE /gunluk/{id}`: günlük kaydı detayı, düzenleme ve silme. */
     const val GUNLUK = "/gunluk"
+
+    /** `PUT` / `DELETE`: beğenme ve geri alma (CONTEXT.md: Beğeni). */
+    fun begeni(kayitId: String) = "$GUNLUK/$kayitId/begeni"
+
+    fun begenenler(kayitId: String) = "$GUNLUK/$kayitId/begenenler"
 
     /** IGDB webhook'ları: `/igdb/webhook/{create|update|delete}`. */
     const val IGDB_WEBHOOK = "/igdb/webhook"

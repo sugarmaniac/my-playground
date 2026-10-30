@@ -43,11 +43,12 @@ fun Application.modul(bagimliliklar: Bagimliliklar) {
         profilRotalari(kullanicilar, davetKodlari, ayarlar)
         val gunluk = Gunluk(veritabani, bagimliliklar.saat)
         val kutuphane = Kutuphane(veritabani, bagimliliklar.saat)
-        katalogRotalari(katalog, kutuphane, gunluk, katalogIceAktarici, bagimliliklar.igdbWebhookSirri)
-        akisRotalari(Akis(veritabani, katalog), kutuphane, katalog)
-        gunlukRotalari(gunluk, katalog)
+        val begeniler = Begeniler(veritabani, bagimliliklar.saat)
         val sosyalGraf = SosyalGraf(veritabani, bagimliliklar.saat)
-        profilSayfasiRotalari(Profiller(veritabani, katalog, kullanicilar, sosyalGraf, bagimliliklar.saat), kullanicilar, sosyalGraf)
+        katalogRotalari(katalog, kutuphane, gunluk, begeniler, katalogIceAktarici, bagimliliklar.igdbWebhookSirri)
+        akisRotalari(Akis(veritabani, katalog, begeniler), kutuphane, katalog)
+        gunlukRotalari(gunluk, katalog, begeniler, sosyalGraf, kullanicilar)
+        profilSayfasiRotalari(Profiller(veritabani, katalog, kullanicilar, sosyalGraf, begeniler, bagimliliklar.saat), kullanicilar, sosyalGraf)
         get(ApiYollari.SAGLIK) {
             val durum = if (ayarlar.oku(Ayar.BakimModu)) SunucuDurumu.BAKIMDA else SunucuDurumu.AYAKTA
             call.respond(

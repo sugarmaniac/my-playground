@@ -87,6 +87,19 @@ class Gunluk(private val veritabani: Database, private val saat: Clock) {
         }
     }
 
+    data class Erisim(val kayit: GunlukKaydi, val sahip: UUID)
+
+    /** Kayıt ve sahibi; [izleyen]'in görme yetkisi yoksa (ya da kayıt yoksa) null (CONTEXT.md: Görünürlük). */
+    suspend fun gorebilecegiKayit(izleyen: UUID, kayitId: UUID, sosyalGraf: SosyalGraf): Erisim? {
+        val (kayit, sahip) = withContext(Dispatchers.IO) {
+            transaction(veritabani) {
+                GunlukKaydiTablosu.selectAll().where { GunlukKaydiTablosu.id eq kayitId }.singleOrNull()
+                    ?.let { it.gunlukKaydi() to it[GunlukKaydiTablosu.kullaniciId] }
+            }
+        } ?: return null
+        return if (kayit.gorunurluk in sosyalGraf.gorebilecegi(izleyen, sahip)) Erisim(kayit, sahip) else null
+    }
+
     data class OyunGunlugu(val kayitlar: List<GunlukKaydi>, val toplamSureDakika: Int?, val sonPlatform: String?)
 
     /** Kullanıcının bir oyundaki kayıtları (yeniden eskiye), toplam süresi ve son seçtiği platform. */

@@ -33,6 +33,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sosyaloyun.app.arama.KullaniciSatiri
+import com.sosyaloyun.app.gunluk.BegeniButonu
+import com.sosyaloyun.app.gunluk.Inceleme
 import com.sosyaloyun.app.hesap.AvatarGorunumu
 import com.sosyaloyun.app.kutuphane.YildizPuani
 import com.sosyaloyun.app.profil.Kapak
@@ -43,8 +45,6 @@ import com.sosyaloyun.app.resources.akis_gunluk_kaydi
 import com.sosyaloyun.app.resources.akis_istek_listemde
 import com.sosyaloyun.app.resources.akis_istek_listeme_ekle
 import com.sosyaloyun.app.resources.akis_oynamaya_basladi
-import com.sosyaloyun.app.resources.akis_spoiler
-import com.sosyaloyun.app.resources.akis_spoiler_goster
 import com.sosyaloyun.app.resources.akis_yeni
 import com.sosyaloyun.app.resources.arama_daha_fazla
 import com.sosyaloyun.app.resources.arkadaslar
@@ -70,6 +70,7 @@ fun AkisEkrani(
     ustCubuk: @Composable () -> Unit,
     oyunaGit: (String) -> Unit,
     kullaniciyaGit: (String) -> Unit,
+    gunlukKaydinaGit: (String) -> Unit,
 ) {
     val durum by viewModel.ekran.collectAsStateWithLifecycle()
     LaunchedEffect(viewModel) {
@@ -105,7 +106,7 @@ fun AkisEkrani(
                 }
             }
             is AkisIcerigi.Ogeler -> LazyColumn(Modifier.padding(horizontal = 12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                items(icerik.ogeler, key = { it.id }) { oge -> AkisKarti(oge, viewModel, oyunaGit, kullaniciyaGit) }
+                items(icerik.ogeler, key = { it.id }) { oge -> AkisKarti(oge, viewModel, oyunaGit, kullaniciyaGit, gunlukKaydinaGit) }
                 if (icerik.dahaVar) {
                     item { TextButton(onClick = viewModel::dahaFazlaYukle, modifier = Modifier.fillMaxWidth()) { Text(stringResource(Res.string.arama_daha_fazla)) } }
                 }
@@ -115,7 +116,7 @@ fun AkisEkrani(
 }
 
 @Composable
-private fun AkisKarti(oge: AkisOgesi, viewModel: AkisViewModel, oyunaGit: (String) -> Unit, kullaniciyaGit: (String) -> Unit) {
+private fun AkisKarti(oge: AkisOgesi, viewModel: AkisViewModel, oyunaGit: (String) -> Unit, kullaniciyaGit: (String) -> Unit, gunlukKaydinaGit: (String) -> Unit) {
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.clickable { kullaniciyaGit(oge.kisi.kullaniciAdi) }) {
@@ -136,7 +137,12 @@ private fun AkisKarti(oge: AkisOgesi, viewModel: AkisViewModel, oyunaGit: (Strin
                     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Text(oyun.ad, style = MaterialTheme.typography.titleSmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
                         oge.gunlukKaydi?.puan?.let { YildizPuani(it, sec = {}, boyut = 16) }
-                        oge.gunlukKaydi?.inceleme?.let { Inceleme(it, oge.gunlukKaydi!!.spoiler) }
+                    }
+                }
+                oge.gunlukKaydi?.let { kayit ->
+                    Column(Modifier.clickable { gunlukKaydinaGit(kayit.id) }.fillMaxWidth()) {
+                        kayit.inceleme?.let { Inceleme(it, kayit.spoiler) }
+                        BegeniButonu(kayit) { viewModel.begeniDegistir(kayit.id) }
                     }
                 }
                 if (oge.istekListemde) {
@@ -146,17 +152,6 @@ private fun AkisKarti(oge: AkisOgesi, viewModel: AkisViewModel, oyunaGit: (Strin
                 }
             }
         }
-    }
-}
-
-/** Spoiler içeren inceleme dokunulana kadar gizli (spec #1, hikaye 39). */
-@Composable
-private fun Inceleme(metin: String, spoiler: Boolean) {
-    var acik by remember { mutableStateOf(!spoiler) }
-    if (acik) {
-        Text(metin, style = MaterialTheme.typography.bodySmall, maxLines = 6, overflow = TextOverflow.Ellipsis)
-    } else {
-        TextButton(onClick = { acik = true }) { Text("${stringResource(Res.string.akis_spoiler)} · ${stringResource(Res.string.akis_spoiler_goster)}") }
     }
 }
 

@@ -20,7 +20,7 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.long
 
-fun Route.katalogRotalari(katalog: Katalog, kutuphane: Kutuphane, gunluk: Gunluk, iceAktarici: KatalogIceAktarici?, webhookSirri: String?) {
+fun Route.katalogRotalari(katalog: Katalog, kutuphane: Kutuphane, gunluk: Gunluk, begeniler: Begeniler, iceAktarici: KatalogIceAktarici?, webhookSirri: String?) {
     oturumGerekli {
         get(ApiYollari.OYUN_ARA) {
             call.respond(katalog.ara(call.request.queryParameters["q"].orEmpty(), call.request.queryParameters["imlec"]))
@@ -37,7 +37,7 @@ fun Route.katalogRotalari(katalog: Katalog, kutuphane: Kutuphane, gunluk: Gunluk
             call.respond(
                 detay.copy(
                     kutuphaneGirisi = kutuphane.giris(kullaniciId, id),
-                    gunlukKayitlarim = oyunGunlugu.kayitlar,
+                    gunlukKayitlarim = begeniler.ekle(kullaniciId, oyunGunlugu.kayitlar),
                     toplamOyunSuresiDakika = oyunGunlugu.toplamSureDakika,
                     sonPlatform = oyunGunlugu.sonPlatform,
                 ),

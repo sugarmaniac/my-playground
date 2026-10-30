@@ -194,7 +194,7 @@ cd "$(dirname "$0")/.."
 
 RAILWAY_PROJE="https://railway.com/project/211ca30f-570f-489b-9a5f-7f42afd64bc4"
 
-TOTAL_STAGES=10
+TOTAL_STAGES=11
 
 # gradle_ayari_yaz AD DEGER: gradle.properties'teki bir derleme ayarını günceller (gizli olmayan değerler).
 gradle_ayari_yaz() {
@@ -205,6 +205,14 @@ gradle_ayari_yaz() {
 }
 
 banner "Sosyal Oyun Platformu: insan adımları"
+
+# ── GitHub Actions faturalandırması ───────────────────────────────────────
+stage "GitHub: Actions ödeme ve harcama limiti"
+say "Ödeme başarısız olursa ya da harcama limiti dolarsa CI işleri hiç başlamaz ve otomasyon PR'ları merge edemez."
+open_url "https://github.com/settings/billing"
+step "Ödeme yöntemini düzelt ya da Actions harcama limitini artır."
+note "macOS işi (iOS derlemesi) Actions dakikasını 10 kat sayar."
+pause "Limit açılınca Enter'a bas"
 
 # ── Railway test ortamı (#4, docs/dagitim.md) ─────────────────────────────
 stage "Railway: PostgreSQL ekle"
