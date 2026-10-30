@@ -82,6 +82,8 @@ class OneriTest {
         assertTrue(ilk.any { adlar[it.oyun.id] == "Ejder" && it.neden == OneriNedeni.TUR && it.ayrinti == RPG })
         assertFalse(ilk.any { adlar[it.oyun.id] in setOf("Ruh", "Kale", "Mermi") })
         assertFalse(ilk.any { adlar[it.oyun.id] == "Namlu" && it.neden == OneriNedeni.BENZER_KULLANICILAR })
+        assertEquals(ilk.size, ilk.map { it.oyun.id }.toSet().size)
+        assertTrue(ilk.size <= 10)
 
         assertEquals(HttpStatusCode.NoContent, client.put(ApiYollari.ilgilenmiyorum(oyunlar.getValue("Buyu"))) { bearerAuth(t("ayse")) }.status)
         assertFalse(oneriler("ayse").any { adlar[it.oyun.id] == "Buyu" })

@@ -40,17 +40,18 @@ class Oneriler(private val veritabani: Database, private val katalog: Katalog, p
             idler.filter { it !in profil.haric && it !in secilenler }.take(adet).forEach { secilenler[it] = neden to ayrinti }
         }
         ekle(benzerKullanicilarinkiler(kullanici, profil), OneriNedeni.BENZER_KULLANICILAR, adet = BENZER_EN_FAZLA)
-        val haricVeSecilen = profil.haric + secilenler.keys
+        // Her adım hariçlere o ana kadar seçilenleri de katar ve toplamı ADET'te tutar.
+        fun kalan(enFazla: Int) = minOf(enFazla, ADET - secilenler.size)
         for (tur in profil.sevilenTurler) {
-            if (secilenler.size >= ADET) break
-            ekle(katalog.populerAdaylar(tur, profil.platformlar, haricVeSecilen, TUR_BASINA), OneriNedeni.TUR, tur, TUR_BASINA)
+            if (kalan(TUR_BASINA) <= 0) break
+            ekle(katalog.populerAdaylar(tur, profil.platformlar, profil.haric + secilenler.keys, kalan(TUR_BASINA)), OneriNedeni.TUR, tur, kalan(TUR_BASINA))
         }
         for (platform in profil.platformlar) {
-            if (secilenler.size >= ADET) break
-            ekle(katalog.populerAdaylar(null, listOf(platform), haricVeSecilen + secilenler.keys, TUR_BASINA), OneriNedeni.PLATFORM, platform, TUR_BASINA)
+            if (kalan(TUR_BASINA) <= 0) break
+            ekle(katalog.populerAdaylar(null, listOf(platform), profil.haric + secilenler.keys, kalan(TUR_BASINA)), OneriNedeni.PLATFORM, platform, kalan(TUR_BASINA))
         }
-        if (secilenler.size < ADET) {
-            ekle(katalog.populerAdaylar(null, emptyList(), haricVeSecilen + secilenler.keys, ADET), OneriNedeni.POPULER, adet = ADET - secilenler.size)
+        if (kalan(ADET) > 0) {
+            ekle(katalog.populerAdaylar(null, emptyList(), profil.haric + secilenler.keys, kalan(ADET)), OneriNedeni.POPULER, adet = kalan(ADET))
         }
         val ozetler = katalog.ozetleri(secilenler.keys.toList())
         return OneriListesi(secilenler.mapNotNull { (id, neden) -> ozetler[id]?.let { Oneri(it, neden.first, neden.second) } })

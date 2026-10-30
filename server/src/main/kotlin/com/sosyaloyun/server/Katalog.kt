@@ -22,6 +22,7 @@ import org.jetbrains.exposed.v1.core.inSubQuery
 import org.jetbrains.exposed.v1.core.stringLiteral
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.inList
+import org.jetbrains.exposed.v1.core.notInList
 import org.jetbrains.exposed.v1.core.or
 import org.jetbrains.exposed.v1.core.java.javaUUID
 import org.jetbrains.exposed.v1.core.like
@@ -157,12 +158,11 @@ class Katalog(private val veritabani: Database) {
                 }
                 kosul = kosul and (OyunTablosu.id inSubQuery platformdakiler)
             }
+            if (haric.isNotEmpty()) kosul = kosul and (OyunTablosu.id notInList haric)
             OyunTablosu.select(OyunTablosu.id).where(kosul)
                 .orderBy(OyunTablosu.populerlik to SortOrder.DESC, OyunTablosu.id to SortOrder.ASC)
-                .limit(adet + haric.size)
+                .limit(adet)
                 .map { it[OyunTablosu.id] }
-                .filter { it !in haric }
-                .take(adet)
         }
     }
 
