@@ -25,6 +25,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import com.sosyaloyun.app.onbellek.LocalYerelOnbellek
+import com.sosyaloyun.app.onbellek.onbellekAyarlari
 import com.sosyaloyun.app.onbellek.AyarliOnbellek
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -163,7 +164,8 @@ fun App() {
         ImageLoader.Builder(baglam).components { add(KtorNetworkFetcherFactory()) }.build()
     }
 
-    val onbellek = remember { AyarliOnbellek() }
+    val onbellekAyarlari = onbellekAyarlari()
+    val onbellek = remember(onbellekAyarlari) { AyarliOnbellek(onbellekAyarlari) }
     // Oturum kapalıyken önceki hesabın saklı ekranları kalmasın.
     val oturumKapali = ekran is OturumEkrani.Giris
     LaunchedEffect(oturumKapali) { if (oturumKapali) onbellek.temizle() }

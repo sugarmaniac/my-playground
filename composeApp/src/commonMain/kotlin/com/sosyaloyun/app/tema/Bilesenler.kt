@@ -22,6 +22,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.delay
 
 /** Tuvaldeki kart: yüzey rengi, ince çizgi, 16 dp köşe. */
 @Composable
@@ -59,12 +61,20 @@ fun Iskelet(modifier: Modifier = Modifier) {
 
 /**
  * Lazy listenin sonuna konur: öğe görünür ya da önceden hazırlanır olunca sonraki sayfa istenir (#60).
- * Anahtar yüklenen öğe sayısını taşır; sayfa gelince yeni öğe yeniden tetikler, istek başarısızsa aynı öğe tekrar istemez.
+ * Görünür kaldıkça artan aralıkla yeniden istenir: ilk istek başka bir yükleme sürerken yok sayılmış ya da başarısız
+ * olmuş olabilir. ViewModel'ler süren yükleme varken gelen isteği yok sayar. Sayfa gelince anahtar değişir, öğe yenilenir.
  */
 fun LazyListScope.sayfaSonu(dahaVar: Boolean, yuklenen: Int, yukle: () -> Unit) {
     if (!dahaVar) return
     item(key = "sayfa-sonu-$yuklenen", contentType = "sayfa-sonu") {
-        LaunchedEffect(Unit) { yukle() }
+        LaunchedEffect(Unit) {
+            var bekleme = 1.seconds
+            while (true) {
+                yukle()
+                delay(bekleme)
+                bekleme = (bekleme * 2).coerceAtMost(30.seconds)
+            }
+        }
         Box(Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) {
             CircularProgressIndicator(Modifier.size(24.dp), strokeWidth = 2.dp)
         }

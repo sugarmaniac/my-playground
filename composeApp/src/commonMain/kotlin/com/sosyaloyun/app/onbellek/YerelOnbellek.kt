@@ -1,5 +1,6 @@
 package com.sosyaloyun.app.onbellek
 
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.staticCompositionLocalOf
 import com.russhwolf.settings.Settings
 import com.sosyaloyun.shared.ApiJson
@@ -24,12 +25,17 @@ object BosOnbellek : YerelOnbellek {
     override fun temizle() = Unit
 }
 
-/** Cihazın ayar deposunda; anahtarlar oturum bilgileriyle karışmasın diye önekli. */
-class AyarliOnbellek(private val ayarlar: Settings = onbellekAyarlari()) : YerelOnbellek {
+/** Cihazın ayar deposunda, oturumdan ayrı bir dosyada. Önbellek yardımcıdır: yazılamazsa ekran etkilenmez. */
+class AyarliOnbellek(private val ayarlar: Settings) : YerelOnbellek {
     override fun oku(anahtar: String): String? = ayarlar.getStringOrNull(ONEK + anahtar)
 
     override fun yaz(anahtar: String, deger: String) {
-        if (deger.length <= EN_BUYUK_DEGER) ayarlar.putString(ONEK + anahtar, deger)
+        if (deger.length > EN_BUYUK_DEGER) return
+        try {
+            ayarlar.putString(ONEK + anahtar, deger)
+        } catch (e: IllegalArgumentException) {
+            // Bazı depolar uzun değeri reddeder (ör. masaüstünde 8 KB sınırı); saklanmaz, istek yine başarılıdır.
+        }
     }
 
     override fun temizle() {
@@ -42,6 +48,7 @@ class AyarliOnbellek(private val ayarlar: Settings = onbellekAyarlari()) : Yerel
     }
 }
 
+@Composable
 expect fun onbellekAyarlari(): Settings
 
 /** Okunamayan (ör. eski sürümün biçimindeki) kayıt yok sayılır. */

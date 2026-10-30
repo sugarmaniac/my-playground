@@ -64,18 +64,28 @@ class AkisViewModel(private val api: ApiIstemcisi, private val onbellek: YerelOn
         sakli?.let { enYeniImlec = it.enYeniImlec }
         _ekran.update { it.copy(icerik = sakli?.let(::ogeler) ?: AkisIcerigi.Yukleniyor, yeniOlaySayisi = 0) }
         sayfaIsi = viewModelScope.launch {
-            val icerik = try {
-                val sayfa = api.akis(sekme)
-                sonrakiImlec = sayfa.sonrakiImlec
-                enYeniImlec = sayfa.enYeniImlec
-                onbellek.yazNesne(onbellekAnahtari(sekme), sayfa)
-                if (sayfa.ogeler.isEmpty()) AkisIcerigi.Bos(api.akisOnerileri()) else ogeler(sayfa)
+            val sayfa = try {
+                api.akis(sekme)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
                 // Saklı sayfa gösteriliyorsa o kalır.
-                if (sakli != null) return@launch
-                AkisIcerigi.Hata
+                if (sakli == null) _ekran.update { it.copy(icerik = AkisIcerigi.Hata) }
+                return@launch
+            }
+            sonrakiImlec = sayfa.sonrakiImlec
+            enYeniImlec = sayfa.enYeniImlec
+            onbellek.yazNesne(onbellekAnahtari(sekme), sayfa)
+            val icerik = if (sayfa.ogeler.isNotEmpty()) {
+                ogeler(sayfa)
+            } else {
+                try {
+                    AkisIcerigi.Bos(api.akisOnerileri())
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    AkisIcerigi.Bos(emptyList())
+                }
             }
             _ekran.update { it.copy(icerik = icerik) }
         }

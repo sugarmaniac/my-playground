@@ -75,7 +75,8 @@ fun KesifEkrani(
                 }
             }
         }
-        item(contentType = "bolum") {
+        // Hata durumunda iskelet yükleniyor izlenimi verir; yalnız kısayollar kalır.
+        if (ekran !is KesifEkrani.Hata) item(contentType = "bolum") {
             Bolum(stringResource(Res.string.kesif_takip_edilenlerde)) {
                 when {
                     kesif == null -> KapakSirasiIskeleti()
@@ -87,7 +88,7 @@ fun KesifEkrani(
                 }
             }
         }
-        item(contentType = "bolum") {
+        if (ekran !is KesifEkrani.Hata) item(contentType = "bolum") {
             Bolum(stringResource(Res.string.kesif_trend)) {
                 Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     if (kesif == null) {
