@@ -173,7 +173,7 @@ private fun AkisKarti(oge: AkisOgesi, viewModel: AkisViewModel, oyunaGit: (Strin
                 Kapak(oyun, Modifier.size(width = 64.dp, height = 86.dp))
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(oyun.ad, style = MaterialTheme.typography.titleLarge, maxLines = 2, overflow = TextOverflow.Ellipsis)
-                    oge.gunlukKaydi?.puan?.let { YildizPuani(it, sec = {}, boyut = 16) }
+                    oge.gunlukKaydi?.puan?.let { YildizPuani(it, boyut = 16) }
                     val ayrinti = listOfNotNull(
                         oge.gunlukKaydi?.sureDakika?.let { stringResource(Res.string.gunluk_saat, dakikadanSaate(it)) },
                         oge.gunlukKaydi?.platform,

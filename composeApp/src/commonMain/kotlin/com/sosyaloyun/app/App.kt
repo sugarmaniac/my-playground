@@ -1,5 +1,7 @@
 package com.sosyaloyun.app
 
+import androidx.compose.ui.unit.sp
+import com.sosyaloyun.app.tema.SigdirilanYazi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -55,6 +57,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import coil3.ImageLoader
+import coil3.request.crossfade
 import coil3.compose.setSingletonImageLoaderFactory
 import coil3.network.ktor3.KtorNetworkFetcherFactory
 import com.sosyaloyun.app.liste.OyunListeleriViewModel
@@ -161,7 +164,7 @@ fun App() {
     val ekran by oturum.ekran.collectAsStateWithLifecycle()
 
     setSingletonImageLoaderFactory { baglam ->
-        ImageLoader.Builder(baglam).components { add(KtorNetworkFetcherFactory()) }.build()
+        ImageLoader.Builder(baglam).components { add(KtorNetworkFetcherFactory()) }.crossfade(true).build()
     }
 
     val onbellekAyarlari = onbellekAyarlari()
@@ -393,11 +396,17 @@ internal fun UygulamaGezintisi(api: ApiIstemcisi, profil: KullaniciOzeti, cikisY
                     platformAc = { gezinti.navigate(OyunListesiRota(platform = it)) },
                     ekBolumler = {
                         if (aktifFaz.kapsar(Faz.FAZ_3)) {
-                            OnerilerBolumu(viewModel { OnerilerViewModel(api) }) { gezinti.navigate(OyunRota(it)) }
+                            item(key = "oneriler", contentType = "ek") {
+                                EkBolum { OnerilerBolumu(viewModel { OnerilerViewModel(api, onbellek) }) { gezinti.navigate(OyunRota(it)) } }
+                            }
                         }
                         if (aktifFaz.kapsar(Faz.FAZ_2)) {
-                            PuanDegisimiBolumu(viewModel { PuanDegisimiViewModel(api) }) { gezinti.navigate(OyunRota(it)) }
-                            KuratorListeleriBolumu(viewModel { KuratorListeleriViewModel(api) }) { gezinti.navigate(ListeRota(it)) }
+                            item(key = "puan-degisimi", contentType = "ek") {
+                                EkBolum { PuanDegisimiBolumu(viewModel { PuanDegisimiViewModel(api) }) { gezinti.navigate(OyunRota(it)) } }
+                            }
+                            item(key = "kurator-listeleri", contentType = "ek") {
+                                EkBolum { KuratorListeleriBolumu(viewModel { KuratorListeleriViewModel(api) }) { gezinti.navigate(ListeRota(it)) } }
+                            }
                         }
                     },
                 )
@@ -666,6 +675,12 @@ private fun AltMenuOgesi(ikon: ImageVector, etiket: String, secili: Boolean, roz
         }) {
             Icon(ikon, contentDescription = null, tint = renk, modifier = Modifier.size(24.dp))
         }
-        Text(etiket, color = renk, style = MaterialTheme.typography.labelSmall, maxLines = 1)
+        SigdirilanYazi(etiket, MaterialTheme.typography.labelSmall, renk = renk, enKucuk = 8.sp)
     }
+}
+
+/** Keşif'teki fazlara bağlı bölümlerin kenar boşluğu; bölüm boşsa yer kaplamaz. */
+@Composable
+private fun EkBolum(icerik: @Composable () -> Unit) {
+    Box(Modifier.padding(horizontal = 16.dp)) { icerik() }
 }

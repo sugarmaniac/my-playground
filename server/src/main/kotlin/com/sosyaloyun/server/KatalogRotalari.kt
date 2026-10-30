@@ -15,6 +15,8 @@ import io.ktor.server.routing.post
 import io.ktor.server.routing.put
 import java.security.MessageDigest
 import java.util.UUID
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -41,16 +43,20 @@ fun Route.katalogRotalari(
                 return@get
             }
             val kullaniciId = call.oturumSahibi.kullaniciId
-            val oyunGunlugu = gunluk.oyunGunlugu(kullaniciId, id)
-            call.respond(
+            // Kullanıcıya özel bölümler birbirinden bağımsız; sırayla değil birlikte okunur (#62).
+            val yanit = coroutineScope {
+                val giris = async { kutuphane.giris(kullaniciId, id) }
+                val puanlar = async { topluluk.puanlar(kullaniciId, id) }
+                val oyunGunlugu = gunluk.oyunGunlugu(kullaniciId, id)
                 detay.copy(
-                    kutuphaneGirisi = kutuphane.giris(kullaniciId, id),
+                    kutuphaneGirisi = giris.await(),
                     gunlukKayitlarim = begeniler.ekle(kullaniciId, oyunGunlugu.kayitlar),
                     toplamOyunSuresiDakika = oyunGunlugu.toplamSureDakika,
                     sonPlatform = oyunGunlugu.sonPlatform,
-                    puanlar = topluluk.puanlar(kullaniciId, id),
-                ),
-            )
+                    puanlar = puanlar.await(),
+                )
+            }
+            call.respond(yanit)
         }
         get(ApiYollari.oyunIncelemeleri("{id}")) {
             val id = call.oyunId()

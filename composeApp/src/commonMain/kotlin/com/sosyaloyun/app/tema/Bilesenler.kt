@@ -1,6 +1,15 @@
 package com.sosyaloyun.app.tema
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.graphics.takeOrElse
+import androidx.compose.ui.graphics.Color
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.foundation.text.TextAutoSize
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.ui.draw.clip
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.material3.CircularProgressIndicator
@@ -79,4 +88,28 @@ fun LazyListScope.sayfaSonu(dahaVar: Boolean, yuklenen: Int, yukle: () -> Unit) 
             CircularProgressIndicator(Modifier.size(24.dp), strokeWidth = 2.dp)
         }
     }
+}
+
+/**
+ * Tek satırda kalması gereken kısa yazılar (düğme, sayaç etiketi, ad): sığmazsa [enKucuk] boyuta kadar küçülür,
+ * yine sığmazsa kırpılır. Üç noktayla kısaltma kullanılmaz: kısaltılan yazı taşmış sayılmadığından küçülme hiç başlamıyor. Büyük yazı boyutu ayarlı telefonlarda kelimenin bölünmesini ya da kesilmesini önler.
+ */
+@Composable
+fun SigdirilanYazi(
+    metin: String,
+    stil: TextStyle,
+    modifier: Modifier = Modifier,
+    renk: Color = Color.Unspecified,
+    enKucuk: TextUnit = 10.sp,
+) {
+    val sonStil = stil.merge(color = renk.takeOrElse { stil.color.takeOrElse { LocalContentColor.current } })
+    BasicText(
+        metin,
+        modifier = modifier,
+        style = sonStil,
+        maxLines = 1,
+        softWrap = false,
+        overflow = TextOverflow.Clip,
+        autoSize = TextAutoSize.StepBased(minFontSize = enKucuk, maxFontSize = stil.fontSize, stepSize = 0.5.sp),
+    )
 }

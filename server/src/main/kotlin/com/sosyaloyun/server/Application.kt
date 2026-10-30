@@ -31,7 +31,7 @@ fun Application.modul(bagimliliklar: Bagimliliklar) {
     val kullanicilar = Kullanicilar(veritabani)
     val davetKodlari = DavetKodlari(veritabani, bagimliliklar.saat)
     runBlocking { davetKodlari.kurucuKodlariniEkle(bagimliliklar.kurucuDavetKodlari) }
-    val katalog = Katalog(veritabani)
+    val katalog = Katalog(veritabani, bagimliliklar.katalogOnbellekSuresi)
     val katalogIceAktarici = bagimliliklar.katalogKaynagi?.let { KatalogIceAktarici(it, katalog, ayarlar) }
     if (bagimliliklar.katalogZamanlayici && katalogIceAktarici != null) katalogZamanlayicisiniBaslat(katalogIceAktarici)
 

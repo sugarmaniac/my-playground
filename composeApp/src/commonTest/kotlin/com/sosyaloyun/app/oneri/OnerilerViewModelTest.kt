@@ -1,5 +1,7 @@
 package com.sosyaloyun.app.oneri
 
+import com.sosyaloyun.app.onbellek.yazNesne
+import com.sosyaloyun.app.test.BellekOnbellegi
 import com.sosyaloyun.app.test.SahteApiIstemcisi
 import com.sosyaloyun.app.test.viewModelTesti
 import com.sosyaloyun.shared.Oneri
@@ -23,13 +25,13 @@ class OnerilerViewModelTest {
 
         vm.ilgilenmiyorum("b")
         advanceUntilIdle()
-        assertEquals(listOf("a", "c"), vm.oneriler.value.map { it.oyun.id })
+        assertEquals(listOf("a", "c"), vm.oneriler.value?.map { it.oyun.id })
         assertEquals(listOf("b"), api.ilgilenilmeyenler)
 
         api.ilgilenmiyorumHatasi = IllegalStateException("bağlantı yok")
         vm.ilgilenmiyorum("a")
         advanceUntilIdle()
-        assertEquals(listOf("a", "c"), vm.oneriler.value.map { it.oyun.id })
+        assertEquals(listOf("a", "c"), vm.oneriler.value?.map { it.oyun.id })
     }
 
     @Test
@@ -38,5 +40,23 @@ class OnerilerViewModelTest {
         val vm = OnerilerViewModel(api)
         advanceUntilIdle()
         assertEquals(emptyList(), vm.oneriler.value)
+    }
+
+    @Test
+    fun sakliOnerilerHemenGosterilirHatadaKalir() = viewModelTesti {
+        val onbellek = BellekOnbellegi()
+        onbellek.yazNesne("oneriler", OneriListesi(listOf(oneri("eski"))))
+        api.hata = IllegalStateException("bağlantı yok")
+
+        val vm = OnerilerViewModel(api, onbellek)
+        assertEquals(listOf("eski"), vm.oneriler.value?.map { it.oyun.id })
+        advanceUntilIdle()
+        assertEquals(listOf("eski"), vm.oneriler.value?.map { it.oyun.id })
+    }
+
+    @Test
+    fun yuklenirkenNullDur() = viewModelTesti {
+        val vm = OnerilerViewModel(api)
+        assertEquals(null, vm.oneriler.value)
     }
 }

@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
@@ -58,15 +59,17 @@ fun KesifEkrani(
     oyunaGit: (String) -> Unit,
     turAc: (Tur) -> Unit,
     platformAc: (String) -> Unit,
-    /** Fazlara bağlı ek bölümler (ör. Faz 2'de küratör listeleri); keşfin başında. */
-    ekBolumler: @Composable () -> Unit = {},
+    /**
+     * Fazlara bağlı ek bölümler (ör. Faz 2'de küratör listeleri); trendin altında, her biri ayrı lazy öğe.
+     * Listenin başında olsalar veri gelince büyüyüp içeriği aşağı iterlerdi (#61).
+     */
+    ekBolumler: LazyListScope.() -> Unit = {},
 ) {
     val ekran by viewModel.ekran.collectAsStateWithLifecycle()
     // Tür ve platform kısayolları istemcide de bilinir; keşif beklenmeden çizilir, gerisi gelene kadar iskelet (#60).
     val kesif = (ekran as? KesifEkrani.Hazir)?.kesif
     LazyColumn(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        item(contentType = "ek") { Column(Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) { ekBolumler() } }
-        item(contentType = "baslik") { Text(stringResource(Res.string.kesif_baslik), style = MaterialTheme.typography.headlineLarge, modifier = Modifier.padding(start = 20.dp, top = 8.dp)) }
+        item(contentType = "baslik") { Text(stringResource(Res.string.kesif_baslik), style = MaterialTheme.typography.headlineLarge, modifier = Modifier.padding(start = 20.dp, top = 24.dp)) }
         if (ekran is KesifEkrani.Hata) {
             item(contentType = "hata") {
                 Column(Modifier.padding(horizontal = 16.dp)) {
@@ -99,6 +102,7 @@ fun KesifEkrani(
                 }
             }
         }
+        ekBolumler()
         item(contentType = "bolum") {
             Bolum(stringResource(Res.string.kesif_turler)) {
                 FlowRow(Modifier.padding(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {

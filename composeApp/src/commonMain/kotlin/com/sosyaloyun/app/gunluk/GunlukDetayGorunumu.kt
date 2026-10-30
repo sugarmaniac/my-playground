@@ -93,7 +93,7 @@ fun GunlukDetayGorunumu(viewModel: GunlukDetayViewModel, api: ApiIstemcisi, oyun
                             Text(oyun.ad, style = MaterialTheme.typography.titleLarge)
                             val tarihler = listOfNotNull(kayit.baslama, kayit.bitis).map(::tarihMetni).joinToString(" – ")
                             Text(listOf(tarihler, kayit.platform.orEmpty()).filter { it.isNotEmpty() }.joinToString(" · "), style = MaterialTheme.typography.labelMedium)
-                            kayit.puan?.let { YildizPuani(it, sec = {}, boyut = 20) }
+                            kayit.puan?.let { YildizPuani(it, boyut = 20) }
                         }
                     }
                 }

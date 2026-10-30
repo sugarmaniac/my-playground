@@ -10,16 +10,18 @@ import com.sosyaloyun.shared.OyunOzeti
 import com.sosyaloyun.shared.OyunTuru
 import com.sosyaloyun.shared.Tur
 import java.util.UUID
+import kotlin.time.Duration
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.exposed.v1.core.CharLength
+import org.jetbrains.exposed.v1.core.Expression
 import org.jetbrains.exposed.v1.core.Op
+import org.jetbrains.exposed.v1.core.QueryBuilder
+import org.jetbrains.exposed.v1.core.TextColumnType
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.Table
 import org.jetbrains.exposed.v1.core.and
-import org.jetbrains.exposed.v1.core.anyFrom
 import org.jetbrains.exposed.v1.core.inSubQuery
-import org.jetbrains.exposed.v1.core.stringLiteral
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.inList
 import org.jetbrains.exposed.v1.core.notInList
@@ -37,8 +39,15 @@ import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import org.jetbrains.exposed.v1.jdbc.update
 import org.jetbrains.exposed.v1.jdbc.upsert
 
-/** Oyun kataloğu: kaynaktan gelen kayıtları kaydedilebilir oyunlara çevirir ve aramayı yapar. */
-class Katalog(private val veritabani: Database) {
+/**
+ * Oyun kataloğu: kaynaktan gelen kayıtları kaydedilebilir oyunlara çevirir ve aramayı yapar.
+ * Detay, trend ve tür/platform sayfaları [onbellekSuresi] boyunca bellekte tutulur (#62); kullanıcıya özel değiller.
+ */
+class Katalog(private val veritabani: Database, onbellekSuresi: Duration = Duration.ZERO) {
+    private val detaylar = SureliOnbellek<UUID, OyunDetayi>(onbellekSuresi)
+    private val populerListeler = SureliOnbellek<Int, List<OyunOzeti>>(onbellekSuresi, enCok = 10)
+    private val listeSayfalari = SureliOnbellek<Triple<Tur?, String?, String?>, OyunAramaYaniti>(onbellekSuresi)
+
     /**
      * Bir kaynak kaydını kataloğa uygular. Port ve sürümler ana oyunlarında birleşir; ana oyunları
      * henüz yoksa `false` döner ve kayıt daha sonra yeniden denenmelidir.
@@ -122,14 +131,17 @@ class Katalog(private val veritabani: Database) {
     }
 
     /** Bir türdeki ya da bir platformdaki ana oyunlar, popüler önce; ikisi de verilmezse bütün ana oyunlar. */
-    suspend fun listele(tur: Tur?, platform: String?, imlec: String?): OyunAramaYaniti = withContext(Dispatchers.IO) {
+    suspend fun listele(tur: Tur?, platform: String?, imlec: String?): OyunAramaYaniti =
+        listeSayfalari.getir(Triple(tur, platform, imlec)) { listeyiOku(tur, platform, imlec) }!!
+
+    private suspend fun listeyiOku(tur: Tur?, platform: String?, imlec: String?): OyunAramaYaniti = withContext(Dispatchers.IO) {
         val baslangic = Imlec.baslangic(imlec)
         transaction(veritabani) {
             var kosul: Op<Boolean> = (OyunTablosu.kaldirildi eq false) and (OyunTablosu.tur eq OyunTuru.ANA_OYUN.name)
-            tur?.let { kosul = kosul and (stringLiteral(it.igdbAdi) eq anyFrom(OyunTablosu.turler)) }
+            tur?.let { kosul = kosul and DiziIcerir(OyunTablosu.turler, it.igdbAdi) }
             platform?.let { ad ->
                 val platformdakiler = OyunKaynagiTablosu.select(OyunKaynagiTablosu.oyunId)
-                    .where { (OyunKaynagiTablosu.kaynak eq IGDB) and (stringLiteral(ad) eq anyFrom(OyunKaynagiTablosu.platformlar)) }
+                    .where { (OyunKaynagiTablosu.kaynak eq IGDB) and DiziIcerir(OyunKaynagiTablosu.platformlar, ad) }
                 kosul = kosul and (OyunTablosu.id inSubQuery platformdakiler)
             }
             val idler = OyunTablosu.select(OyunTablosu.id)
@@ -151,10 +163,10 @@ class Katalog(private val veritabani: Database) {
     suspend fun populerAdaylar(tur: String?, platformlar: Collection<String>, haric: Set<UUID>, adet: Int): List<UUID> = withContext(Dispatchers.IO) {
         transaction(veritabani) {
             var kosul: Op<Boolean> = (OyunTablosu.kaldirildi eq false) and (OyunTablosu.tur eq OyunTuru.ANA_OYUN.name)
-            tur?.let { kosul = kosul and (stringLiteral(it) eq anyFrom(OyunTablosu.turler)) }
+            tur?.let { kosul = kosul and DiziIcerir(OyunTablosu.turler, it) }
             if (platformlar.isNotEmpty()) {
                 val platformdakiler = OyunKaynagiTablosu.select(OyunKaynagiTablosu.oyunId).where {
-                    (OyunKaynagiTablosu.kaynak eq IGDB) and platformlar.map { stringLiteral(it) eq anyFrom(OyunKaynagiTablosu.platformlar) }.reduce { a, b -> a or b }
+                    (OyunKaynagiTablosu.kaynak eq IGDB) and platformlar.map<String, Op<Boolean>> { DiziIcerir(OyunKaynagiTablosu.platformlar, it) }.reduce { a, b -> a or b }
                 }
                 kosul = kosul and (OyunTablosu.id inSubQuery platformdakiler)
             }
@@ -167,7 +179,9 @@ class Katalog(private val veritabani: Database) {
     }
 
     /** En popüler ana oyunlar; Steam bağlamayan kullanıcı onboarding'de bunlardan işaretler. */
-    suspend fun populerler(adet: Int): List<OyunOzeti> = withContext(Dispatchers.IO) {
+    suspend fun populerler(adet: Int): List<OyunOzeti> = populerListeler.getir(adet) { populerleriOku(adet) }.orEmpty()
+
+    private suspend fun populerleriOku(adet: Int): List<OyunOzeti> = withContext(Dispatchers.IO) {
         transaction(veritabani) {
             val idler = OyunTablosu.select(OyunTablosu.id)
                 .where { (OyunTablosu.kaldirildi eq false) and (OyunTablosu.tur eq OyunTuru.ANA_OYUN.name) }
@@ -217,7 +231,9 @@ class Katalog(private val veritabani: Database) {
     }
 
     /** Kaynakta silinmiş ya da hiç olmayan oyun için null. */
-    suspend fun detay(oyunId: UUID): OyunDetayi? = withContext(Dispatchers.IO) {
+    suspend fun detay(oyunId: UUID): OyunDetayi? = detaylar.getir(oyunId) { detayiOku(oyunId) }
+
+    private suspend fun detayiOku(oyunId: UUID): OyunDetayi? = withContext(Dispatchers.IO) {
         transaction(veritabani) {
             val satir = OyunTablosu.selectAll()
                 .where { (OyunTablosu.id eq oyunId) and (OyunTablosu.kaldirildi eq false) }
@@ -478,4 +494,14 @@ private object OyunKaynagiTablosu : Table("oyun_kaynagi") {
     val birincil = bool("birincil")
     val platformlar = array<String>("platformlar")
     override val primaryKey = PrimaryKey(kaynak, kaynakId)
+}
+
+/** `dizi @> ARRAY[oge]`: `oge = ANY(dizi)`'den farklı olarak GIN indeksini kullanabilir (#62). */
+private class DiziIcerir(private val dizi: Expression<List<String>>, private val oge: String) : Op<Boolean>() {
+    override fun toQueryBuilder(queryBuilder: QueryBuilder) = queryBuilder {
+        +dizi
+        append(" @> ARRAY[")
+        registerArgument(TextColumnType(), oge)
+        append("]::text[]")
+    }
 }
