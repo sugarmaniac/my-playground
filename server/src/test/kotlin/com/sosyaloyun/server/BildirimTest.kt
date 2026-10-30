@@ -25,6 +25,7 @@ import io.ktor.client.request.parameter
 import io.ktor.client.request.post
 import io.ktor.client.request.put
 import kotlin.test.Test
+import org.jetbrains.exposed.v1.jdbc.selectAll
 import kotlin.test.assertEquals
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.hours
@@ -239,6 +240,28 @@ class BildirimTest {
         pushDagitici.bekleyenleriGonder()
         pushDagitici.bekleyenleriGonder()
         assertEquals(listOf("token-ayse" to "Yeni bildirimlerin var: 1 beğeni, 2 yeni takipçi."), pushGonderici.gonderilenler)
+    }
+
+    @Test
+    fun faz2deOzeteYalnizcaPushuAcikTurlerGirer() = apiTesti {
+        hazirla("ayse", "mehmet")
+        ayarlar.yaz(Ayar.AktifFaz, 2)
+        cihazKaydet("ayse")
+        client.put(ApiYollari.BILDIRIM_TERCIHLERI) {
+            bearerAuth(t("ayse"))
+            json(BildirimTercihleri.serializer(), BildirimTercihleri(mapOf(BildirimTuru.BEGENI to false)))
+        }
+        saat.simdi = Instant.parse("2026-01-05T06:00:00Z")
+        begen("mehmet", kayitGir("ayse"))
+        takipEt("mehmet", "ayse")
+        saat.simdi = Instant.parse("2026-01-05T09:05:00Z")
+        pushDagitici.bekleyenleriGonder()
+        assertEquals(listOf("Mehmet seni takip etmeye başladı."), pushGonderici.gonderilenler.map { it.second })
+        // Atlanan beğeni günlük sınıra sayılmaz: yalnızca takip "gönderildi" olarak kalır.
+        val durumlar = org.jetbrains.exposed.v1.jdbc.transactions.transaction(veritabani) {
+            BildirimTablosu.selectAll().map { it[BildirimTablosu.tur] to it[BildirimTablosu.pushDurumu] }.toSet()
+        }
+        assertEquals(setOf("BEGENI" to "ATLANDI", "YENI_TAKIPCI" to "GONDERILDI"), durumlar)
     }
 
     @Test

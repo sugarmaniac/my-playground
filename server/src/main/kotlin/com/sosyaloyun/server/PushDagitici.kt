@@ -101,7 +101,7 @@ class PushDagitici(
                 false
             }
         }
-        return Sonuc.Durum(if (gonderildi > 0) PushDurumu.GONDERILDI else PushDurumu.ATLANDI)
+        return if (gonderildi > 0) Sonuc.Gonderildi(push.dahil) else Sonuc.Durum(PushDurumu.ATLANDI)
     }
 
     private class Bekleyen(val id: UUID, val alici: UUID, val tur: BildirimTuru, val aktor: UUID?)
@@ -110,13 +110,15 @@ class PushDagitici(
     private class Kurallar(val sinir: Int, val sessizBaslangic: Int, val sessizBitis: Int, val pencereler: List<Pair<Int, Int>>?)
 
     private sealed interface Plan {
-        class Gonder(val tokenlar: List<String>, val metin: String) : Plan
+        /** [dahil]: tercihi açık olup push'a giren bildirimler; grubun kalanı atlanır. */
+        class Gonder(val tokenlar: List<String>, val metin: String, val dahil: List<UUID>) : Plan
         class Bekle(val zaman: OffsetDateTime) : Plan
         data object Atla : Plan
     }
 
     private sealed interface Sonuc {
         class Durum(val durum: PushDurumu) : Sonuc
+        class Gonderildi(val dahil: List<UUID>) : Sonuc
         class Bekle(val zaman: OffsetDateTime) : Sonuc
     }
 
@@ -145,26 +147,30 @@ class PushDagitici(
             val aktor = b.aktor?.let { id -> KullaniciTablosu.selectAll().where { KullaniciTablosu.id eq id }.single()[KullaniciTablosu.gorunenAd] }
             metin(b.tur, aktor)
         } ?: ozetMetni(acik.map { it.tur })
-        return Plan.Gonder(cihazlar.map { it[PushCihaziTablosu.token] }, metin)
+        return Plan.Gonder(cihazlar.map { it[PushCihaziTablosu.token] }, metin, acik.map { it.id })
     }
 
-    /** Grubun ilki gönderildi sayılır (günlük sınıra bir push olarak girer), kalanlar özete katılmış olarak işaretlenir. */
+    /**
+     * Gönderilen push'a girenlerin ilki gönderildi sayılır (günlük sınıra bir push olarak girer), diğerleri özete katılmış;
+     * tercihi kapalı olanlar atlanır.
+     */
     private suspend fun isaretle(grup: List<Bekleyen>, sonuc: Sonuc) {
         withContext(Dispatchers.IO) {
             transaction(veritabani) {
                 val idler = grup.map { it.id }
+                fun durumla(hedef: List<UUID>, durum: PushDurumu) {
+                    if (hedef.isNotEmpty()) BildirimTablosu.update({ BildirimTablosu.id inList hedef }) { it[pushDurumu] = durum.name }
+                }
                 when (sonuc) {
                     is Sonuc.Bekle -> BildirimTablosu.update({ BildirimTablosu.id inList idler }) { it[pushSonra] = sonuc.zaman }
-                    is Sonuc.Durum -> {
-                        BildirimTablosu.update({ BildirimTablosu.id eq idler.first() }) {
-                            it[pushDurumu] = sonuc.durum.name
-                            if (sonuc.durum == PushDurumu.GONDERILDI) it[pushZamani] = simdiUtc()
+                    is Sonuc.Durum -> durumla(idler, sonuc.durum)
+                    is Sonuc.Gonderildi -> {
+                        BildirimTablosu.update({ BildirimTablosu.id eq sonuc.dahil.first() }) {
+                            it[pushDurumu] = PushDurumu.GONDERILDI.name
+                            it[pushZamani] = simdiUtc()
                         }
-                        val digerleri = idler.drop(1)
-                        if (digerleri.isNotEmpty()) {
-                            val durum = if (sonuc.durum == PushDurumu.GONDERILDI) PushDurumu.OZETLENDI else sonuc.durum
-                            BildirimTablosu.update({ BildirimTablosu.id inList digerleri }) { it[pushDurumu] = durum.name }
-                        }
+                        durumla(sonuc.dahil.drop(1), PushDurumu.OZETLENDI)
+                        durumla(idler - sonuc.dahil.toSet(), PushDurumu.ATLANDI)
                     }
                 }
             }
