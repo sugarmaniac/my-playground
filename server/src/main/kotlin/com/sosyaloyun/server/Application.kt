@@ -34,7 +34,8 @@ fun Application.modul(bagimliliklar: Bagimliliklar) {
     val katalogIceAktarici = bagimliliklar.katalogKaynagi?.let { KatalogIceAktarici(it, katalog) }
     if (bagimliliklar.katalogZamanlayici && katalogIceAktarici != null) katalogZamanlayicisiniBaslat(katalogIceAktarici)
 
-    oturumDogrulamasiKur(oturumlar)
+    oturumDogrulamasiKur(oturumlar, Aktiflik(veritabani, bagimliliklar.saat))
+    if (bagimliliklar.metrikZamanlayici) metrikZamanlayicisiniBaslat(Metrikler(veritabani, bagimliliklar.epostaGonderici, bagimliliklar.saat))
 
     install(ContentNegotiation) {
         json(ApiJson)

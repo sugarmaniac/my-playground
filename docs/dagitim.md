@@ -34,6 +34,10 @@ Değerler repoya yazılmaz; Railway'in servis ayarlarına girilir. Adımları `.
 | `IGDB_WEBHOOK_SIRRI` | Backend servisi → Variables | IGDB webhook'larının `X-Secret` başlığında gönderdiği değer; webhook kaydında aynısı verilir. |
 | `APPLE_KIMLIK_KITLELERI` | Backend servisi → Variables | İsteğe bağlı; Apple token'larının kabul edilen kitleleri (virgülle). Varsayılan `com.sosyaloyun.app`. |
 | `GOOGLE_KIMLIK_KITLELERI` | Backend servisi → Variables | Google web (server) OAuth istemci kimliği; birden fazlaysa virgülle. Boşsa Google ile giriş reddedilir. |
+| `MODERASYON_SIFRESI` | Backend servisi → Variables | `/moderasyon` sayfasının şifresi (HTTP Basic). Boşsa sayfa kapalı. |
+| `RESEND_API_KEY` | Backend servisi → Variables | Resend API anahtarı. Boşsa ekibe e-posta gitmez. |
+| `MODERASYON_EPOSTASI` | Backend servisi → Variables | Ekibin e-posta adresi: yeni şikayetler ve pazartesi sabahı haftalık doğrulama metrikleri buraya gider. |
+| `EPOSTA_GONDEREN` | Backend servisi → Variables | Resend'de doğrulanmış gönderen adresi; boşsa Resend'in deneme adresi. |
 | Public domain | Backend servisi → Settings → Networking | Bir `*.up.railway.app` adresi oluşturulur. |
 
 Backend'in okuduğu bütün ortam değişkenleri `server/src/main/kotlin/com/sosyaloyun/server/Bagimliliklar.kt` içindeki `Bagimliliklar.ortamdan()`'dadır; yeni bir dış servis eklendiğinde bu tabloya da eklenir.

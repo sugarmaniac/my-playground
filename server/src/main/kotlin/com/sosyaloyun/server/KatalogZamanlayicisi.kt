@@ -46,3 +46,13 @@ fun Application.pushZamanlayicisiniBaslat(dagitici: PushDagitici) {
         }
     }
 }
+
+/** Saatte bir bakılır; haftanın raporu henüz gitmediyse pazartesi sabahından itibaren ekibe gönderilir. */
+fun Application.metrikZamanlayicisiniBaslat(metrikler: Metrikler) {
+    launch {
+        while (true) {
+            runCatching { metrikler.haftalikRaporuGonder() }.onFailure { log.error("Haftalık metrikler gönderilemedi", it) }
+            delay(1.hours)
+        }
+    }
+}

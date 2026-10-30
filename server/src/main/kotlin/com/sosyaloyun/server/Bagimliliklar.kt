@@ -34,6 +34,8 @@ class Bagimliliklar(
     val epostaGonderici: EpostaGonderici? = null,
     /** Moderasyon sayfasının şifresi; null ise sayfa kapalı. */
     val moderasyonSifresi: String? = null,
+    /** Haftalık doğrulama metrikleri e-postası; testlerde kapalı, test [Metrikler.haftalikRaporuGonder]'i kendisi çağırır. */
+    val metrikZamanlayici: Boolean = false,
     /** Statik web sitesinin dizini (`web/`); null ise server web sitesini sunmaz. */
     val webDizini: File? = null,
 ) {
@@ -61,6 +63,7 @@ class Bagimliliklar(
                 pushZamanlayici = true,
                 epostaGonderici = ResendEpostaGonderici.ortamdan(),
                 moderasyonSifresi = System.getenv("MODERASYON_SIFRESI")?.takeIf { it.isNotBlank() },
+                metrikZamanlayici = true,
                 webDizini = File(ortam("WEB_DIZINI", "web")).takeIf { it.isDirectory },
                 katalogZamanlayici = true,
             )

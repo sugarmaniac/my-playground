@@ -15,7 +15,7 @@ import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
 import org.slf4j.LoggerFactory
 
-/** Moderatöre giden e-postalar (yeni şikayet). */
+/** Ekibe giden e-postalar: yeni şikayet ve haftalık doğrulama metrikleri. */
 interface EpostaGonderici {
     suspend fun gonder(konu: String, metin: String)
 }
