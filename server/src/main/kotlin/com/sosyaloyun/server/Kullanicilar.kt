@@ -197,6 +197,7 @@ internal object KullaniciTablosu : Table("kullanici") {
     val askininBitisi = timestampWithTimeZone("askinin_bitisi").nullable()
     val banli = bool("banli").default(false)
     val gizli = bool("gizli").default(false)
+    val kurator = bool("kurator").default(false)
     override val primaryKey = PrimaryKey(id)
 }
 

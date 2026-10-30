@@ -1,5 +1,6 @@
 package com.sosyaloyun.app.api
 
+import com.sosyaloyun.shared.KuratorDurumu
 import com.sosyaloyun.shared.ListeSayfasi
 import com.sosyaloyun.shared.ListeIstegi
 import com.sosyaloyun.shared.Liste
@@ -200,6 +201,13 @@ interface ApiIstemcisi {
     suspend fun listeBegenisiniGeriAl(listeId: String)
 
     suspend fun oyunListeleri(oyunId: String): ListeSayfasi
+
+    /** Faz 2 (#50): küratörlük. */
+    suspend fun kuratorDurumu(): KuratorDurumu
+
+    suspend fun kuratorBasvur(): KuratorDurumu
+
+    suspend fun kuratorListeleri(): ListeSayfasi
 
     suspend fun kullaniciAra(sorgu: String, imlec: String? = null): KullaniciListesi
 

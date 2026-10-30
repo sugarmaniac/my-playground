@@ -2,6 +2,7 @@ package com.sosyaloyun.server
 
 import com.sosyaloyun.shared.ApiYollari
 import com.sosyaloyun.shared.Faz
+import com.sosyaloyun.shared.KuratorSartTuru
 import com.sosyaloyun.shared.SikayetSebebi
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
@@ -26,12 +27,27 @@ import javax.crypto.spec.SecretKeySpec
  * Ekibin yönetim paneli (#46): aktif faz ve moderasyon. HTTP Basic (kullanıcı adı herhangi, şifre
  * MODERASYON_SIFRESI); şifre tanımlı değilse panel yok. Formlar şifreden türetilen bir anahtar taşır.
  */
-fun Route.yonetimRotalari(moderasyon: Moderasyon, fazlar: Fazlar, sifre: String?) {
+fun Route.yonetimRotalari(moderasyon: Moderasyon, fazlar: Fazlar, kuratorler: Kuratorler, sifre: String?) {
     get(ApiYollari.MODERASYON) { call.respondRedirect(ApiYollari.YONETIM) }
 
     get(ApiYollari.YONETIM) {
         val dogru = call.yoneticiMi(sifre) ?: return@get
-        call.respondText(yonetimSayfasi(fazlar.aktif(), moderasyon.acikSikayetler(), formAnahtari(dogru)), ContentType.Text.Html)
+        val aktif = fazlar.aktif()
+        // Faz 2 bölümleri yalnızca faz açıkken gösterilir; veri yine tutulur.
+        val kuratorBasvurulari = if (aktif.kapsar(Faz.FAZ_2)) kuratorler.bekleyenler() else null
+        call.respondText(yonetimSayfasi(aktif, moderasyon.acikSikayetler(), kuratorBasvurulari, formAnahtari(dogru)), ContentType.Text.Html)
+    }
+    post("${ApiYollari.YONETIM}/kurator/{id}") {
+        val form = call.yonetimFormu(sifre) ?: return@post
+        val id = call.parameters["id"]?.let { runCatching { UUID.fromString(it) }.getOrNull() }
+        val onay = when (form["karar"]) {
+            "ONAYLA" -> true
+            "REDDET" -> false
+            else -> null
+        }
+        if (id == null || onay == null) return@post call.respond(HttpStatusCode.BadRequest)
+        kuratorler.karar(id, onay)
+        call.respondRedirect(ApiYollari.YONETIM)
     }
     post("${ApiYollari.YONETIM}/faz") {
         val form = call.yonetimFormu(sifre) ?: return@post
@@ -116,7 +132,13 @@ private val FAZ_ACIKLAMASI = mapOf(
     Faz.FAZ_3 to "MVP + Faz 2 + Faz 3 (istatistikler, yıllık özet, öneriler, Xbox/PlayStation, webde giriş)",
 )
 
-private fun yonetimSayfasi(aktifFaz: Faz, sikayetler: List<AcikSikayet>, anahtar: String): String = buildString {
+private val SART_ADI = mapOf(
+    KuratorSartTuru.INCELEME to "inceleme",
+    KuratorSartTuru.TAKIPCI to "takipçi",
+    KuratorSartTuru.HESAP_YASI_GUN to "gün",
+)
+
+private fun yonetimSayfasi(aktifFaz: Faz, sikayetler: List<AcikSikayet>, kuratorBasvurulari: List<BekleyenKuratorBasvurusu>?, anahtar: String): String = buildString {
     append("<!doctype html><html lang=\"tr\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">")
     append("<title>Yönetim</title><style>body{font-family:system-ui,sans-serif;max-width:860px;margin:2rem auto;padding:0 1rem}")
     append("article,fieldset{border:1px solid #ccc;border-radius:8px;padding:1rem;margin:1rem 0}blockquote{white-space:pre-wrap;background:#f4f4f4;padding:.5rem;margin:.5rem 0}")
@@ -151,5 +173,17 @@ private fun yonetimSayfasi(aktifFaz: Faz, sikayetler: List<AcikSikayet>, anahtar
         }
         append("</form></article>")
     }
-    append("</section></body></html>")
+    append("</section>")
+    kuratorBasvurulari?.let { basvurular ->
+        append("<section><h2>Küratör başvuruları (${basvurular.size})</h2>")
+        if (basvurular.isEmpty()) append("<p>Karar bekleyen başvuru yok.</p>")
+        for (b in basvurular) {
+            append("<article><p><strong>@${b.kullaniciAdi.html()}</strong> · ${b.zaman.toInstant()}</p><p>")
+            append(b.sartlar.joinToString(" · ") { "${it.mevcut}/${it.gereken} ${SART_ADI.getValue(it.tur)}" })
+            append("</p><form method=\"post\" action=\"${ApiYollari.YONETIM}/kurator/${b.id}\"><input type=\"hidden\" name=\"anahtar\" value=\"$anahtar\">")
+            append("<button name=\"karar\" value=\"ONAYLA\">Onayla</button><button name=\"karar\" value=\"REDDET\">Reddet</button></form></article>")
+        }
+        append("</section>")
+    }
+    append("</body></html>")
 }

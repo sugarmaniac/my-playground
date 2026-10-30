@@ -48,7 +48,14 @@ import org.jetbrains.compose.resources.stringResource
 /** Keşif: takip edilenler arasında bu hafta kaydedilenler, trend oyunlar, tür ve platform kısayolları. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun KesifEkrani(viewModel: KesifViewModel, oyunaGit: (String) -> Unit, turAc: (Tur) -> Unit, platformAc: (String) -> Unit) {
+fun KesifEkrani(
+    viewModel: KesifViewModel,
+    oyunaGit: (String) -> Unit,
+    turAc: (Tur) -> Unit,
+    platformAc: (String) -> Unit,
+    /** Fazlara bağlı ek bölümler (ör. Faz 2'de küratör listeleri); keşfin başında. */
+    ekBolumler: @Composable () -> Unit = {},
+) {
     val ekran by viewModel.ekran.collectAsStateWithLifecycle()
     when (val durum = ekran) {
         KesifEkrani.Yukleniyor -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
@@ -57,6 +64,7 @@ fun KesifEkrani(viewModel: KesifViewModel, oyunaGit: (String) -> Unit, turAc: (T
             TextButton(onClick = viewModel::yenile) { Text(stringResource(Res.string.tekrar_dene)) }
         }
         is KesifEkrani.Hazir -> LazyColumn(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            item { ekBolumler() }
             val kesif = durum.kesif
             item { Text(stringResource(Res.string.kesif_baslik), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(start = 16.dp, top = 16.dp)) }
             item {

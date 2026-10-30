@@ -130,6 +130,11 @@ object ApiYollari {
     /** `GET`: oyunun incelemeleri, önce arkadaşlarınki; `?imlec=` ile sayfalı. */
     fun oyunIncelemeleri(oyunId: String) = "$OYUNLAR/$oyunId/incelemeler"
 
+    /** Faz 2 (#50): küratörlük durumu, başvuru ve keşifteki küratör listeleri. */
+    const val KURATOR = "/kurator"
+    const val KURATOR_BASVURU = "/kurator/basvuru"
+    const val KURATOR_LISTELERI = "/kuratorler/listeler"
+
     /** Faz 2 (#49): listeler. */
     const val LISTELER = "/listeler"
     fun liste(listeId: String) = "$LISTELER/$listeId"

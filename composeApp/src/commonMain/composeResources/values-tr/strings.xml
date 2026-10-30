@@ -309,4 +309,19 @@
     <string name="liste_kayit_hatasi">Liste kaydedilemedi. Tekrar dene.</string>
     <string name="oyun_listeleri">Bu oyunun geçtiği listeler</string>
     <string name="liste_silme_hatasi">Liste silinemedi. Tekrar dene.</string>
+    <string name="kurator_baslik">Küratörlük</string>
+    <string name="kurator_rozet">Küratör</string>
+    <string name="kurator_oldun">Küratörsün. Herkese açık listelerin Keşif'te gösterilir.</string>
+    <string name="kurator_bekliyor">Küratör başvurun inceleniyor.</string>
+    <string name="kurator_reddedildi">Son başvurun onaylanmadı. Yeniden başvurabilirsin.</string>
+    <string name="kurator_sart_inceleme">İnceleme: %1$d/%2$d</string>
+    <string name="kurator_sart_takipci">Takipçi: %1$d/%2$d</string>
+    <string name="kurator_sart_gun">Katılalı gün: %1$d/%2$d</string>
+    <string name="kurator_hata">Başvuru gönderilemedi. Tekrar dene.</string>
+    <string name="kurator_basvur">Küratör olmak için başvur</string>
+    <string name="kurator_listeleri">Küratörlerden listeler</string>
+    <string name="bildirim_kurator_onaylandi">Artık küratörsün.</string>
+    <string name="bildirim_kurator_reddedildi">Küratör başvurun onaylanmadı.</string>
+    <string name="tercih_kurator_onaylandi">Küratör onayları</string>
+    <string name="tercih_kurator_reddedildi">Küratör retleri</string>
 </resources>

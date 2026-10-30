@@ -70,6 +70,9 @@ import com.sosyaloyun.app.gunluk.DetayliKayitViewModel
 import com.sosyaloyun.app.gunluk.GunlukDetayGorunumu
 import com.sosyaloyun.app.gunluk.GunlukDetayViewModel
 import com.sosyaloyun.app.gizlilik.GizlilikViewModel
+import com.sosyaloyun.app.kurator.KuratorListeleriBolumu
+import com.sosyaloyun.app.kurator.KuratorListeleriViewModel
+import com.sosyaloyun.app.kurator.KuratorViewModel
 import com.sosyaloyun.app.hesap.AnaEkran
 import com.sosyaloyun.app.hesap.DavetKodlarimViewModel
 import com.sosyaloyun.app.hesap.DavetKoduEkrani
@@ -342,6 +345,11 @@ private fun UygulamaGezintisi(api: ApiIstemcisi, profil: KullaniciOzeti, cikisYa
                     oyunaGit = { gezinti.navigate(OyunRota(it)) },
                     turAc = { gezinti.navigate(OyunListesiRota(tur = it)) },
                     platformAc = { gezinti.navigate(OyunListesiRota(platform = it)) },
+                    ekBolumler = {
+                        if (aktifFaz.kapsar(Faz.FAZ_2)) {
+                            KuratorListeleriBolumu(viewModel { KuratorListeleriViewModel(api) }) { gezinti.navigate(ListeRota(it)) }
+                        }
+                    },
                 )
             }
             composable<OyunListesiRota> { listeGirdisi ->
@@ -364,6 +372,7 @@ private fun UygulamaGezintisi(api: ApiIstemcisi, profil: KullaniciOzeti, cikisYa
                     cikisYap = cikisYap,
                     hesapSilme = { viewModel { HesapSilmeViewModel(api, profil.kullaniciAdi, hesapSilindi) } },
                     gizlilik = if (aktifFaz.kapsar(Faz.FAZ_2)) ({ viewModel { GizlilikViewModel(api) } }) else null,
+                    kurator = if (aktifFaz.kapsar(Faz.FAZ_2)) ({ viewModel { KuratorViewModel(api) } }) else null,
                 )
             }
             composable<EngelListesiRota> { listeGirdisi ->

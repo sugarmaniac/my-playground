@@ -100,6 +100,8 @@ data class ProfilSayfasi(
     val takipIstegiGonderdim: Boolean? = null,
     /** İsteyen bu gizli profilin içeriğini göremiyor (takipçi değil): sekmeler ve vitrin boş gelir. */
     val icerikGizli: Boolean = false,
+    /** Faz 2 (#50): onaylanmış küratör; profilde rozetle gösterilir. */
+    val kurator: Boolean = false,
 )
 
 /** `PUT /gizlilik` (Faz 2, #48). Gizliden açığa geçince bekleyen takip istekleri kabul edilir. */

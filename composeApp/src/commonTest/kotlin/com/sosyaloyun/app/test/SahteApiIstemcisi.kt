@@ -4,6 +4,8 @@ import com.sosyaloyun.app.api.ApiHatasiIstisnasi
 import com.sosyaloyun.app.api.ApiIstemcisi
 import com.sosyaloyun.app.api.EngelListesiTuru
 import com.sosyaloyun.app.api.KisiListesiTuru
+import com.sosyaloyun.shared.KuratorDurumu
+import com.sosyaloyun.shared.KuratorBasvuruDurumu
 import com.sosyaloyun.shared.OyunTuru
 import com.sosyaloyun.shared.ListeSayfasi
 import com.sosyaloyun.shared.ListeIstegi
@@ -562,6 +564,28 @@ class SahteApiIstemcisi : ApiIstemcisi {
         hata?.let { throw it }
         listeIstekleri += "oyun:$oyunId"
         return oyunListeSayfasi
+    }
+
+    var kuratorDurumu = KuratorDurumu(false, null, emptyList())
+    var kuratorListeSayfasi = ListeSayfasi(emptyList(), null)
+    var kuratorHatasi: Exception? = null
+    var kuratorBasvurulari = 0
+
+    override suspend fun kuratorDurumu(): KuratorDurumu {
+        hata?.let { throw it }
+        return kuratorDurumu
+    }
+
+    override suspend fun kuratorBasvur(): KuratorDurumu {
+        kuratorHatasi?.let { throw it }
+        kuratorBasvurulari++
+        kuratorDurumu = kuratorDurumu.copy(basvuru = KuratorBasvuruDurumu.BEKLIYOR)
+        return kuratorDurumu
+    }
+
+    override suspend fun kuratorListeleri(): ListeSayfasi {
+        hata?.let { throw it }
+        return kuratorListeSayfasi
     }
 
     fun ornekListe(id: String, istek: ListeIstegi, begeniSayisi: Int = 0, begendim: Boolean = false, benim: Boolean = true) = Liste(

@@ -44,7 +44,6 @@ fun Application.modul(bagimliliklar: Bagimliliklar) {
     routing {
         kimlikRotalari(bagimliliklar.kimlikDogrulayici, kullanicilar, oturumlar, moderasyon)
         sikayetRotalari(moderasyon)
-        yonetimRotalari(moderasyon, fazlar, bagimliliklar.moderasyonSifresi)
         profilRotalari(kullanicilar, davetKodlari, ayarlar, fazlar)
         val gunluk = Gunluk(veritabani, bagimliliklar.saat)
         val kutuphane = Kutuphane(veritabani, bagimliliklar.saat)
@@ -62,7 +61,11 @@ fun Application.modul(bagimliliklar: Bagimliliklar) {
         gunlukRotalari(gunluk, katalog, begeniler, sosyalGraf, kullanicilar, Yorumlar(veritabani, bagimliliklar.saat), fazlar)
         val profiller = Profiller(veritabani, katalog, kullanicilar, sosyalGraf, begeniler, bagimliliklar.saat)
         profilSayfasiRotalari(profiller, kullanicilar, sosyalGraf, fazlar)
-        listeRotalari(Listeler(veritabani, katalog, sosyalGraf, bagimliliklar.saat), kullanicilar, fazlar)
+        val listeler = Listeler(veritabani, katalog, sosyalGraf, bagimliliklar.saat)
+        listeRotalari(listeler, kullanicilar, fazlar)
+        val kuratorler = Kuratorler(veritabani, ayarlar, listeler, bagimliliklar.saat)
+        kuratorRotalari(kuratorler, fazlar)
+        yonetimRotalari(moderasyon, fazlar, kuratorler, bagimliliklar.moderasyonSifresi)
         paylasimRotalari(Paylasim(veritabani, katalog, profiller, begeniler, bagimliliklar.saat, sosyalGraf), kullanicilar, bagimliliklar.webDizini)
         get(ApiYollari.SAGLIK) {
             val durum = if (ayarlar.oku(Ayar.BakimModu)) SunucuDurumu.BAKIMDA else SunucuDurumu.AYAKTA

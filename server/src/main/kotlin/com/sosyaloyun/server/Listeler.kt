@@ -162,6 +162,15 @@ class Listeler(
         }
     }
 
+    /** Küratörlerin herkese açık listeleri (#50); engelliler ve takip edilmeyen gizli profiller hariç. */
+    suspend fun kuratorListeleri(izleyen: UUID, imlec: String?): ListeSayfasi = sayfa(imlec) {
+        val takipEttikleri = TakipTablosu.select(TakipTablosu.takipEdilen).where { TakipTablosu.takipEden eq izleyen }
+            .map { it[TakipTablosu.takipEdilen] }
+        (KullaniciTablosu.kurator eq true) and (ListeTablosu.gorunurluk eq ListeGorunurlugu.HERKES.name) and
+            (ListeTablosu.kullaniciId notInList engellileri(izleyen)) and
+            ((KullaniciTablosu.gizli eq false) or (ListeTablosu.kullaniciId inList takipEttikleri) or (ListeTablosu.kullaniciId eq izleyen))
+    }
+
     suspend fun begen(kullanici: UUID, id: UUID): Boolean {
         getir(id, kullanici) ?: return false
         withContext(Dispatchers.IO) {
