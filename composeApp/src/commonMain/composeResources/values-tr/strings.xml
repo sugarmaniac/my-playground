@@ -370,4 +370,17 @@
     <string name="oneri_neden_tur">Sevdiğin %1$s oyunlarına benziyor</string>
     <string name="oneri_neden_platform">%1$s'de popüler</string>
     <string name="oneri_neden_populer">Şu sıralar popüler</string>
+    <string name="konsol_baslik">Xbox ve PlayStation</string>
+    <string name="konsol_xbox">Xbox</string>
+    <string name="konsol_playstation">PlayStation</string>
+    <string name="konsol_hesap_xbox">Gamertag</string>
+    <string name="konsol_hesap_playstation">PSN çevrimiçi kimliği</string>
+    <string name="konsol_bagla">%1$s bağla</string>
+    <string name="konsol_bagli">%1$s: %2$s</string>
+    <string name="konsol_kaldir">Bağlantıyı kaldır</string>
+    <string name="konsol_sonuc">Kütüphanene %1$d oyun eklendi, %2$d oyun eşleşmedi.</string>
+    <string name="konsol_hata_bulunamadi">Bu adla bir hesap bulunamadı.</string>
+    <string name="konsol_hata_gizli">Bu hesabın oyun geçmişi gizli. Konsolun gizlilik ayarından herkese açık yapıp tekrar dene.</string>
+    <string name="konsol_hata_baska">Bu hesap başka bir kullanıcıya bağlı.</string>
+    <string name="konsol_hata_kullanilamiyor">Servise şu an ulaşılamıyor. Biraz sonra tekrar dene.</string>
 </resources>

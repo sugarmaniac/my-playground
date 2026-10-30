@@ -228,7 +228,7 @@ private fun oynanmis(): Op<Boolean> {
         GunlukKaydiTablosu.select(GunlukKaydiTablosu.id)
             .where { (GunlukKaydiTablosu.kullaniciId eq t.kullaniciId) and (GunlukKaydiTablosu.oyunId eq t.oyunId) },
     )
-    return t.durum.isNotNull() or t.puan.isNotNull() or (t.begendim eq true) or t.steamSureDakika.isNotNull() or gunlukVar
+    return t.durum.isNotNull() or t.puan.isNotNull() or (t.begendim eq true) or t.steamSureDakika.isNotNull() or t.konsolAgi.isNotNull() or gunlukVar
 }
 
 private object VitrinTablosu : Table("vitrin_oyunu") {

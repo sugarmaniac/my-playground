@@ -27,12 +27,13 @@ fun Application.katalogZamanlayicisiniBaslat(iceAktarici: KatalogIceAktarici) {
     }
 }
 
-/** Günde bir: bağlı Steam hesaplarının süreleri güncellenir (akışa düşmez). */
-fun Application.steamZamanlayicisiniBaslat(steam: Steam) {
+/** Günde bir: bağlı Steam hesaplarının süreleri ve (Faz 3'te) konsol oyunları güncellenir (akışa düşmez). */
+fun Application.steamZamanlayicisiniBaslat(steam: Steam, konsollar: Konsollar) {
     launch {
         while (true) {
             delay(24.hours)
             runCatching { steam.hepsiniGuncelle() }.onFailure { log.error("Steam süreleri güncellenemedi", it) }
+            runCatching { konsollar.hepsiniGuncelle() }.onFailure { log.error("Konsol oyunları güncellenemedi", it) }
         }
     }
 }

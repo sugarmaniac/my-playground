@@ -75,6 +75,7 @@ import com.sosyaloyun.app.kurator.KuratorListeleriViewModel
 import com.sosyaloyun.app.istatistik.YillikOzetGorunumu
 import com.sosyaloyun.app.istatistik.YillikOzetViewModel
 import com.sosyaloyun.app.itiraz.ItirazViewModel
+import com.sosyaloyun.app.konsol.KonsolViewModel
 import com.sosyaloyun.app.kurator.KuratorViewModel
 import com.sosyaloyun.app.oneri.OnerilerBolumu
 import com.sosyaloyun.app.oneri.OnerilerViewModel
@@ -393,6 +394,7 @@ private fun UygulamaGezintisi(api: ApiIstemcisi, profil: KullaniciOzeti, cikisYa
                     gizlilik = if (aktifFaz.kapsar(Faz.FAZ_2)) ({ viewModel { GizlilikViewModel(api) } }) else null,
                     kurator = if (aktifFaz.kapsar(Faz.FAZ_2)) ({ viewModel { KuratorViewModel(api) } }) else null,
                     itiraz = if (aktifFaz.kapsar(Faz.FAZ_2)) ({ viewModel { ItirazViewModel(api) } }) else null,
+                    konsol = if (aktifFaz.kapsar(Faz.FAZ_3)) ({ viewModel { KonsolViewModel(api) } }) else null,
                 )
             }
             composable<EngelListesiRota> { listeGirdisi ->

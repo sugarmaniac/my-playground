@@ -117,5 +117,8 @@ internal object KutuphaneGirisiTablosu : Table("kutuphane_girisi") {
 
     /** Steam'den gelen toplam süre; Steam bağlıysa günde bir güncellenir. */
     val steamSureDakika = integer("steam_sure_dakika").nullable()
+
+    /** Xbox ya da PlayStation'dan içe aktarıldıysa ağ (#57); durumsuz giriş bununla oynanmış sayılır. */
+    val konsolAgi = text("konsol_agi").nullable()
     override val primaryKey = PrimaryKey(kullaniciId, oyunId)
 }
