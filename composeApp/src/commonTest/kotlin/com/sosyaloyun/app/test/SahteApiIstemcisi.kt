@@ -39,6 +39,7 @@ import com.sosyaloyun.shared.OyunOzeti
 import com.sosyaloyun.shared.ProfilIstegi
 import com.sosyaloyun.shared.ProfilSayfasi
 import com.sosyaloyun.shared.SaglikYaniti
+import com.sosyaloyun.shared.SikayetIstegi
 import com.sosyaloyun.shared.SteamBaglantisi
 import com.sosyaloyun.shared.SteamIceAktarmaSonucu
 import com.sosyaloyun.shared.SunucuDurumu
@@ -160,6 +161,14 @@ class SahteApiIstemcisi : ApiIstemcisi {
         bildirimIstekleri += "tercih:${tercihler.push}"
         bildirimTercihleri = BildirimTercihleri(bildirimTercihleri.push + tercihler.push)
         return bildirimTercihleri
+    }
+
+    val sikayetler = mutableListOf<SikayetIstegi>()
+    var sikayetHatasi: Exception? = null
+
+    override suspend fun sikayetEt(istek: SikayetIstegi) {
+        sikayetHatasi?.let { throw it }
+        sikayetler += istek
     }
 
     var kesifYaniti: Kesif? = null

@@ -11,6 +11,12 @@ enum class BildirimTuru {
     @SerialName("arkadaslik_kabulu") ARKADASLIK_KABULU,
     @SerialName("begeni") BEGENI,
     @SerialName("davet_kodu_kullanildi") DAVET_KODU_KULLANILDI,
+
+    /** Kalıp mesaj: şikayet edene, şikayetinin incelendiği. */
+    @SerialName("sikayet_sonuclandi") SIKAYET_SONUCLANDI,
+
+    /** Kalıp mesaj: içeriği kurallara aykırı bulunup kaldırılana. */
+    @SerialName("icerik_kaldirildi") ICERIK_KALDIRILDI,
 }
 
 /**
@@ -21,7 +27,8 @@ enum class BildirimTuru {
 data class Bildirim(
     val id: String,
     val tur: BildirimTuru,
-    val kisi: KullaniciOzeti,
+    /** Bildirimi doğuran kişi; moderasyon kalıp mesajlarında yok. */
+    val kisi: KullaniciOzeti?,
     val zaman: Instant,
     val okundu: Boolean,
     val digerSayisi: Int = 0,

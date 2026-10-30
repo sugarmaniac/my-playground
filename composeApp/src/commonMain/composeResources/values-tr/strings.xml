@@ -244,4 +244,26 @@
     <string name="onboarding_bildirim_izin_ver">Bildirimlere izin ver</string>
     <string name="onboarding_bildirim_simdi_degil">Şimdi değil</string>
     <string name="akis_bildirimler">🔔 %1$d</string>
+    <string name="giris_hata_askida">Hesabın %1$s tarihine kadar askıya alındı.</string>
+    <string name="giris_hata_banli">Hesabın topluluk kurallarına aykırılık nedeniyle kalıcı olarak kapatıldı.</string>
+    <string name="bildirim_sikayet_sonuclandi">Şikayetin incelendi. Bildirdiğin için teşekkürler.</string>
+    <string name="bildirim_icerik_kaldirildi">Bir içeriğin topluluk kurallarına aykırı bulunduğu için kaldırıldı.</string>
+    <string name="tercih_sikayet">Şikayet sonuçları</string>
+    <string name="tercih_icerik_kaldirildi">Kaldırılan içerik</string>
+    <string name="sikayet_et">Şikayet et</string>
+    <string name="sikayet_baslik">Neden şikayet ediyorsun?</string>
+    <string name="sikayet_aciklama">Açıklama (isteğe bağlı)</string>
+    <string name="sikayet_gonder">Gönder</string>
+    <string name="sikayet_hata">Gönderilemedi. Tekrar dene.</string>
+    <string name="sikayet_gonderildi">Teşekkürler, şikayetin gönderildi</string>
+    <string name="sikayet_engellendi">Engellendi.</string>
+    <string name="sikayet_sessize_alindi">Sessize alındı.</string>
+    <string name="kapat">Kapat</string>
+    <string name="sebep_spam">Spam</string>
+    <string name="sebep_taciz">Taciz</string>
+    <string name="sebep_nefret_soylemi">Nefret söylemi</string>
+    <string name="sebep_uygunsuz_icerik">Uygunsuz içerik</string>
+    <string name="sebep_isaretsiz_spoiler">İşaretsiz spoiler</string>
+    <string name="sebep_sahte_hesap">Sahte hesap</string>
+    <string name="sebep_diger">Diğer</string>
 </resources>

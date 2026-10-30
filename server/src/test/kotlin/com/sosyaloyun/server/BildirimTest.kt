@@ -109,10 +109,10 @@ class BildirimTest {
                 BildirimTuru.ARKADASLIK_ISTEGI to "zeynep",
                 BildirimTuru.YENI_TAKIPCI to "ayse",
             ),
-            bildirimler("mehmet").bildirimler.map { it.tur to it.kisi.kullaniciAdi },
+            bildirimler("mehmet").bildirimler.map { it.tur to it.kisi?.kullaniciAdi },
         )
         // Kabul eden tarafın arkadaşlıkla gelen takibi "yeni takipçi" düşürmez.
-        assertEquals(listOf(BildirimTuru.ARKADASLIK_KABULU to "mehmet"), bildirimler("zeynep").bildirimler.map { it.tur to it.kisi.kullaniciAdi })
+        assertEquals(listOf(BildirimTuru.ARKADASLIK_KABULU to "mehmet"), bildirimler("zeynep").bildirimler.map { it.tur to it.kisi?.kullaniciAdi })
     }
 
     @Test
@@ -126,7 +126,7 @@ class BildirimTest {
 
         val grup = bildirimler("ayse").bildirimler.single()
         assertEquals(BildirimTuru.BEGENI, grup.tur)
-        assertEquals("ali", grup.kisi.kullaniciAdi)
+        assertEquals("ali", grup.kisi?.kullaniciAdi)
         assertEquals(2, grup.digerSayisi)
         assertEquals(kayit.id, grup.gunlukKaydiId)
         assertEquals(1, client.get(ApiYollari.OKUNMAMIS_BILDIRIM_SAYISI) { bearerAuth(t("ayse")) }.govde(OkunmamisBildirimSayisi.serializer()).sayi)
@@ -136,7 +136,7 @@ class BildirimTest {
 
         client.delete(ApiYollari.begeni(kayit.id)) { bearerAuth(t("ali")) }
         val sonra = bildirimler("ayse").bildirimler.single()
-        assertEquals("zeynep", sonra.kisi.kullaniciAdi)
+        assertEquals("zeynep", sonra.kisi?.kullaniciAdi)
         assertEquals(1, sonra.digerSayisi)
 
         takipEt("mehmet", "ayse")

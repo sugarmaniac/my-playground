@@ -52,6 +52,11 @@ class Oturumlar(private val veritabani: Database) {
         MessageDigest.getInstance("SHA-256").digest(token.toByteArray()).joinToString("") { "%02x".format(it) }
 }
 
+/** Kullanıcının bütün oturumlarını kapatır (askı, ban). */
+internal fun org.jetbrains.exposed.v1.jdbc.JdbcTransaction.oturumlariKapat(kullaniciId: UUID) {
+    OturumTablosu.deleteWhere { OturumTablosu.kullaniciId eq kullaniciId }
+}
+
 private object OturumTablosu : Table("oturum") {
     val tokenOzeti = text("token_ozeti")
     val kullaniciId = javaUUID("kullanici_id")

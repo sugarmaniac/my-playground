@@ -48,6 +48,7 @@ class ApiTestOrtami(
     val pushGonderici: SahtePushGonderici,
     /** Push'lar gerçekte arka planda gönderilir; testte [PushDagitici.bekleyenleriGonder] elle çağrılır. */
     val pushDagitici: PushDagitici,
+    val eposta: SahteEpostaGonderici,
 ) {
     private var kurucuKoduSayaci = 0
 
@@ -92,6 +93,7 @@ class ApiTestOrtami(
 }
 
 const val TEST_WEBHOOK_SIRRI = "test-webhook-sirri"
+const val TEST_MODERASYON_SIFRESI = "test-moderasyon-sifresi"
 
 /** İsteğin gövdesini ortak modeldeki tipiyle JSON olarak yazar. */
 fun <T> HttpRequestBuilder.json(serializer: KSerializer<T>, govde: T) {
@@ -114,6 +116,7 @@ fun apiTesti(blok: suspend ApiTestOrtami.() -> Unit) = testApplication {
     val katalogKaynagi = SahteKatalogKaynagi()
     val steamKaynagi = SahteSteamKaynagi()
     val pushGonderici = SahtePushGonderici()
+    val eposta = SahteEpostaGonderici()
     val bagimliliklar = Bagimliliklar(
         veriKaynagi = TestVeritabani.kaynak,
         saat = saat,
@@ -121,6 +124,8 @@ fun apiTesti(blok: suspend ApiTestOrtami.() -> Unit) = testApplication {
         katalogKaynagi = katalogKaynagi,
         igdbWebhookSirri = TEST_WEBHOOK_SIRRI,
         steamKaynagi = steamKaynagi,
+        epostaGonderici = eposta,
+        moderasyonSifresi = TEST_MODERASYON_SIFRESI,
     )
     application { modul(bagimliliklar) }
 
@@ -136,5 +141,6 @@ fun apiTesti(blok: suspend ApiTestOrtami.() -> Unit) = testApplication {
         steam = Steam(veritabani, Katalog(veritabani), Kutuphane(veritabani, saat), steamKaynagi, saat),
         pushGonderici = pushGonderici,
         pushDagitici = PushDagitici(veritabani, Ayarlar(veritabani), pushGonderici, saat),
+        eposta = eposta,
     ).blok()
 }

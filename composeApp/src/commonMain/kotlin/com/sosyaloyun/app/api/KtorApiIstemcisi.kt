@@ -25,6 +25,7 @@ import com.sosyaloyun.shared.OrtakOyunlar
 import com.sosyaloyun.shared.OyunAramaYaniti
 import com.sosyaloyun.shared.IncelemeListesi
 import com.sosyaloyun.shared.OyunDetayi
+import com.sosyaloyun.shared.SikayetIstegi
 import com.sosyaloyun.shared.OkunmamisBildirimSayisi
 import com.sosyaloyun.shared.BildirimTercihleri
 import com.sosyaloyun.shared.BildirimListesi
@@ -175,6 +176,15 @@ class KtorApiIstemcisi(
     override suspend fun oyunDetayi(oyunId: String): OyunDetayi = istek { http.get("${ApiYollari.OYUNLAR}/$oyunId").body() }
 
     override suspend fun kesif(): Kesif = istek { http.get(ApiYollari.KESIF).body() }
+
+    override suspend fun sikayetEt(istek: SikayetIstegi) {
+        istek {
+            http.post(ApiYollari.SIKAYETLER) {
+                contentType(ContentType.Application.Json)
+                setBody(istek)
+            }
+        }
+    }
 
     override suspend fun bildirimler(): BildirimListesi = istek { http.get(ApiYollari.BILDIRIMLER).body() }
 
@@ -371,7 +381,7 @@ class KtorApiIstemcisi(
         blok()
     } catch (e: ClientRequestException) {
         val hata = runCatching { ApiJson.decodeFromString(ApiHatasi.serializer(), e.response.bodyAsText()) }.getOrNull()
-        throw if (hata != null) ApiHatasiIstisnasi(hata.kod) else e
+        throw if (hata != null) ApiHatasiIstisnasi(hata.kod, hata.ayrinti) else e
     }
 }
 

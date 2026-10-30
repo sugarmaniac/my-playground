@@ -69,6 +69,11 @@ object ApiYollari {
 
     const val KESIF = "/kesif"
 
+    const val SIKAYETLER = "/sikayetler"
+
+    /** Moderatörün şifreyle (HTTP Basic) açtığı tek sayfalık şikayet listesi; uygulama kullanmaz. */
+    const val MODERASYON = "/moderasyon"
+
     /** `GET` liste (son 200 bildirim, beğeniler gruplanmış). */
     const val BILDIRIMLER = "/bildirimler"
 

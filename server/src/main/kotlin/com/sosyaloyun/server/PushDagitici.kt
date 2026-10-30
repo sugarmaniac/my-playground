@@ -71,7 +71,7 @@ class PushDagitici(
         return if (gonderildi > 0) PushDurumu.GONDERILDI else PushDurumu.ATLANDI
     }
 
-    private class Bekleyen(val id: UUID, val alici: UUID, val tur: BildirimTuru, val aktor: UUID)
+    private class Bekleyen(val id: UUID, val alici: UUID, val tur: BildirimTuru, val aktor: UUID?)
 
     private class Plan(val tokenlar: List<String>, val metin: String)
 
@@ -89,7 +89,7 @@ class PushDagitici(
                 (BildirimTablosu.pushZamani greaterEq gunBasi)
         }.count()
         if (bugun >= sinir) return null
-        val aktor = KullaniciTablosu.selectAll().where { KullaniciTablosu.id eq b.aktor }.single()[KullaniciTablosu.gorunenAd]
+        val aktor = b.aktor?.let { id -> KullaniciTablosu.selectAll().where { KullaniciTablosu.id eq id }.single()[KullaniciTablosu.gorunenAd] }
         return Plan(cihazlar.map { it[PushCihaziTablosu.token] }, metin(b.tur, aktor))
     }
 
@@ -122,6 +122,8 @@ class PushDagitici(
                 BildirimTuru.ARKADASLIK_KABULU -> "$kim arkadaşlık isteğini kabul etti."
                 BildirimTuru.BEGENI -> "$kim günlük kaydını beğendi."
                 BildirimTuru.DAVET_KODU_KULLANILDI -> "Davet kodun kullanıldı${aktor?.let { ": $it aramıza katıldı." } ?: "."}"
+                BildirimTuru.SIKAYET_SONUCLANDI -> "Şikayetin incelendi. Bildirdiğin için teşekkürler."
+                BildirimTuru.ICERIK_KALDIRILDI -> "Bir içeriğin topluluk kurallarına aykırı bulunduğu için kaldırıldı."
             }
         }
     }

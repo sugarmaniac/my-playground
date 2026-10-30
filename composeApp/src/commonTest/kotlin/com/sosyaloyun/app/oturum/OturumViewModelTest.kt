@@ -76,6 +76,20 @@ class OturumViewModelTest {
     }
 
     @Test
+    fun askidakiVeBanliHesapNedeniyleReddedilir() = runTest(dispatcher) {
+        api.hata = ApiHatasiIstisnasi(HataKodu.HESAP_ASKIDA, "2026-01-12T09:00:00Z")
+        val viewModel = OturumViewModel(api, depo)
+        viewModel.girisYap(KimlikSaglayici.APPLE) { KimlikTokeniSonucu.Token("t") }
+        advanceUntilIdle()
+        assertEquals(OturumEkrani.Giris(hata = GirisHatasi.HESAP_ASKIDA, askiBitisi = "2026-01-12"), viewModel.ekran.value)
+
+        api.hata = ApiHatasiIstisnasi(HataKodu.HESAP_BANLI)
+        viewModel.girisYap(KimlikSaglayici.APPLE) { KimlikTokeniSonucu.Token("t") }
+        advanceUntilIdle()
+        assertEquals(OturumEkrani.Giris(hata = GirisHatasi.HESAP_BANLI), viewModel.ekran.value)
+    }
+
+    @Test
     fun backendTokeniReddederseHataGosterilirVeOturumAcilmaz() = runTest(dispatcher) {
         api.hata = ApiHatasiIstisnasi(HataKodu.KIMLIK_TOKENI_GECERSIZ)
         val viewModel = OturumViewModel(api, depo)

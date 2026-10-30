@@ -37,6 +37,9 @@ import com.sosyaloyun.app.akis.AkisEkrani
 import com.sosyaloyun.app.akis.AkisViewModel
 import com.sosyaloyun.app.api.ApiIstemcisi
 import com.sosyaloyun.app.api.EngelListesiTuru
+import com.sosyaloyun.app.sikayet.SikayetHedefi
+import com.sosyaloyun.app.sikayet.SikayetPenceresi
+import com.sosyaloyun.app.sikayet.SikayetViewModel
 import com.sosyaloyun.app.bildirim.BildirimTercihleriViewModel
 import com.sosyaloyun.app.bildirim.BildirimlerGorunumu
 import com.sosyaloyun.app.bildirim.BildirimlerViewModel
@@ -273,6 +276,7 @@ private fun UygulamaGezintisi(api: ApiIstemcisi, profil: KullaniciOzeti, cikisYa
                 val kayitId = detayGirdisi.toRoute<GunlukDetayRota>().kayitId
                 GunlukDetayGorunumu(
                     viewModel(key = "gunluk-detay-$kayitId") { GunlukDetayViewModel(api, kayitId) },
+                    api = api,
                     oyunaGit = { gezinti.navigate(OyunRota(it)) },
                     kullaniciyaGit = { gezinti.navigate(KullaniciRota(it)) },
                     geri = { gezinti.popBackStack() },
@@ -355,6 +359,9 @@ private fun UygulamaGezintisi(api: ApiIstemcisi, profil: KullaniciOzeti, cikisYa
                     kisiListesi = { kisi, tur -> gezinti.navigate(TakipListesiRota(kisi, tur)) },
                     gunlukKaydinaGit = { gezinti.navigate(GunlukDetayRota(it)) },
                     geri = { gezinti.popBackStack() },
+                    sikayetPenceresi = { hedef, kapat ->
+                        SikayetPenceresi(viewModel(key = "sikayet-$hedef") { SikayetViewModel(api, SikayetHedefi(hedef)) }, kapat)
+                    },
                 )
             }
             composable<TakipListesiRota> { listeGirdisi ->
