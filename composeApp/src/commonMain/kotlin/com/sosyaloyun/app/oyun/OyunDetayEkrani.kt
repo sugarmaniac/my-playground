@@ -42,6 +42,7 @@ import com.sosyaloyun.app.api.ApiIstemcisi
 import com.sosyaloyun.app.gunluk.Inceleme
 import com.sosyaloyun.app.gunluk.dakikadanSaate
 import com.sosyaloyun.app.hesap.AvatarGorunumu
+import com.sosyaloyun.app.kesif.igdbTurAdi
 import com.sosyaloyun.app.gunluk.gorunurlukAdi
 import com.sosyaloyun.app.gunluk.tarihMetni
 import com.sosyaloyun.app.kutuphane.HizliKayitSayfasi
@@ -194,7 +195,7 @@ private fun Detay(
         )
         if (detay.turler.isNotEmpty()) {
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                detay.turler.forEach { AssistChip(onClick = {}, label = { Text(it) }) }
+                detay.turler.forEach { AssistChip(onClick = {}, label = { Text(igdbTurAdi(it)) }) }
             }
         }
         detay.aciklama?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }

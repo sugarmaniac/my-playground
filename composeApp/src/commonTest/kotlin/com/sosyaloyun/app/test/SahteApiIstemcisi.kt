@@ -27,6 +27,8 @@ import com.sosyaloyun.shared.GunlukOgesi
 import com.sosyaloyun.shared.GunlukSayfasi
 import com.sosyaloyun.shared.HataKodu
 import com.sosyaloyun.shared.IncelemeListesi
+import com.sosyaloyun.shared.Kesif
+import com.sosyaloyun.shared.Tur
 import com.sosyaloyun.shared.OrtakOyunlar
 import com.sosyaloyun.shared.OyunAramaYaniti
 import com.sosyaloyun.shared.OyunDetayi
@@ -123,6 +125,23 @@ class SahteApiIstemcisi : ApiIstemcisi {
     override suspend fun oyunDetayi(oyunId: String): OyunDetayi {
         hata?.let { throw it }
         return oyunDetaylari[oyunId] ?: throw ApiHatasiIstisnasi(HataKodu.OYUN_BULUNAMADI)
+    }
+
+    var kesifYaniti: Kesif? = null
+    /** Sorgu ("tur:ROL_YAPMA" ya da "platform:PC") ve imlece göre sayfalar. */
+    var oyunListeleri = emptyMap<Pair<String, String?>, OyunAramaYaniti>()
+    val oyunListesiSorgulari = mutableListOf<String>()
+
+    override suspend fun kesif(): Kesif {
+        hata?.let { throw it }
+        return kesifYaniti!!
+    }
+
+    override suspend fun oyunListesi(tur: Tur?, platform: String?, imlec: String?): OyunAramaYaniti {
+        hata?.let { throw it }
+        val sorgu = tur?.let { "tur:${it.name}" } ?: "platform:$platform"
+        oyunListesiSorgulari += "$sorgu:$imlec"
+        return oyunListeleri[sorgu to imlec] ?: OyunAramaYaniti(emptyList(), null)
     }
 
     /** İmleçe göre inceleme sayfaları; ilk sayfanın imleci null. */

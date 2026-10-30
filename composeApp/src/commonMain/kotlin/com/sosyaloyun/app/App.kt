@@ -37,6 +37,13 @@ import com.sosyaloyun.app.akis.AkisEkrani
 import com.sosyaloyun.app.akis.AkisViewModel
 import com.sosyaloyun.app.api.ApiIstemcisi
 import com.sosyaloyun.app.api.EngelListesiTuru
+import com.sosyaloyun.app.kesif.KesifEkrani
+import com.sosyaloyun.app.kesif.KesifViewModel
+import com.sosyaloyun.app.kesif.OyunListesiGorunumu
+import com.sosyaloyun.app.kesif.OyunListesiViewModel
+import com.sosyaloyun.app.kesif.turAdi
+import com.sosyaloyun.app.resources.sekme_kesif
+import com.sosyaloyun.shared.Tur
 import com.sosyaloyun.app.api.KisiListesiTuru
 import com.sosyaloyun.app.arama.AramaEkrani
 import com.sosyaloyun.app.arama.AramaViewModel
@@ -139,6 +146,13 @@ private data object AnaRota
 @Serializable
 private data object ProfilRota
 
+@Serializable
+private data object KesifRota
+
+/** Keşif kısayolu: [tur] ya da [platform] dolu. */
+@Serializable
+private data class OyunListesiRota(val tur: Tur? = null, val platform: String? = null)
+
 /** [mod]: oyuna gitmek, ortadaki kaydet butonundan hızlı kayıt ya da vitrine oyun seçmek için arama. */
 @Serializable
 private data class AramaRota(val mod: AramaModu = AramaModu.GEZINTI)
@@ -205,6 +219,12 @@ private fun UygulamaGezintisi(api: ApiIstemcisi, profil: KullaniciOzeti, cikisYa
                     label = { Text(stringResource(Res.string.sekme_ana)) },
                 )
                 NavigationBarItem(
+                    selected = hedef?.hierarchy?.any { it.hasRoute<KesifRota>() } == true,
+                    onClick = { sekmeyeGit(KesifRota) },
+                    icon = { Text("🧭") },
+                    label = { Text(stringResource(Res.string.sekme_kesif)) },
+                )
+                NavigationBarItem(
                     selected = false,
                     onClick = { gezinti.navigate(AramaRota(AramaModu.KAYIT)) },
                     icon = { Text("➕") },
@@ -242,6 +262,23 @@ private fun UygulamaGezintisi(api: ApiIstemcisi, profil: KullaniciOzeti, cikisYa
                     viewModel(key = "gunluk-detay-$kayitId") { GunlukDetayViewModel(api, kayitId) },
                     oyunaGit = { gezinti.navigate(OyunRota(it)) },
                     kullaniciyaGit = { gezinti.navigate(KullaniciRota(it)) },
+                    geri = { gezinti.popBackStack() },
+                )
+            }
+            composable<KesifRota> {
+                KesifEkrani(
+                    viewModel { KesifViewModel(api) },
+                    oyunaGit = { gezinti.navigate(OyunRota(it)) },
+                    turAc = { gezinti.navigate(OyunListesiRota(tur = it)) },
+                    platformAc = { gezinti.navigate(OyunListesiRota(platform = it)) },
+                )
+            }
+            composable<OyunListesiRota> { listeGirdisi ->
+                val rota = listeGirdisi.toRoute<OyunListesiRota>()
+                OyunListesiGorunumu(
+                    viewModel(key = "oyun-listesi-${rota.tur}-${rota.platform}") { OyunListesiViewModel(api, rota.tur, rota.platform) },
+                    baslik = rota.tur?.let { turAdi(it) } ?: rota.platform.orEmpty(),
+                    oyunaGit = { gezinti.navigate(OyunRota(it)) },
                     geri = { gezinti.popBackStack() },
                 )
             }

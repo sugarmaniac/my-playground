@@ -20,6 +20,8 @@ import com.sosyaloyun.shared.OrtakOyunlar
 import com.sosyaloyun.shared.OyunAramaYaniti
 import com.sosyaloyun.shared.BulunanKisi
 import com.sosyaloyun.shared.IncelemeListesi
+import com.sosyaloyun.shared.Kesif
+import com.sosyaloyun.shared.Tur
 import com.sosyaloyun.shared.SteamBaglantisi
 import com.sosyaloyun.shared.SteamIceAktarmaSonucu
 import com.sosyaloyun.shared.OyunDetayi
@@ -69,6 +71,11 @@ interface ApiIstemcisi {
     suspend fun oyunAra(sorgu: String, imlec: String? = null): OyunAramaYaniti
 
     suspend fun oyunDetayi(oyunId: String): OyunDetayi
+
+    suspend fun kesif(): Kesif
+
+    /** Bir türdeki ya da platformdaki oyunlar, popüler önce. */
+    suspend fun oyunListesi(tur: Tur?, platform: String?, imlec: String? = null): OyunAramaYaniti
 
     suspend fun oyunIncelemeleri(oyunId: String, imlec: String? = null): IncelemeListesi
 

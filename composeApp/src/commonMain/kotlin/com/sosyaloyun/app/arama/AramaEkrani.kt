@@ -125,7 +125,7 @@ private fun Bilgi(metin: String) {
 }
 
 @Composable
-private fun OyunSatiri(oyun: OyunOzeti, tikla: () -> Unit) {
+fun OyunSatiri(oyun: OyunOzeti, tikla: () -> Unit) {
     Row(modifier = Modifier.fillMaxWidth().clickable(onClick = tikla), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
         AsyncImage(
             model = oyun.kapakUrl,
