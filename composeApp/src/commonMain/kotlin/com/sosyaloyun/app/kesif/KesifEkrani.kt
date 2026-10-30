@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -91,14 +92,15 @@ fun KesifEkrani(
                 }
             }
         }
-        if (ekran !is KesifEkrani.Hata) item(contentType = "bolum") {
-            Bolum(stringResource(Res.string.kesif_trend)) {
-                Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    if (kesif == null) {
-                        repeat(TREND_ISKELETI) { Iskelet(Modifier.fillMaxWidth().height(58.dp)) }
-                    } else {
-                        kesif.trend.take(TREND_SATIRI).forEachIndexed { sira, oyun -> TrendSatiri(sira + 1, oyun, oyunaGit) }
-                    }
+        // Trend satırları ayrı lazy öğeler: tek öğe olduklarında on satır ve on görsel kaydırırken aynı karede
+        // çiziliyordu (#63).
+        if (ekran !is KesifEkrani.Hata) {
+            item(contentType = "bolum-basligi") { BolumBasligi(stringResource(Res.string.kesif_trend)) }
+            if (kesif == null) {
+                items(TREND_ISKELETI, contentType = { "iskelet" }) { Iskelet(Modifier.padding(horizontal = 16.dp).fillMaxWidth().height(58.dp)) }
+            } else {
+                itemsIndexed(kesif.trend.take(TREND_SATIRI), key = { _, oyun -> "trend-${oyun.id}" }, contentType = { _, _ -> "oyun-satiri" }) { sira, oyun ->
+                    Box(Modifier.padding(horizontal = 16.dp)) { TrendSatiri(sira + 1, oyun, oyunaGit) }
                 }
             }
         }
@@ -130,9 +132,14 @@ private fun KapakSirasiIskeleti() {
 @Composable
 private fun Bolum(baslik: String, icerik: @Composable () -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(baslik, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(horizontal = 16.dp))
+        BolumBasligi(baslik)
         icerik()
     }
+}
+
+@Composable
+fun BolumBasligi(baslik: String) {
+    Text(baslik, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(horizontal = 16.dp))
 }
 
 private const val TREND_SATIRI = 10

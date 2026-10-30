@@ -102,7 +102,7 @@ import com.sosyaloyun.app.istatistik.YillikOzetViewModel
 import com.sosyaloyun.app.itiraz.ItirazViewModel
 import com.sosyaloyun.app.konsol.KonsolViewModel
 import com.sosyaloyun.app.kurator.KuratorViewModel
-import com.sosyaloyun.app.oneri.OnerilerBolumu
+import com.sosyaloyun.app.oneri.onerilerBolumu
 import com.sosyaloyun.app.oneri.OnerilerViewModel
 import com.sosyaloyun.app.puan.PuanDegisimiBolumu
 import com.sosyaloyun.app.puan.PuanDegisimiViewModel
@@ -389,17 +389,16 @@ internal fun UygulamaGezintisi(api: ApiIstemcisi, profil: KullaniciOzeti, cikisY
                 )
             }
             composable<KesifRota> {
+                // Öneriler satır satır lazy öğe olarak eklenir; durumları burada, kompozisyonda okunur (#63).
+                val oneriVm = if (aktifFaz.kapsar(Faz.FAZ_3)) viewModel { OnerilerViewModel(api, onbellek) } else null
+                val oneriler = oneriVm?.oneriler?.collectAsStateWithLifecycle()?.value
                 KesifEkrani(
                     viewModel { KesifViewModel(api, onbellek) },
                     oyunaGit = { gezinti.navigate(OyunRota(it)) },
                     turAc = { gezinti.navigate(OyunListesiRota(tur = it)) },
                     platformAc = { gezinti.navigate(OyunListesiRota(platform = it)) },
                     ekBolumler = {
-                        if (aktifFaz.kapsar(Faz.FAZ_3)) {
-                            item(key = "oneriler", contentType = "ek") {
-                                EkBolum { OnerilerBolumu(viewModel { OnerilerViewModel(api, onbellek) }) { gezinti.navigate(OyunRota(it)) } }
-                            }
-                        }
+                        oneriVm?.let { vm -> onerilerBolumu(oneriler, vm::ilgilenmiyorum) { gezinti.navigate(OyunRota(it)) } }
                         if (aktifFaz.kapsar(Faz.FAZ_2)) {
                             item(key = "puan-degisimi", contentType = "ek") {
                                 EkBolum { PuanDegisimiBolumu(viewModel { PuanDegisimiViewModel(api) }) { gezinti.navigate(OyunRota(it)) } }
