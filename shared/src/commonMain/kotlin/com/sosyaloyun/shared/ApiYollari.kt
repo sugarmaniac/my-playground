@@ -67,6 +67,11 @@ object ApiYollari {
     const val OYUN_ARA = "/oyunlar/ara"
     const val POPULER_OYUNLAR = "/oyunlar/populer"
 
+    const val KESIF = "/kesif"
+
+    /** `GET ?tur=<Tur>` ya da `?platform=<IGDB platform adı>`, `&imlec=`: o türdeki ya da platformdaki oyunlar, popüler önce. */
+    const val OYUN_LISTESI = "/oyunlar/liste"
+
     /** `GET` bağlantı, `PUT` bağla ve içe aktar, `DELETE` bağlantıyı kaldır. */
     const val STEAM = "/steam"
 

@@ -8,6 +8,7 @@ import com.sosyaloyun.shared.OyunAramaYaniti
 import com.sosyaloyun.shared.OyunDetayi
 import com.sosyaloyun.shared.OyunOzeti
 import com.sosyaloyun.shared.OyunTuru
+import com.sosyaloyun.shared.Tur
 import java.util.UUID
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -16,6 +17,9 @@ import org.jetbrains.exposed.v1.core.Op
 import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.Table
 import org.jetbrains.exposed.v1.core.and
+import org.jetbrains.exposed.v1.core.anyFrom
+import org.jetbrains.exposed.v1.core.inSubQuery
+import org.jetbrains.exposed.v1.core.stringLiteral
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.inList
 import org.jetbrains.exposed.v1.core.java.javaUUID
@@ -112,6 +116,29 @@ class Katalog(private val veritabani: Database) {
                 .selectAll()
                 .where { (OyunKaynagiTablosu.kaynak eq STEAM) and (OyunKaynagiTablosu.kaynakId inList uygulamaIdleri) and (OyunTablosu.kaldirildi eq false) }
                 .associate { it[OyunKaynagiTablosu.kaynakId] to it[OyunKaynagiTablosu.oyunId] }
+        }
+    }
+
+    /** Bir türdeki ya da bir platformdaki ana oyunlar, popüler önce; ikisi de verilmezse bütün ana oyunlar. */
+    suspend fun listele(tur: Tur?, platform: String?, imlec: String?): OyunAramaYaniti = withContext(Dispatchers.IO) {
+        val baslangic = Imlec.baslangic(imlec)
+        transaction(veritabani) {
+            var kosul: Op<Boolean> = (OyunTablosu.kaldirildi eq false) and (OyunTablosu.tur eq OyunTuru.ANA_OYUN.name)
+            tur?.let { kosul = kosul and (stringLiteral(it.igdbAdi) eq anyFrom(OyunTablosu.turler)) }
+            platform?.let { ad ->
+                val platformdakiler = OyunKaynagiTablosu.select(OyunKaynagiTablosu.oyunId)
+                    .where { (OyunKaynagiTablosu.kaynak eq IGDB) and (stringLiteral(ad) eq anyFrom(OyunKaynagiTablosu.platformlar)) }
+                kosul = kosul and (OyunTablosu.id inSubQuery platformdakiler)
+            }
+            val idler = OyunTablosu.select(OyunTablosu.id)
+                .where(kosul)
+                .orderBy(OyunTablosu.populerlik to SortOrder.DESC, OyunTablosu.ad to SortOrder.ASC, OyunTablosu.id to SortOrder.ASC)
+                .limit(SAYFA + 1)
+                .offset(baslangic.toLong())
+                .map { it[OyunTablosu.id] }
+            val sayfa = idler.take(SAYFA)
+            val oyunlar = ozetler(sayfa)
+            OyunAramaYaniti(sayfa.mapNotNull(oyunlar::get), Imlec.sonraki(idler.size, baslangic, SAYFA))
         }
     }
 

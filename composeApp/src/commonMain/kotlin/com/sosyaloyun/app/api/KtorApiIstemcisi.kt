@@ -25,6 +25,8 @@ import com.sosyaloyun.shared.OrtakOyunlar
 import com.sosyaloyun.shared.OyunAramaYaniti
 import com.sosyaloyun.shared.IncelemeListesi
 import com.sosyaloyun.shared.OyunDetayi
+import com.sosyaloyun.shared.Tur
+import com.sosyaloyun.shared.Kesif
 import com.sosyaloyun.shared.TopluTakipIstegi
 import com.sosyaloyun.shared.RehberEslestirmeIstegi
 import com.sosyaloyun.shared.TelefonumIstegi
@@ -168,6 +170,16 @@ class KtorApiIstemcisi(
     }
 
     override suspend fun oyunDetayi(oyunId: String): OyunDetayi = istek { http.get("${ApiYollari.OYUNLAR}/$oyunId").body() }
+
+    override suspend fun kesif(): Kesif = istek { http.get(ApiYollari.KESIF).body() }
+
+    override suspend fun oyunListesi(tur: Tur?, platform: String?, imlec: String?): OyunAramaYaniti = istek {
+        http.get(ApiYollari.OYUN_LISTESI) {
+            tur?.let { parameter("tur", it.name) }
+            platform?.let { parameter("platform", it) }
+            imlec?.let { parameter("imlec", it) }
+        }.body()
+    }
 
     override suspend fun oyunIncelemeleri(oyunId: String, imlec: String?): IncelemeListesi =
         istek { http.get(ApiYollari.oyunIncelemeleri(oyunId)) { imlec?.let { parameter("imlec", it) } }.body() }
