@@ -326,15 +326,14 @@ fun Kapak(oyun: OyunOzeti?, modifier: Modifier = Modifier, kucuk: Boolean = fals
         contentAlignment = Alignment.BottomStart,
     ) {
         if (oyun != null) {
-            // Görsel yoksa tasarımdaki gibi renkli zemin üstünde büyük harfli ad.
-            if (oyun.kapakUrl == null) {
-                if (kucuk) {
-                    Text(oyun.ad.take(1).uppercase(), style = MaterialTheme.typography.titleLarge, modifier = Modifier.align(Alignment.Center))
-                } else {
-                    Text(oyun.ad.uppercase(), style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.ExtraBold, maxLines = 3, modifier = Modifier.padding(6.dp))
-                }
+            // Tasarımdaki yer tutucu: renkli zemin üstünde büyük harfli ad. Görsel yoksa, yüklenirken ya da yüklenemezse
+            // görünür; görsel gelince yumuşak geçişle üstüne biner (#61).
+            if (kucuk) {
+                Text(oyun.ad.take(1).uppercase(), style = MaterialTheme.typography.titleLarge, modifier = Modifier.align(Alignment.Center))
+            } else {
+                Text(oyun.ad.uppercase(), style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.ExtraBold, maxLines = 3, modifier = Modifier.padding(6.dp))
             }
-            AsyncImage(model = oyun.kapakUrl, contentDescription = oyun.ad, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
+            if (oyun.kapakUrl != null) AsyncImage(model = oyun.kapakUrl, contentDescription = oyun.ad, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
         }
     }
 }
