@@ -6,6 +6,7 @@ import androidx.compose.material3.Shapes
 import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -29,14 +30,11 @@ object Renk {
     val AltMenu = Color(0xFF12141A)
     val Cizgi = Color(0xFF2A2E39)
     val Yazi = Color(0xFFF2F3F5)
-    val YaziIkincil = Color(0xFFD9DCE2)
     val Soluk = Color(0xFFA3A9B7)
-    val Pasif = Color(0xFF5B6270)
     val Vurgu = Color(0xFFC8F542)
     val VurguKoyu = Color(0xFF1B2410)
     val Yildiz = Color(0xFFFFA94D)
     val Hata = Color(0xFFFF6B6B)
-    val Dusus = Color(0xFFFF8A8A)
 
     /** Avatar ve kapak yer tutucularının koyu, doygunluğu düşük zeminleri; sıra sabittir. */
     private val kartelaRenkleri = listOf(0xFF4A3B6B, 0xFF6B3B4A, 0xFF2F5D50, 0xFF5D4A2F, 0xFF3B4A6B, 0xFF8A3B3B).map(::Color)
@@ -96,6 +94,10 @@ private fun yaziTipleri(): Typography {
         Font(Res.font.inter_600, FontWeight.SemiBold),
         Font(Res.font.inter_700, FontWeight.Bold),
     )
+    return remember(baslik, govde) { yaziOlcegi(baslik, govde) }
+}
+
+private fun yaziOlcegi(baslik: FontFamily, govde: FontFamily): Typography {
     fun b(boyut: Int, kalinlik: FontWeight, satir: Int, harf: Double = -0.3) =
         TextStyle(fontFamily = baslik, fontWeight = kalinlik, fontSize = boyut.sp, lineHeight = satir.sp, letterSpacing = harf.sp)
     fun g(boyut: Int, kalinlik: FontWeight, satir: Int, harf: Double = 0.0) =

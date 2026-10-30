@@ -284,10 +284,11 @@ internal fun UygulamaGezintisi(api: ApiIstemcisi, profil: KullaniciOzeti, cikisY
     val gezinti = rememberNavController()
     val girdi by gezinti.currentBackStackEntryAsState()
     val hedef = girdi?.destination
-    fun sekmeyeGit(rota: Any) = gezinti.navigate(rota) {
+    /** [koru] false ise sekme önceki durumundan dönmez, yeniden yüklenir (bildirimler her açılışta tazelenip okundu sayılsın). */
+    fun sekmeyeGit(rota: Any, koru: Boolean = true) = gezinti.navigate(rota) {
         popUpTo(gezinti.graph.findStartDestination().id) { saveState = true }
         launchSingleTop = true
-        restoreState = true
+        restoreState = koru
     }
     // Profil sayfası ve düzenleme ekranları aynı ViewModel'leri paylaşmasın diye profil verisi rotalar arasında taşınır.
     var duzenlenenProfil by remember { mutableStateOf<ProfilSayfasi?>(null) }
@@ -323,7 +324,7 @@ internal fun UygulamaGezintisi(api: ApiIstemcisi, profil: KullaniciOzeti, cikisY
                             Text(stringResource(Res.string.akis_baslik), style = MaterialTheme.typography.headlineLarge, modifier = Modifier.weight(1f))
                             UstIkon(Ikonlar.KisiEkle, stringResource(Res.string.akis_istekler)) { gezinti.navigate(GelenIsteklerRota) }
                             UstIkon(Ikonlar.Ara, stringResource(Res.string.akis_ara)) { gezinti.navigate(AramaRota()) }
-                            UstIkon(Ikonlar.Ayarlar, stringResource(Res.string.akis_davetler)) { gezinti.navigate(DavetlerRota) }
+                            UstIkon(Ikonlar.Davet, stringResource(Res.string.akis_davetler)) { gezinti.navigate(DavetlerRota) }
                         }
                     },
                     oyunaGit = { gezinti.navigate(OyunRota(it)) },
@@ -495,7 +496,7 @@ internal fun UygulamaGezintisi(api: ApiIstemcisi, profil: KullaniciOzeti, cikisY
             }
             composable<BildirimlerRota> {
                 BildirimlerGorunumu(
-                    viewModel { BildirimlerViewModel(api) },
+                    viewModel { BildirimlerViewModel(api, okundu = bildirimSayaci::yenile) },
                     kullaniciyaGit = { gezinti.navigate(KullaniciRota(it)) },
                     gunlukKaydinaGit = { gezinti.navigate(GunlukDetayRota(it)) },
                     geri = { gezinti.popBackStack() },
@@ -619,7 +620,7 @@ private fun UstIkon(ikon: ImageVector, aciklama: String, tikla: () -> Unit) {
 
 /** Akış, Keşif, ortada lime Kaydet, okunmamış rozetli Bildirimler ve Profil (#59). */
 @Composable
-private fun AltMenu(seciliMi: (kotlin.reflect.KClass<*>) -> Boolean, sekmeyeGit: (Any) -> Unit, kaydet: () -> Unit, okunmamis: Int) {
+private fun AltMenu(seciliMi: (kotlin.reflect.KClass<*>) -> Boolean, sekmeyeGit: (Any, Boolean) -> Unit, kaydet: () -> Unit, okunmamis: Int) {
     Column(Modifier.background(Renk.AltMenu)) {
         HorizontalDivider(color = Renk.Cizgi)
         Row(
@@ -627,15 +628,15 @@ private fun AltMenu(seciliMi: (kotlin.reflect.KClass<*>) -> Boolean, sekmeyeGit:
             horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            AltMenuOgesi(Ikonlar.Ev, stringResource(Res.string.sekme_ana), seciliMi(AnaRota::class)) { sekmeyeGit(AnaRota) }
-            AltMenuOgesi(Ikonlar.Ara, stringResource(Res.string.sekme_kesif), seciliMi(KesifRota::class)) { sekmeyeGit(KesifRota) }
+            AltMenuOgesi(Ikonlar.Ev, stringResource(Res.string.sekme_ana), seciliMi(AnaRota::class)) { sekmeyeGit(AnaRota, true) }
+            AltMenuOgesi(Ikonlar.Ara, stringResource(Res.string.sekme_kesif), seciliMi(KesifRota::class)) { sekmeyeGit(KesifRota, true) }
             Surface(onClick = kaydet, shape = MaterialTheme.shapes.large, color = Renk.Vurgu, modifier = Modifier.size(52.dp)) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(Ikonlar.Arti, contentDescription = stringResource(Res.string.sekme_kaydet), tint = Renk.Zemin, modifier = Modifier.size(26.dp))
                 }
             }
-            AltMenuOgesi(Ikonlar.Zil, stringResource(Res.string.sekme_bildirimler), seciliMi(BildirimlerRota::class), rozet = okunmamis) { sekmeyeGit(BildirimlerRota) }
-            AltMenuOgesi(Ikonlar.Kisi, stringResource(Res.string.sekme_profil), seciliMi(ProfilRota::class)) { sekmeyeGit(ProfilRota) }
+            AltMenuOgesi(Ikonlar.Zil, stringResource(Res.string.sekme_bildirimler), seciliMi(BildirimlerRota::class), rozet = okunmamis) { sekmeyeGit(BildirimlerRota, false) }
+            AltMenuOgesi(Ikonlar.Kisi, stringResource(Res.string.sekme_profil), seciliMi(ProfilRota::class)) { sekmeyeGit(ProfilRota, true) }
         }
     }
 }

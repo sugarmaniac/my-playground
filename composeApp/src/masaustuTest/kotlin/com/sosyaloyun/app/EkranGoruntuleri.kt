@@ -91,6 +91,7 @@ class EkranGoruntuleri {
 
     @Test
     fun ekranlar() {
+        val oncekiYerel = java.util.Locale.getDefault()
         java.util.Locale.setDefault(java.util.Locale.forLanguageTag("tr-TR"))
         Dispatchers.setMain(UnconfinedTestDispatcher())
         try {
@@ -112,6 +113,7 @@ class EkranGoruntuleri {
             }
         } finally {
             Dispatchers.resetMain()
+            java.util.Locale.setDefault(oncekiYerel)
         }
     }
 

@@ -15,7 +15,7 @@ import androidx.compose.ui.text.withStyle
 import com.sosyaloyun.app.resources.akis_eylem_arkadas
 import com.sosyaloyun.app.resources.akis_eylem_basladi
 import com.sosyaloyun.app.resources.akis_eylem_gunluk
-import com.sosyaloyun.app.resources.akis_sure_saat
+import com.sosyaloyun.app.resources.gunluk_saat
 import com.sosyaloyun.app.resources.zaman_dakika
 import com.sosyaloyun.app.resources.zaman_gun
 import com.sosyaloyun.app.resources.zaman_saat
@@ -55,6 +55,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sosyaloyun.app.arama.KullaniciSatiri
 import com.sosyaloyun.app.gunluk.BegeniButonu
 import com.sosyaloyun.app.gunluk.Inceleme
+import com.sosyaloyun.app.gunluk.dakikadanSaate
 import com.sosyaloyun.app.hesap.AvatarGorunumu
 import com.sosyaloyun.app.kutuphane.YildizPuani
 import com.sosyaloyun.app.profil.Kapak
@@ -176,7 +177,7 @@ private fun AkisKarti(oge: AkisOgesi, viewModel: AkisViewModel, oyunaGit: (Strin
                     Text(oyun.ad, style = MaterialTheme.typography.titleLarge, maxLines = 2, overflow = TextOverflow.Ellipsis)
                     oge.gunlukKaydi?.puan?.let { YildizPuani(it, sec = {}, boyut = 16) }
                     val ayrinti = listOfNotNull(
-                        oge.gunlukKaydi?.sureDakika?.let { stringResource(Res.string.akis_sure_saat, (it + 30) / 60) },
+                        oge.gunlukKaydi?.sureDakika?.let { stringResource(Res.string.gunluk_saat, dakikadanSaate(it)) },
                         oge.gunlukKaydi?.platform,
                     ).joinToString(" · ")
                     if (ayrinti.isNotEmpty()) Text(ayrinti, style = MaterialTheme.typography.bodySmall, color = Renk.Soluk)

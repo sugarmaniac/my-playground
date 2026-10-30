@@ -139,19 +139,12 @@
     <string name="sekme_takip">Following</string>
     <string name="akis_yeni">%1$d new posts</string>
     <string name="akis_bos">Your feed is empty. Follow people to see what they play.</string>
-    <string name="akis_gunluk_kaydi">%1$s logged a game</string>
-    <string name="akis_oynamaya_basladi">%1$s started playing</string>
-    <string name="akis_arkadas_oldu">%1$s and %2$s are now friends</string>
     <string name="akis_istek_listeme_ekle">+ Wishlist</string>
     <string name="akis_istek_listemde">On your wishlist</string>
     <string name="akis_spoiler">Contains spoilers</string>
     <string name="akis_spoiler_goster">Show</string>
     <string name="begenenler">Liked by</string>
     <string name="gunluk_kaydi_bulunamadi">This journal entry could not be found.</string>
-    <string name="oyun_topluluk_puani">Community score: %1$s</string>
-    <string name="oyun_yeterli_puan_yok">Not enough ratings yet</string>
-    <string name="oyun_arkadas_ortalamasi">Friends: %1$s</string>
-    <string name="oyun_oynayan_arkadas">Friends who played: %1$d</string>
     <string name="oyun_incelemeler">Reviews</string>
     <string name="oyun_arkadasin">Friend</string>
     <string name="sessize_al">Mute</string>
@@ -386,7 +379,6 @@
     <string name="akis_eylem_gunluk">logged a game</string>
     <string name="akis_eylem_basladi">started playing</string>
     <string name="akis_eylem_arkadas">and %1$s are now friends</string>
-    <string name="akis_sure_saat">%1$d hours</string>
     <string name="zaman_simdi">now</string>
     <string name="zaman_dakika">%1$d min</string>
     <string name="zaman_saat">%1$d h</string>
