@@ -57,7 +57,9 @@ fun Application.modul(bagimliliklar: Bagimliliklar) {
         katalogRotalari(katalog, kutuphane, gunluk, begeniler, Topluluk(veritabani, ayarlar), katalogIceAktarici, bagimliliklar.igdbWebhookSirri)
         akisRotalari(Akis(veritabani, katalog, begeniler), kutuphane, katalog)
         gunlukRotalari(gunluk, katalog, begeniler, sosyalGraf, kullanicilar)
-        profilSayfasiRotalari(Profiller(veritabani, katalog, kullanicilar, sosyalGraf, begeniler, bagimliliklar.saat), kullanicilar, sosyalGraf)
+        val profiller = Profiller(veritabani, katalog, kullanicilar, sosyalGraf, begeniler, bagimliliklar.saat)
+        profilSayfasiRotalari(profiller, kullanicilar, sosyalGraf)
+        paylasimRotalari(Paylasim(veritabani, katalog, profiller, begeniler, bagimliliklar.saat), kullanicilar, bagimliliklar.webDizini)
         get(ApiYollari.SAGLIK) {
             val durum = if (ayarlar.oku(Ayar.BakimModu)) SunucuDurumu.BAKIMDA else SunucuDurumu.AYAKTA
             call.respond(

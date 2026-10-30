@@ -9,6 +9,7 @@
       "gradle/**",
       "*.gradle.kts",
       "gradle.properties",
+      "web/**",
       "Dockerfile",
       "railway.json"
     ]

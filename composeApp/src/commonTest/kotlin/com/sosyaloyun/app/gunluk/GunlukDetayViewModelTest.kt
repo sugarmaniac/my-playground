@@ -1,5 +1,6 @@
 package com.sosyaloyun.app.gunluk
 
+import com.sosyaloyun.app.api.sunucuAdresi
 import com.sosyaloyun.app.test.SahteApiIstemcisi
 import com.sosyaloyun.app.test.viewModelTesti
 import com.sosyaloyun.shared.Avatar
@@ -33,7 +34,28 @@ class GunlukDetayViewModelTest {
         val vm = GunlukDetayViewModel(api, "g1")
         advanceUntilIdle()
 
-        assertEquals(GunlukDetayEkrani.Hazir(detay, begenenler = listOf(ayse)), vm.ekran.value)
+        assertEquals(
+            GunlukDetayEkrani.Hazir(detay, begenenler = listOf(ayse), paylasimLinki = "${sunucuAdresi()}/kayit.html?id=g1"),
+            vm.ekran.value,
+        )
+    }
+
+    @Test
+    fun paylasButonuWebSitesindekiKayitSayfasinaLinkUretir() = viewModelTesti {
+        api.gunlukDetaylari = mapOf("g1" to detay)
+        val vm = GunlukDetayViewModel(api, "g1", webAdresi = "https://ornek.test/")
+        advanceUntilIdle()
+
+        assertEquals("https://ornek.test/kayit.html?id=g1", (vm.ekran.value as GunlukDetayEkrani.Hazir).paylasimLinki)
+    }
+
+    @Test
+    fun herkeseAcikOlmayanKayitPaylasilamaz() = viewModelTesti {
+        api.gunlukDetaylari = mapOf("g1" to detay.copy(kayit = detay.kayit.copy(gorunurluk = Gorunurluk.TAKIPCILER)))
+        val vm = GunlukDetayViewModel(api, "g1", webAdresi = "https://ornek.test")
+        advanceUntilIdle()
+
+        assertEquals(null, (vm.ekran.value as GunlukDetayEkrani.Hazir).paylasimLinki)
     }
 
     @Test

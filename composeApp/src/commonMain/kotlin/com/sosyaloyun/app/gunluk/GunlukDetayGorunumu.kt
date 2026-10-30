@@ -40,6 +40,8 @@ import com.sosyaloyun.app.resources.akis_spoiler_goster
 import com.sosyaloyun.app.resources.begenenler
 import com.sosyaloyun.app.resources.durum_hata
 import com.sosyaloyun.app.resources.geri
+import com.sosyaloyun.app.resources.paylas
+import com.sosyaloyun.app.hesap.paylasici
 import com.sosyaloyun.app.resources.gunluk_kaydi_bulunamadi
 import com.sosyaloyun.shared.GunlukKaydi
 import org.jetbrains.compose.resources.stringResource
@@ -80,6 +82,10 @@ fun GunlukDetayGorunumu(viewModel: GunlukDetayViewModel, api: ApiIstemcisi, oyun
                 item {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         BegeniButonu(kayit, viewModel::begeniDegistir)
+                        durum.paylasimLinki?.let { link ->
+                            val paylas = paylasici()
+                            TextButton(onClick = { paylas(link) }) { Text(stringResource(Res.string.paylas)) }
+                        }
                         var sikayetAcik by remember { mutableStateOf(false) }
                         TextButton(onClick = { sikayetAcik = true }) { Text(stringResource(Res.string.sikayet_et)) }
                         if (sikayetAcik) {

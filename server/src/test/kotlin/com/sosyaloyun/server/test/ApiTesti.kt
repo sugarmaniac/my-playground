@@ -29,6 +29,7 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
+import java.io.File
 import kotlinx.serialization.KSerializer
 import org.jetbrains.exposed.v1.jdbc.Database
 import io.ktor.server.testing.testApplication
@@ -129,6 +130,8 @@ fun apiTesti(blok: suspend ApiTestOrtami.() -> Unit) = testApplication {
         steamKaynagi = steamKaynagi,
         epostaGonderici = eposta,
         moderasyonSifresi = TEST_MODERASYON_SIFRESI,
+        // Testler server/ dizininde çalışır; web sitesi kökteki web/ dizininde.
+        webDizini = File("../web").takeIf { it.isDirectory },
     )
     application { modul(bagimliliklar) }
 

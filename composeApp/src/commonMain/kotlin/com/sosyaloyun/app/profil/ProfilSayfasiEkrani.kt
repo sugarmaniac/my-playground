@@ -40,6 +40,8 @@ import com.sosyaloyun.app.hesap.AvatarGorunumu
 import com.sosyaloyun.app.kutuphane.YildizPuani
 import com.sosyaloyun.app.kutuphane.durumAdi
 import com.sosyaloyun.app.resources.Res
+import com.sosyaloyun.app.resources.paylas
+import com.sosyaloyun.app.hesap.paylasici
 import com.sosyaloyun.app.resources.arama_daha_fazla
 import com.sosyaloyun.app.resources.durum_hata
 import com.sosyaloyun.app.resources.arkadas_ekle
@@ -165,6 +167,11 @@ private fun Baslik(
             Column(Modifier.weight(1f)) {
                 Text(kullanici.gorunenAd, style = MaterialTheme.typography.titleLarge)
                 Text("@${kullanici.kullaniciAdi}", style = MaterialTheme.typography.bodyMedium)
+            }
+            val durum by viewModel.ekran.collectAsStateWithLifecycle()
+            durum.paylasimLinki?.let { link ->
+                val paylas = paylasici()
+                TextButton(onClick = { paylas(link) }) { Text(stringResource(Res.string.paylas)) }
             }
         }
         sayfa.biyografi?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }

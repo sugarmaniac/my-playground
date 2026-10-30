@@ -272,4 +272,5 @@
     <string name="hesap_sil_onay_etiketi">Onaylamak için %1$s yaz</string>
     <string name="hesap_sil_onay">Kalıcı olarak sil</string>
     <string name="hesap_sil_hata">Hesabın silinemedi. Tekrar dene.</string>
+    <string name="paylas">Paylaş</string>
 </resources>
