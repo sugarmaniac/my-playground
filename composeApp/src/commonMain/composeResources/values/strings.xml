@@ -137,12 +137,12 @@
     <string name="akis_istekler">Requests</string>
     <string name="akis_davetler">Invites</string>
     <string name="sekme_takip">Following</string>
-    <string name="akis_yeni">%1$d new posts — show</string>
+    <string name="akis_yeni">%1$d new posts</string>
     <string name="akis_bos">Your feed is empty. Follow people to see what they play.</string>
     <string name="akis_gunluk_kaydi">%1$s logged a game</string>
     <string name="akis_oynamaya_basladi">%1$s started playing</string>
     <string name="akis_arkadas_oldu">%1$s and %2$s are now friends</string>
-    <string name="akis_istek_listeme_ekle">Add to wishlist</string>
+    <string name="akis_istek_listeme_ekle">+ Wishlist</string>
     <string name="akis_istek_listemde">On your wishlist</string>
     <string name="akis_spoiler">Contains spoilers</string>
     <string name="akis_spoiler_goster">Show</string>
@@ -243,7 +243,6 @@
     <string name="onboarding_bildirim_aciklama">We notify you when someone follows you, sends or accepts a friend request, likes your journal entry or joins with your invite code. At most a few per day, never at night; you can turn each type off in settings.</string>
     <string name="onboarding_bildirim_izin_ver">Allow notifications</string>
     <string name="onboarding_bildirim_simdi_degil">Not now</string>
-    <string name="akis_bildirimler">🔔 %1$d</string>
     <string name="giris_hata_askida">Your account is suspended until %1$s.</string>
     <string name="giris_hata_banli">Your account has been permanently banned for violating the community rules.</string>
     <string name="bildirim_sikayet_sonuclandi">Your report was reviewed. Thanks for letting us know.</string>
@@ -383,4 +382,15 @@
     <string name="konsol_hata_gizli">This account's game history is private. Make it public in the console's privacy settings and try again.</string>
     <string name="konsol_hata_baska">This account is connected to another user.</string>
     <string name="konsol_hata_kullanilamiyor">Can't reach the service right now. Try again later.</string>
+    <string name="sekme_bildirimler">Notifications</string>
+    <string name="akis_eylem_gunluk">logged a game</string>
+    <string name="akis_eylem_basladi">started playing</string>
+    <string name="akis_eylem_arkadas">and %1$s are now friends</string>
+    <string name="akis_sure_saat">%1$d hours</string>
+    <string name="zaman_simdi">now</string>
+    <string name="zaman_dakika">%1$d min</string>
+    <string name="zaman_saat">%1$d h</string>
+    <string name="zaman_gun">%1$d d</string>
+    <string name="begen">Like</string>
+    <string name="begeni_sayisi_kisa">%1$d likes</string>
 </resources>

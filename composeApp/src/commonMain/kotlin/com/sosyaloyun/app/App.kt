@@ -1,5 +1,25 @@
 package com.sosyaloyun.app
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
+import com.sosyaloyun.app.tema.Ikonlar
+import com.sosyaloyun.app.tema.Renk
+import com.sosyaloyun.app.tema.SosyalOyunTemasi
+import com.sosyaloyun.app.resources.sekme_bildirimler
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -51,7 +71,6 @@ import com.sosyaloyun.app.bildirim.BildirimTercihleriViewModel
 import com.sosyaloyun.app.bildirim.BildirimlerGorunumu
 import com.sosyaloyun.app.bildirim.BildirimlerViewModel
 import com.sosyaloyun.app.bildirim.OkunmamisBildirimViewModel
-import com.sosyaloyun.app.resources.akis_bildirimler
 import com.sosyaloyun.app.kesif.KesifEkrani
 import com.sosyaloyun.app.kesif.KesifViewModel
 import com.sosyaloyun.app.kesif.OyunListesiGorunumu
@@ -142,7 +161,7 @@ fun App() {
         ImageLoader.Builder(baglam).components { add(KtorNetworkFetcherFactory()) }.build()
     }
 
-    MaterialTheme {
+    SosyalOyunTemasi {
         Surface(modifier = Modifier.fillMaxSize()) {
             when (val durum = ekran) {
                 is OturumEkrani.Giris -> GirisEkraniGorunumu(
@@ -177,77 +196,90 @@ private fun HesapAkisi(api: ApiIstemcisi, cikisYap: () -> Unit, hesapSilindi: ()
 }
 
 @Serializable
-private data object AnaRota
+internal data object AnaRota
 
 @Serializable
-private data object ProfilRota
+internal data object ProfilRota
 
 @Serializable
-private data object KesifRota
+internal data object KesifRota
 
 /** Keşif kısayolu: [tur] ya da [platform] dolu. */
+/** Enum parametreler rotada adlarıyla taşınır: Android dışındaki platformlarda gezinme enum türlerini tanımaz (#59). */
 @Serializable
-private data class OyunListesiRota(val tur: Tur? = null, val platform: String? = null)
+internal data class OyunListesiRota(val turAdi: String? = null, val platform: String? = null) {
+    constructor(tur: Tur, platform: String? = null) : this(tur.name, platform)
+    val tur: Tur? get() = turAdi?.let(Tur::valueOf)
+}
 
 /** [mod]: oyuna gitmek, ortadaki kaydet butonundan hızlı kayıt ya da vitrine oyun seçmek için arama. */
 @Serializable
-private data class AramaRota(val mod: AramaModu = AramaModu.GEZINTI)
+internal data class AramaRota(val modAdi: String = AramaModu.GEZINTI.name) {
+    constructor(mod: AramaModu) : this(mod.name)
+    val mod: AramaModu get() = AramaModu.valueOf(modAdi)
+}
 
 @Serializable
 enum class AramaModu { GEZINTI, KAYIT, VITRIN }
 
 @Serializable
-private data class OyunRota(val oyunId: String, val hizliKayitAc: Boolean = false)
+internal data class OyunRota(val oyunId: String, val hizliKayitAc: Boolean = false)
 
 @Serializable
-private data class DetayliKayitRota(val oyunId: String, val kayitId: String? = null)
+internal data class DetayliKayitRota(val oyunId: String, val kayitId: String? = null)
 
 @Serializable
-private data class GunlukDetayRota(val kayitId: String)
+internal data class GunlukDetayRota(val kayitId: String)
 
 @Serializable
-private data class KullaniciRota(val kullaniciAdi: String)
+internal data class KullaniciRota(val kullaniciAdi: String)
 
 @Serializable
-private data class TakipListesiRota(val kullaniciAdi: String, val tur: KisiListesiTuru)
+internal data class TakipListesiRota(val kullaniciAdi: String, val turAdi: String) {
+    constructor(kullaniciAdi: String, tur: KisiListesiTuru) : this(kullaniciAdi, tur.name)
+    val tur: KisiListesiTuru get() = KisiListesiTuru.valueOf(turAdi)
+}
 
 @Serializable
-private data class EngelListesiRota(val tur: EngelListesiTuru)
+internal data class EngelListesiRota(val turAdi: String) {
+    constructor(tur: EngelListesiTuru) : this(tur.name)
+    val tur: EngelListesiTuru get() = EngelListesiTuru.valueOf(turAdi)
+}
 
 @Serializable
-private data object BildirimlerRota
+internal data object BildirimlerRota
 
 @Serializable
-private data object GelenIsteklerRota
+internal data object GelenIsteklerRota
 
 @Serializable
-private data object DavetlerRota
+internal data object DavetlerRota
 
 @Serializable
-private data object ProfilDuzenleRota
+internal data object ProfilDuzenleRota
 
 @Serializable
-private data object VitrinRota
+internal data object VitrinRota
 
 @Serializable
-private data class ListeRota(val listeId: String)
+internal data class ListeRota(val listeId: String)
 
 /** Faz 3 (#55): yıllık özet; [kullaniciAdi] null ise kendi özetin. */
 @Serializable
-private data class YillikOzetRota(val kullaniciAdi: String?, val yil: Int)
+internal data class YillikOzetRota(val kullaniciAdi: String?, val yil: Int)
 
 /** Düzenlenen liste [duzenlenenListe]'de; null ise yeni liste. */
 @Serializable
-private data object ListeDuzenleRota
+internal data object ListeDuzenleRota
 
 /** Alt ekranlardan dönünce önceki ekranın yeniden yüklenmesi ya da seçilen oyunu alması için bırakılan işaretler. */
 private const val GUNLUK_DEGISTI = "gunlukDegisti"
 private const val PROFIL_DEGISTI = "profilDegisti"
 private const val VITRIN_OYUNU = "vitrinOyunu"
 
-/** Onboarding bittikten sonraki ekranlar: alt gezinme çubuğu (Ana sayfa, ortada Kaydet, Profil). */
+/** Onboarding bittikten sonraki ekranlar ve alt menü. Ekran görüntüsü testleri (masaustuTest) doğrudan çizer. */
 @Composable
-private fun UygulamaGezintisi(api: ApiIstemcisi, profil: KullaniciOzeti, cikisYap: () -> Unit, hesapSilindi: () -> Unit) {
+internal fun UygulamaGezintisi(api: ApiIstemcisi, profil: KullaniciOzeti, cikisYap: () -> Unit, hesapSilindi: () -> Unit) {
     val aktifFaz = LocalAktifFaz.current
     val gezinti = rememberNavController()
     val girdi by gezinti.currentBackStackEntryAsState()
@@ -262,51 +294,36 @@ private fun UygulamaGezintisi(api: ApiIstemcisi, profil: KullaniciOzeti, cikisYa
     var duzenlenenListe by remember { mutableStateOf<Liste?>(null) }
     var guncellenenListe by remember { mutableStateOf<Liste?>(null) }
 
+    // Okunmamış bildirim sayısı alt menüdeki rozette; her ekran değişiminde tazelenir.
+    val bildirimSayaci = viewModel { OkunmamisBildirimViewModel(api) }
+    val okunmamis by bildirimSayaci.sayi.collectAsStateWithLifecycle()
+    LaunchedEffect(hedef?.route) { bildirimSayaci.yenile() }
+
     Scaffold(
+        containerColor = Renk.Zemin,
         bottomBar = {
-            NavigationBar {
-                NavigationBarItem(
-                    selected = hedef?.hierarchy?.any { it.hasRoute<AnaRota>() } == true,
-                    onClick = { sekmeyeGit(AnaRota) },
-                    icon = { Text("🏠") },
-                    label = { Text(stringResource(Res.string.sekme_ana)) },
-                )
-                NavigationBarItem(
-                    selected = hedef?.hierarchy?.any { it.hasRoute<KesifRota>() } == true,
-                    onClick = { sekmeyeGit(KesifRota) },
-                    icon = { Text("🧭") },
-                    label = { Text(stringResource(Res.string.sekme_kesif)) },
-                )
-                NavigationBarItem(
-                    selected = false,
-                    onClick = { gezinti.navigate(AramaRota(AramaModu.KAYIT)) },
-                    icon = { Text("➕") },
-                    label = { Text(stringResource(Res.string.sekme_kaydet)) },
-                )
-                NavigationBarItem(
-                    selected = hedef?.hierarchy?.any { it.hasRoute<ProfilRota>() } == true,
-                    onClick = { sekmeyeGit(ProfilRota) },
-                    icon = { Text("👤") },
-                    label = { Text(stringResource(Res.string.sekme_profil)) },
-                )
-            }
+            AltMenu(
+                seciliMi = { rota -> hedef?.hierarchy?.any { it.hasRoute(rota) } == true },
+                sekmeyeGit = ::sekmeyeGit,
+                kaydet = { gezinti.navigate(AramaRota(AramaModu.KAYIT)) },
+                okunmamis = okunmamis,
+            )
         },
     ) { bosluk ->
         NavHost(gezinti, startDestination = AnaRota, modifier = Modifier.padding(bosluk)) {
             composable<AnaRota> {
-                val bildirimSayaci = viewModel { OkunmamisBildirimViewModel(api) }
-                val okunmamis by bildirimSayaci.sayi.collectAsStateWithLifecycle()
-                // Akışa her dönüşte (ör. bildirimler ekranından) sayı tazelenir.
-                LaunchedEffect(Unit) { bildirimSayaci.yenile() }
                 AkisEkrani(
                     viewModel { AkisViewModel(api) },
                     ustCubuk = {
-                        Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-                            Text(stringResource(Res.string.akis_baslik), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.weight(1f))
-                            TextButton(onClick = { gezinti.navigate(BildirimlerRota) }) { Text(stringResource(Res.string.akis_bildirimler, okunmamis)) }
-                            TextButton(onClick = { gezinti.navigate(AramaRota()) }) { Text(stringResource(Res.string.akis_ara)) }
-                            TextButton(onClick = { gezinti.navigate(GelenIsteklerRota) }) { Text(stringResource(Res.string.akis_istekler)) }
-                            TextButton(onClick = { gezinti.navigate(DavetlerRota) }) { Text(stringResource(Res.string.akis_davetler)) }
+                        Row(
+                            Modifier.fillMaxWidth().padding(start = 20.dp, end = 12.dp, top = 16.dp, bottom = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            Text(stringResource(Res.string.akis_baslik), style = MaterialTheme.typography.headlineLarge, modifier = Modifier.weight(1f))
+                            UstIkon(Ikonlar.KisiEkle, stringResource(Res.string.akis_istekler)) { gezinti.navigate(GelenIsteklerRota) }
+                            UstIkon(Ikonlar.Ara, stringResource(Res.string.akis_ara)) { gezinti.navigate(AramaRota()) }
+                            UstIkon(Ikonlar.Ayarlar, stringResource(Res.string.akis_davetler)) { gezinti.navigate(DavetlerRota) }
                         }
                     },
                     oyunaGit = { gezinti.navigate(OyunRota(it)) },
@@ -589,5 +606,53 @@ private fun UygulamaGezintisi(api: ApiIstemcisi, profil: KullaniciOzeti, cikisYa
                 VitrinDuzenleEkrani(vitrinVm, oyunEkle = { gezinti.navigate(AramaRota(AramaModu.VITRIN)) }, geri = { gezinti.popBackStack() })
             }
         }
+    }
+}
+
+/** Tasarımdaki 44 dp'lik, yüzey renkli kare ikon düğmesi. */
+@Composable
+private fun UstIkon(ikon: ImageVector, aciklama: String, tikla: () -> Unit) {
+    Surface(onClick = tikla, shape = MaterialTheme.shapes.medium, color = Renk.Yuzey, modifier = Modifier.size(44.dp)) {
+        Box(contentAlignment = Alignment.Center) { Icon(ikon, contentDescription = aciklama, tint = Renk.Yazi, modifier = Modifier.size(22.dp)) }
+    }
+}
+
+/** Akış, Keşif, ortada lime Kaydet, okunmamış rozetli Bildirimler ve Profil (#59). */
+@Composable
+private fun AltMenu(seciliMi: (kotlin.reflect.KClass<*>) -> Boolean, sekmeyeGit: (Any) -> Unit, kaydet: () -> Unit, okunmamis: Int) {
+    Column(Modifier.background(Renk.AltMenu)) {
+        HorizontalDivider(color = Renk.Cizgi)
+        Row(
+            Modifier.fillMaxWidth().navigationBarsPadding().height(68.dp),
+            horizontalArrangement = Arrangement.SpaceAround,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            AltMenuOgesi(Ikonlar.Ev, stringResource(Res.string.sekme_ana), seciliMi(AnaRota::class)) { sekmeyeGit(AnaRota) }
+            AltMenuOgesi(Ikonlar.Ara, stringResource(Res.string.sekme_kesif), seciliMi(KesifRota::class)) { sekmeyeGit(KesifRota) }
+            Surface(onClick = kaydet, shape = MaterialTheme.shapes.large, color = Renk.Vurgu, modifier = Modifier.size(52.dp)) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(Ikonlar.Arti, contentDescription = stringResource(Res.string.sekme_kaydet), tint = Renk.Zemin, modifier = Modifier.size(26.dp))
+                }
+            }
+            AltMenuOgesi(Ikonlar.Zil, stringResource(Res.string.sekme_bildirimler), seciliMi(BildirimlerRota::class), rozet = okunmamis) { sekmeyeGit(BildirimlerRota) }
+            AltMenuOgesi(Ikonlar.Kisi, stringResource(Res.string.sekme_profil), seciliMi(ProfilRota::class)) { sekmeyeGit(ProfilRota) }
+        }
+    }
+}
+
+@Composable
+private fun AltMenuOgesi(ikon: ImageVector, etiket: String, secili: Boolean, rozet: Int = 0, tikla: () -> Unit) {
+    val renk = if (secili) Renk.Vurgu else Renk.Soluk
+    Column(
+        Modifier.widthIn(min = 64.dp).clip(MaterialTheme.shapes.medium).clickable(onClick = tikla).padding(vertical = 6.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        BadgedBox(badge = {
+            if (rozet > 0) Badge(containerColor = Renk.Hata, contentColor = Renk.Zemin) { Text(if (rozet > 99) "99+" else rozet.toString()) }
+        }) {
+            Icon(ikon, contentDescription = null, tint = renk, modifier = Modifier.size(24.dp))
+        }
+        Text(etiket, color = renk, style = MaterialTheme.typography.labelSmall, maxLines = 1)
     }
 }

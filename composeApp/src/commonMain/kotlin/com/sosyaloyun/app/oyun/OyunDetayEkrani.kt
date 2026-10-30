@@ -1,5 +1,6 @@
 package com.sosyaloyun.app.oyun
 
+import com.sosyaloyun.app.resources.begeni_sayisi_kisa
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -266,7 +267,7 @@ private fun Topluluk(durum: OyunDetayEkrani.Hazir, dahaFazla: () -> Unit, kullan
             }
             kayit.puan?.let { YildizPuani(it, sec = {}, boyut = 16) }
             kayit.inceleme?.let { Inceleme(it, kayit.spoiler) }
-            if (kayit.begeniSayisi > 0) Text("♥ ${kayit.begeniSayisi}", style = MaterialTheme.typography.labelSmall)
+            if (kayit.begeniSayisi > 0) Text("${stringResource(Res.string.begeni_sayisi_kisa, kayit.begeniSayisi)}", style = MaterialTheme.typography.labelSmall)
         }
     }
     if (durum.incelemeImleci != null) {

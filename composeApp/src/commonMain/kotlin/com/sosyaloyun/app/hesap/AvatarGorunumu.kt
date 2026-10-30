@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.sosyaloyun.app.tema.Renk
 import com.sosyaloyun.shared.Avatar
 
 val Avatar.emoji: String
@@ -36,7 +37,7 @@ fun AvatarGorunumu(avatar: Avatar, modifier: Modifier = Modifier, boyut: Dp = 48
         modifier = modifier
             .size(boyut)
             .background(
-                if (secili) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
+                if (secili) MaterialTheme.colorScheme.primaryContainer else Renk.avatarZemini(avatar.ordinal),
                 CircleShape,
             ),
         contentAlignment = Alignment.Center,

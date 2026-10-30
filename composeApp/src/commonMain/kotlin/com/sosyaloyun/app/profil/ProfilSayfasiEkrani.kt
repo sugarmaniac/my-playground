@@ -1,5 +1,7 @@
 package com.sosyaloyun.app.profil
 
+import androidx.compose.ui.text.font.FontWeight
+import com.sosyaloyun.app.tema.Renk
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -315,13 +317,16 @@ fun Kapak(oyun: OyunOzeti?, modifier: Modifier = Modifier) {
     Box(
         modifier
             .size(width = 72.dp, height = 96.dp)
-            .clip(RoundedCornerShape(6.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant),
-        contentAlignment = Alignment.Center,
+            .clip(RoundedCornerShape(8.dp))
+            .background(if (oyun == null) Renk.YuzeyYuksek else Renk.avatarZemini(oyun.ad.hashCode())),
+        contentAlignment = Alignment.BottomStart,
     ) {
         if (oyun != null) {
+            // Görsel yoksa tasarımdaki gibi renkli zemin üstünde büyük harfli ad.
+            if (oyun.kapakUrl == null) {
+                Text(oyun.ad.uppercase(), style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.ExtraBold, maxLines = 3, modifier = Modifier.padding(6.dp))
+            }
             AsyncImage(model = oyun.kapakUrl, contentDescription = oyun.ad, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
-            if (oyun.kapakUrl == null) Text(oyun.ad, style = MaterialTheme.typography.labelSmall, maxLines = 3, modifier = Modifier.padding(4.dp))
         }
     }
 }

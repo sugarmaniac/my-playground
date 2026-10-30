@@ -46,6 +46,9 @@ kotlin {
         }
     }
 
+    // Yalnızca ekran görüntüsü testleri için masaüstü (JVM) hedefi; ürün olarak dağıtılmaz (#59).
+    jvm("masaustu")
+
     android {
         namespace = "com.sosyaloyun.app.compose"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
@@ -71,6 +74,17 @@ kotlin {
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
+        }
+        val masaustuMain by getting {
+            dependencies {
+                implementation(libs.ktor.client.cio)
+                implementation(libs.multiplatform.settings.noArg)
+            }
+        }
+        val masaustuTest by getting {
+            dependencies {
+                implementation(compose.desktop.currentOs)
+            }
         }
         commonMain {
             kotlin.srcDir(derlemeAyarlariniUret)

@@ -137,12 +137,12 @@
     <string name="akis_istekler">İstekler</string>
     <string name="akis_davetler">Davetler</string>
     <string name="sekme_takip">Takip</string>
-    <string name="akis_yeni">%1$d yeni gönderi — göster</string>
+    <string name="akis_yeni">%1$d yeni gönderi</string>
     <string name="akis_bos">Akışın boş. Ne oynadıklarını görmek için birilerini takip et.</string>
     <string name="akis_gunluk_kaydi">%1$s bir oyun kaydetti</string>
     <string name="akis_oynamaya_basladi">%1$s oynamaya başladı</string>
     <string name="akis_arkadas_oldu">%1$s ve %2$s arkadaş oldu</string>
-    <string name="akis_istek_listeme_ekle">İstek listeme ekle</string>
+    <string name="akis_istek_listeme_ekle">+ İstek listesi</string>
     <string name="akis_istek_listemde">İstek listende</string>
     <string name="akis_spoiler">Spoiler içeriyor</string>
     <string name="akis_spoiler_goster">Göster</string>
@@ -243,7 +243,6 @@
     <string name="onboarding_bildirim_aciklama">Biri seni takip ettiğinde, arkadaşlık isteği gönderdiğinde ya da kabul ettiğinde, günlük kaydını beğendiğinde ve davet kodunla katıldığında haber veririz. Günde en fazla birkaç tane, gece hiç; her türü ayarlardan kapatabilirsin.</string>
     <string name="onboarding_bildirim_izin_ver">Bildirimlere izin ver</string>
     <string name="onboarding_bildirim_simdi_degil">Şimdi değil</string>
-    <string name="akis_bildirimler">🔔 %1$d</string>
     <string name="giris_hata_askida">Hesabın %1$s tarihine kadar askıya alındı.</string>
     <string name="giris_hata_banli">Hesabın topluluk kurallarına aykırılık nedeniyle kalıcı olarak kapatıldı.</string>
     <string name="bildirim_sikayet_sonuclandi">Şikayetin incelendi. Bildirdiğin için teşekkürler.</string>
@@ -383,4 +382,15 @@
     <string name="konsol_hata_gizli">Bu hesabın oyun geçmişi gizli. Konsolun gizlilik ayarından herkese açık yapıp tekrar dene.</string>
     <string name="konsol_hata_baska">Bu hesap başka bir kullanıcıya bağlı.</string>
     <string name="konsol_hata_kullanilamiyor">Servise şu an ulaşılamıyor. Biraz sonra tekrar dene.</string>
+    <string name="sekme_bildirimler">Bildirimler</string>
+    <string name="akis_eylem_gunluk">bir oyunu günlüğüne yazdı</string>
+    <string name="akis_eylem_basladi">oynamaya başladı</string>
+    <string name="akis_eylem_arkadas">ve %1$s artık arkadaş</string>
+    <string name="akis_sure_saat">%1$d saat</string>
+    <string name="zaman_simdi">şimdi</string>
+    <string name="zaman_dakika">%1$d dk</string>
+    <string name="zaman_saat">%1$d sa</string>
+    <string name="zaman_gun">%1$d g</string>
+    <string name="begen">Beğen</string>
+    <string name="begeni_sayisi_kisa">%1$d beğeni</string>
 </resources>

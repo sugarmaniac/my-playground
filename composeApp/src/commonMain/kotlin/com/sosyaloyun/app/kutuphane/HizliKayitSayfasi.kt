@@ -1,5 +1,6 @@
 package com.sosyaloyun.app.kutuphane
 
+import com.sosyaloyun.app.tema.Renk
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -80,7 +81,7 @@ fun HizliKayitSayfasi(oyunAdi: String, viewModel: HizliKayitViewModel) {
 /** Beş yıldız; her yıldızın sol yarısı yarım, sağ yarısı tam puan. */
 @Composable
 fun YildizPuani(yarimYildiz: Int?, sec: (Int) -> Unit, boyut: Int = 40) {
-    val renk = MaterialTheme.colorScheme.primary
+    val renk = Renk.Yildiz
     Row {
         for (yildiz in 1..5) {
             val dolu = (yarimYildiz ?: 0) - (yildiz - 1) * 2
