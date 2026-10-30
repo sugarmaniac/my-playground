@@ -32,6 +32,7 @@ sealed interface GunlukDetayEkrani {
         val yorumMetni: String = "",
         val yorumGonderiliyor: Boolean = false,
         val yorumHatasi: Boolean = false,
+        val yorumSilmeHatasi: Boolean = false,
     ) : GunlukDetayEkrani {
         val yorumGonderilebilir: Boolean
             get() = yorumlar != null && !yorumGonderiliyor && yorumMetni.isNotBlank() && yorumMetni.trim().length <= YorumKurallari.EN_FAZLA
@@ -109,19 +110,24 @@ class GunlukDetayViewModel(
         }
     }
 
-    /** Yorum hemen kaldırılır; sunucu reddederse geri eklenir. */
+    /** Yorum hemen kaldırılır; sunucu reddederse yalnızca o yorum zamanına göre yerine geri eklenir. */
     fun yorumSil(yorumId: String) {
         val durum = _ekran.value as? GunlukDetayEkrani.Hazir ?: return
-        val onceki = durum.yorumlar ?: return
-        if (onceki.none { it.id == yorumId && it.silebilirim }) return
-        _ekran.value = durum.copy(yorumlar = onceki.filterNot { it.id == yorumId })
+        val silinen = durum.yorumlar?.firstOrNull { it.id == yorumId && it.silebilirim } ?: return
+        _ekran.value = durum.copy(yorumlar = durum.yorumlar.filterNot { it.id == yorumId }, yorumSilmeHatasi = false)
         viewModelScope.launch {
             try {
                 api.yorumSil(yorumId)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                _ekran.update { if (it is GunlukDetayEkrani.Hazir) it.copy(yorumlar = onceki, yorumHatasi = true) else it }
+                _ekran.update {
+                    if (it is GunlukDetayEkrani.Hazir) {
+                        it.copy(yorumlar = (it.yorumlar.orEmpty() + silinen).sortedBy { y -> y.zaman }, yorumSilmeHatasi = true)
+                    } else {
+                        it
+                    }
+                }
             }
         }
     }

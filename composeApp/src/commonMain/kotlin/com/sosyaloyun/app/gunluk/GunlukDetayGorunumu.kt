@@ -6,6 +6,7 @@ import com.sosyaloyun.app.resources.yorumlar_baslik
 import com.sosyaloyun.app.resources.yorum_yok
 import com.sosyaloyun.app.resources.yorum_yaz
 import com.sosyaloyun.app.resources.yorum_sil
+import com.sosyaloyun.app.resources.yorum_silme_hata
 import com.sosyaloyun.app.resources.yorum_hata
 import com.sosyaloyun.app.resources.yorum_gonder
 import androidx.compose.material3.OutlinedTextField
@@ -181,6 +182,7 @@ private fun YorumYazmaAlani(durum: GunlukDetayEkrani.Hazir, viewModel: GunlukDet
             enabled = !durum.yorumGonderiliyor,
         )
         if (durum.yorumHatasi) Text(stringResource(Res.string.yorum_hata), color = MaterialTheme.colorScheme.error)
+        if (durum.yorumSilmeHatasi) Text(stringResource(Res.string.yorum_silme_hata), color = MaterialTheme.colorScheme.error)
         Button(onClick = viewModel::yorumGonder, enabled = durum.yorumGonderilebilir, modifier = Modifier.align(Alignment.End)) {
             Text(stringResource(Res.string.yorum_gonder))
         }

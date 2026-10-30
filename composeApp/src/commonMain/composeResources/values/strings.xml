@@ -281,4 +281,5 @@
     <string name="yorum_hata">Couldn't post your comment. Try again.</string>
     <string name="bildirim_yorum">%1$s commented on your diary entry.</string>
     <string name="tercih_yorum">Comments</string>
+    <string name="yorum_silme_hata">Couldn't delete the comment. Try again.</string>
 </resources>

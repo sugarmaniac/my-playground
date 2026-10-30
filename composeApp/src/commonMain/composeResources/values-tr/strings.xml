@@ -281,4 +281,5 @@
     <string name="yorum_hata">Yorum gönderilemedi. Tekrar dene.</string>
     <string name="bildirim_yorum">%1$s günlük kaydına yorum yaptı.</string>
     <string name="tercih_yorum">Yorumlar</string>
+    <string name="yorum_silme_hata">Yorum silinemedi. Tekrar dene.</string>
 </resources>
