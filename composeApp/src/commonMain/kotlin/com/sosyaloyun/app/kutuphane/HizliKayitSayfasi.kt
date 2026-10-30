@@ -14,18 +14,20 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import com.sosyaloyun.app.tema.Ikonlar
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.graphics.drawscope.clipRect
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sosyaloyun.app.resources.Res
 import com.sosyaloyun.app.resources.durum_beklemede
@@ -82,23 +84,30 @@ fun HizliKayitSayfasi(oyunAdi: String, viewModel: HizliKayitViewModel) {
 
 /** Beş yıldız; her yıldızın sol yarısı yarım, sağ yarısı tam puan. */
 @Composable
-fun YildizPuani(yarimYildiz: Int?, sec: (Int) -> Unit, boyut: Int = 40) {
-    val renk = Renk.Yildiz
+fun YildizPuani(yarimYildiz: Int?, sec: ((Int) -> Unit)? = null, boyut: Int = 40) {
+    // Yıldızlar vektör ikonla çizilir: yazı karakterlerinin (☆ ★) boş ve dolu halleri fontta farklı boyutta ve
+    // hizadaydı, yarım yıldız kayıyordu. Yarım yıldızda dolu ikon tam ortadan kırpılır.
+    // [sec] null ise yalnız gösterim: dokunuş yutulmaz, satırın kendi tıklaması çalışır.
     Row {
         for (yildiz in 1..5) {
             val dolu = (yarimYildiz ?: 0) - (yildiz - 1) * 2
             Box(Modifier.size(boyut.dp), contentAlignment = Alignment.Center) {
-                Text("☆", fontSize = (boyut * 0.8).sp, color = renk)
-                if (dolu >= 2) {
-                    Text("★", fontSize = (boyut * 0.8).sp, color = renk)
-                } else if (dolu == 1) {
-                    Box(Modifier.width((boyut / 2).dp).fillMaxHeight().align(Alignment.CenterStart).clipToBounds(), contentAlignment = Alignment.CenterStart) {
-                        Text("★", fontSize = (boyut * 0.8).sp, color = renk, modifier = Modifier.width(boyut.dp))
-                    }
+                val ikon = Modifier.fillMaxSize().padding((boyut * 0.06f).dp)
+                Icon(Ikonlar.YildizBos, contentDescription = null, tint = Renk.Yildiz, modifier = ikon)
+                when {
+                    dolu >= 2 -> Icon(Ikonlar.Yildiz, contentDescription = null, tint = Renk.Yildiz, modifier = ikon)
+                    dolu == 1 -> Icon(
+                        Ikonlar.Yildiz,
+                        contentDescription = null,
+                        tint = Renk.Yildiz,
+                        modifier = ikon.drawWithContent { clipRect(right = size.width / 2) { this@drawWithContent.drawContent() } },
+                    )
                 }
-                Row(Modifier.fillMaxWidth().fillMaxHeight()) {
-                    Box(Modifier.weight(1f).fillMaxHeight().clickable { sec(yildiz * 2 - 1) })
-                    Box(Modifier.weight(1f).fillMaxHeight().clickable { sec(yildiz * 2) })
+                if (sec != null) {
+                    Row(Modifier.fillMaxSize()) {
+                        Box(Modifier.weight(1f).fillMaxHeight().clickable { sec(yildiz * 2 - 1) })
+                        Box(Modifier.weight(1f).fillMaxHeight().clickable { sec(yildiz * 2) })
+                    }
                 }
             }
         }

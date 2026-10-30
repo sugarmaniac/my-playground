@@ -347,7 +347,7 @@ private fun GunlukSatiri(oge: GunlukOgesi, tikla: () -> Unit) {
             Text(oge.oyun.ad, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
             val tarih = kayit.bitis ?: kayit.baslama
             Text(listOfNotNull(tarih?.let(::tarihMetni), kayit.platform).joinToString(" · "), style = MaterialTheme.typography.labelMedium)
-            kayit.puan?.let { YildizPuani(it, sec = {}, boyut = 16) }
+            kayit.puan?.let { YildizPuani(it, boyut = 16) }
             kayit.inceleme?.let { Text(it, style = MaterialTheme.typography.bodySmall, maxLines = 3, overflow = TextOverflow.Ellipsis) }
         }
     }
@@ -364,7 +364,7 @@ private fun KutuphaneSatiri(oge: KutuphaneOgesi, tikla: () -> Unit) {
         Column(Modifier.weight(1f)) {
             Text(oge.oyun.ad, style = MaterialTheme.typography.titleSmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
             oge.giris.durum?.let { Text(durumAdi(it), style = MaterialTheme.typography.labelMedium) }
-            oge.giris.puan?.let { YildizPuani(it, sec = {}, boyut = 16) }
+            oge.giris.puan?.let { YildizPuani(it, boyut = 16) }
         }
     }
 }

@@ -322,7 +322,7 @@ private fun Topluluk(durum: OyunDetayEkrani.Hazir, dahaFazla: () -> Unit, kullan
                 Text(sahip.gorunenAd, style = MaterialTheme.typography.labelLarge)
                 if (arkadas) Text(stringResource(Res.string.oyun_arkadasin), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
             }
-            kayit.puan?.let { YildizPuani(it, sec = {}, boyut = 16) }
+            kayit.puan?.let { YildizPuani(it, boyut = 16) }
             kayit.inceleme?.let { Inceleme(it, kayit.spoiler) }
             if (kayit.begeniSayisi > 0) Text(stringResource(Res.string.begeni_sayisi_kisa, kayit.begeniSayisi), style = MaterialTheme.typography.labelSmall)
         }
@@ -368,7 +368,7 @@ private fun KutuphaneOzeti(giris: KutuphaneGirisi?, kaydet: () -> Unit) {
             Row(Modifier.padding(horizontal = 14.dp), verticalAlignment = Alignment.CenterVertically) {
                 Text(stringResource(Res.string.oyun_senin_puanin), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
                 if (giris?.puan != null) {
-                    YildizPuani(giris.puan, sec = {}, boyut = 18)
+                    YildizPuani(giris.puan, boyut = 18)
                     Spacer(Modifier.width(8.dp))
                 }
                 Text(stringResource(if (giris == null) Res.string.kayit_ac else Res.string.kayit_duzenle), style = MaterialTheme.typography.labelMedium, color = Renk.Soluk)
@@ -401,7 +401,7 @@ private fun Gunlugum(detay: OyunDetayi, gunlugeYaz: (String?) -> Unit) {
                     gorunurlukAdi(kayit.gorunurluk),
                 )
                 Text(ust.joinToString(" · "), style = MaterialTheme.typography.labelMedium)
-                kayit.puan?.let { YildizPuani(it, sec = {}, boyut = 16) }
+                kayit.puan?.let { YildizPuani(it, boyut = 16) }
                 kayit.inceleme?.let { Text(it, style = MaterialTheme.typography.bodySmall, maxLines = 3) }
             }
         }
