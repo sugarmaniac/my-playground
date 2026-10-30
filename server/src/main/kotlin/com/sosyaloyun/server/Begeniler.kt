@@ -1,5 +1,6 @@
 package com.sosyaloyun.server
 
+import com.sosyaloyun.shared.BildirimTuru
 import com.sosyaloyun.shared.GunlukKaydi
 import com.sosyaloyun.shared.KullaniciListesi
 import java.time.ZoneOffset
@@ -30,11 +31,13 @@ class Begeniler(private val veritabani: Database, private val saat: Clock) {
     suspend fun begen(kullaniciId: UUID, kayitId: UUID) {
         withContext(Dispatchers.IO) {
             transaction(veritabani) {
-                BegeniTablosu.insertIgnore {
+                val simdi = saat.now().toJavaInstant().atOffset(ZoneOffset.UTC)
+                val eklendi = BegeniTablosu.insertIgnore {
                     it[BegeniTablosu.kullaniciId] = kullaniciId
                     it[gunlukKaydiId] = kayitId
-                    it[olusturulma] = saat.now().toJavaInstant().atOffset(ZoneOffset.UTC)
-                }
+                    it[olusturulma] = simdi
+                }.insertedCount
+                if (eklendi == 1) with(BildirimOlaylari) { bildir(sahibi(kayitId), BildirimTuru.BEGENI, kullaniciId, simdi, kayitId) }
             }
         }
     }
@@ -42,7 +45,9 @@ class Begeniler(private val veritabani: Database, private val saat: Clock) {
     suspend fun geriAl(kullaniciId: UUID, kayitId: UUID) {
         withContext(Dispatchers.IO) {
             transaction(veritabani) {
-                BegeniTablosu.deleteWhere { (BegeniTablosu.kullaniciId eq kullaniciId) and (gunlukKaydiId eq kayitId) }
+                if (BegeniTablosu.deleteWhere { (BegeniTablosu.kullaniciId eq kullaniciId) and (gunlukKaydiId eq kayitId) } > 0) {
+                    with(BildirimOlaylari) { bildirimiSil(sahibi(kayitId), BildirimTuru.BEGENI, kullaniciId, kayitId) }
+                }
             }
         }
     }
@@ -86,6 +91,9 @@ class Begeniler(private val veritabani: Database, private val saat: Clock) {
     }
 
     suspend fun ekle(izleyen: UUID, kayit: GunlukKaydi): GunlukKaydi = ekle(izleyen, listOf(kayit)).single()
+
+    private fun sahibi(kayitId: UUID): UUID =
+        GunlukKaydiTablosu.select(GunlukKaydiTablosu.kullaniciId).where { GunlukKaydiTablosu.id eq kayitId }.single()[GunlukKaydiTablosu.kullaniciId]
 
     private companion object {
         const val SAYFA = 30

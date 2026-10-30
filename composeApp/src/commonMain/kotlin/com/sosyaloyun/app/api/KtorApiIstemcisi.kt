@@ -25,6 +25,9 @@ import com.sosyaloyun.shared.OrtakOyunlar
 import com.sosyaloyun.shared.OyunAramaYaniti
 import com.sosyaloyun.shared.IncelemeListesi
 import com.sosyaloyun.shared.OyunDetayi
+import com.sosyaloyun.shared.OkunmamisBildirimSayisi
+import com.sosyaloyun.shared.BildirimTercihleri
+import com.sosyaloyun.shared.BildirimListesi
 import com.sosyaloyun.shared.Tur
 import com.sosyaloyun.shared.Kesif
 import com.sosyaloyun.shared.TopluTakipIstegi
@@ -172,6 +175,23 @@ class KtorApiIstemcisi(
     override suspend fun oyunDetayi(oyunId: String): OyunDetayi = istek { http.get("${ApiYollari.OYUNLAR}/$oyunId").body() }
 
     override suspend fun kesif(): Kesif = istek { http.get(ApiYollari.KESIF).body() }
+
+    override suspend fun bildirimler(): BildirimListesi = istek { http.get(ApiYollari.BILDIRIMLER).body() }
+
+    override suspend fun bildirimleriOkunduSay() {
+        istek { http.post(ApiYollari.BILDIRIMLER_OKUNDU) }
+    }
+
+    override suspend fun okunmamisBildirimSayisi(): Int = istek { http.get(ApiYollari.OKUNMAMIS_BILDIRIM_SAYISI).body<OkunmamisBildirimSayisi>().sayi }
+
+    override suspend fun bildirimTercihleri(): BildirimTercihleri = istek { http.get(ApiYollari.BILDIRIM_TERCIHLERI).body() }
+
+    override suspend fun bildirimTercihleriniKaydet(tercihler: BildirimTercihleri): BildirimTercihleri = istek {
+        http.put(ApiYollari.BILDIRIM_TERCIHLERI) {
+            contentType(ContentType.Application.Json)
+            setBody(tercihler)
+        }.body()
+    }
 
     override suspend fun oyunListesi(tur: Tur?, platform: String?, imlec: String?): OyunAramaYaniti = istek {
         http.get(ApiYollari.OYUN_LISTESI) {

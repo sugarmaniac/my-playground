@@ -25,6 +25,10 @@ class Bagimliliklar(
     val steamKaynagi: SteamKaynagi? = null,
     /** Günde bir bağlı Steam hesaplarının süreleri güncellenir; testlerde kapalı. */
     val steamZamanlayici: Boolean = false,
+    /** Push bildirimleri (FCM); null ise bildirimler yalnızca uygulama içinde kalır. */
+    val pushGonderici: PushGonderici? = null,
+    /** Bekleyen push'lar arka planda düzenli gönderilir; testlerde kapalı, test dağıtıcıyı kendisi çağırır. */
+    val pushZamanlayici: Boolean = false,
 ) {
     companion object {
         /** PostgreSQL bağlantısı standart `PG*` ortam değişkenlerinden okunur (Railway ve VDS aynı imajı kullanır, ADR 0009). */
@@ -46,6 +50,8 @@ class Bagimliliklar(
                 igdbWebhookSirri = System.getenv("IGDB_WEBHOOK_SIRRI")?.takeIf { it.isNotBlank() },
                 steamKaynagi = SteamWebApiKaynagi.ortamdan(),
                 steamZamanlayici = true,
+                pushGonderici = FcmPushGonderici.ortamdan(),
+                pushZamanlayici = true,
                 katalogZamanlayici = true,
             )
         }

@@ -62,6 +62,9 @@ sealed interface OnboardingAdimi {
     ) : OnboardingAdimi {
         val takipEdilmeyenler: List<BulunanKisi> get() = kisiler.filterNot { it.takipEdiyorum }
     }
+
+    /** Son adım: bildirim izni, nedeni açıklandıktan sonra istenir; reddedilse de onboarding biter. */
+    data class BildirimIzni(val bitiriliyor: Boolean = false, val hata: Boolean = false) : OnboardingAdimi
 }
 
 class OnboardingViewModel(private val api: ApiIstemcisi, private val hesabiYenile: () -> Unit) : ViewModel() {
@@ -204,9 +207,14 @@ class OnboardingViewModel(private val api: ApiIstemcisi, private val hesabiYenil
         }
     }
 
-    /** Onboarding'i bitirir; arkadaş bulma adımı atlanabilir. */
+    /** Arkadaş bulma adımı atlanabilir; ardından bildirim izni adımı gelir. */
+    fun arkadaslariBitir() {
+        if (_ekran.value is OnboardingAdimi.Arkadaslar) _ekran.value = OnboardingAdimi.BildirimIzni()
+    }
+
+    /** İzin verilsin ya da verilmesin onboarding biter. */
     fun bitir() {
-        val adim = _ekran.value as? OnboardingAdimi.Arkadaslar ?: return
+        val adim = _ekran.value as? OnboardingAdimi.BildirimIzni ?: return
         if (adim.bitiriliyor) return
         _ekran.value = adim.copy(bitiriliyor = true, hata = false)
         viewModelScope.launch {
@@ -216,7 +224,7 @@ class OnboardingViewModel(private val api: ApiIstemcisi, private val hesabiYenil
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                _ekran.update { if (it is OnboardingAdimi.Arkadaslar) it.copy(bitiriliyor = false, hata = true) else it }
+                _ekran.update { if (it is OnboardingAdimi.BildirimIzni) it.copy(bitiriliyor = false, hata = true) else it }
             }
         }
     }

@@ -4,6 +4,7 @@
     <uses-permission android:name="android.permission.INTERNET"/>
     <!-- Arkadaş bulma: numaralar cihazda hash'lenir, açık numara gönderilmez (ADR 0003). -->
     <uses-permission android:name="android.permission.READ_CONTACTS"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
 
     <application
         android:allowBackup="true"

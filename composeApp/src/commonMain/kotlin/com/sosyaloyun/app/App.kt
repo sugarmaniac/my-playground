@@ -37,6 +37,11 @@ import com.sosyaloyun.app.akis.AkisEkrani
 import com.sosyaloyun.app.akis.AkisViewModel
 import com.sosyaloyun.app.api.ApiIstemcisi
 import com.sosyaloyun.app.api.EngelListesiTuru
+import com.sosyaloyun.app.bildirim.BildirimTercihleriViewModel
+import com.sosyaloyun.app.bildirim.BildirimlerGorunumu
+import com.sosyaloyun.app.bildirim.BildirimlerViewModel
+import com.sosyaloyun.app.bildirim.OkunmamisBildirimViewModel
+import com.sosyaloyun.app.resources.akis_bildirimler
 import com.sosyaloyun.app.kesif.KesifEkrani
 import com.sosyaloyun.app.kesif.KesifViewModel
 import com.sosyaloyun.app.kesif.OyunListesiGorunumu
@@ -179,6 +184,9 @@ private data class TakipListesiRota(val kullaniciAdi: String, val tur: KisiListe
 private data class EngelListesiRota(val tur: EngelListesiTuru)
 
 @Serializable
+private data object BildirimlerRota
+
+@Serializable
 private data object GelenIsteklerRota
 
 @Serializable
@@ -241,11 +249,16 @@ private fun UygulamaGezintisi(api: ApiIstemcisi, profil: KullaniciOzeti, cikisYa
     ) { bosluk ->
         NavHost(gezinti, startDestination = AnaRota, modifier = Modifier.padding(bosluk)) {
             composable<AnaRota> {
+                val bildirimSayaci = viewModel { OkunmamisBildirimViewModel(api) }
+                val okunmamis by bildirimSayaci.sayi.collectAsStateWithLifecycle()
+                // Akışa her dönüşte (ör. bildirimler ekranından) sayı tazelenir.
+                LaunchedEffect(Unit) { bildirimSayaci.yenile() }
                 AkisEkrani(
                     viewModel { AkisViewModel(api) },
                     ustCubuk = {
                         Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                             Text(stringResource(Res.string.akis_baslik), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.weight(1f))
+                            TextButton(onClick = { gezinti.navigate(BildirimlerRota) }) { Text(stringResource(Res.string.akis_bildirimler, okunmamis)) }
                             TextButton(onClick = { gezinti.navigate(AramaRota()) }) { Text(stringResource(Res.string.akis_ara)) }
                             TextButton(onClick = { gezinti.navigate(GelenIsteklerRota) }) { Text(stringResource(Res.string.akis_istekler)) }
                             TextButton(onClick = { gezinti.navigate(DavetlerRota) }) { Text(stringResource(Res.string.akis_davetler)) }
@@ -288,6 +301,7 @@ private fun UygulamaGezintisi(api: ApiIstemcisi, profil: KullaniciOzeti, cikisYa
                     davetKodlari = viewModel { DavetKodlarimViewModel(api) },
                     geri = { gezinti.popBackStack() },
                     steamAyari = viewModel { SteamAyariViewModel(api) },
+                    bildirimTercihleri = viewModel { BildirimTercihleriViewModel(api) },
                     engelListesi = { gezinti.navigate(EngelListesiRota(it)) },
                     cikisYap = cikisYap,
                 )
@@ -349,6 +363,14 @@ private fun UygulamaGezintisi(api: ApiIstemcisi, profil: KullaniciOzeti, cikisYa
                     viewModel(key = "kisiler-${rota.kullaniciAdi}-${rota.tur}") { TakipListesiViewModel(api, rota.kullaniciAdi, rota.tur) },
                     tur = rota.tur,
                     kullaniciyaGit = { gezinti.navigate(KullaniciRota(it)) },
+                    geri = { gezinti.popBackStack() },
+                )
+            }
+            composable<BildirimlerRota> {
+                BildirimlerGorunumu(
+                    viewModel { BildirimlerViewModel(api) },
+                    kullaniciyaGit = { gezinti.navigate(KullaniciRota(it)) },
+                    gunlukKaydinaGit = { gezinti.navigate(GunlukDetayRota(it)) },
                     geri = { gezinti.popBackStack() },
                 )
             }

@@ -8,6 +8,9 @@ import com.sosyaloyun.shared.AkisOgesi
 import com.sosyaloyun.shared.AkisSayfasi
 import com.sosyaloyun.shared.AkisSekmesi
 import com.sosyaloyun.shared.Avatar
+import com.sosyaloyun.shared.BildirimListesi
+import com.sosyaloyun.shared.BildirimTercihleri
+import com.sosyaloyun.shared.BildirimTuru
 import com.sosyaloyun.shared.BulunanKisi
 import com.sosyaloyun.shared.BenYaniti
 import com.sosyaloyun.shared.DavetKodu
@@ -125,6 +128,38 @@ class SahteApiIstemcisi : ApiIstemcisi {
     override suspend fun oyunDetayi(oyunId: String): OyunDetayi {
         hata?.let { throw it }
         return oyunDetaylari[oyunId] ?: throw ApiHatasiIstisnasi(HataKodu.OYUN_BULUNAMADI)
+    }
+
+    var bildirimListesi = BildirimListesi(emptyList(), 0)
+    var bildirimTercihleri = BildirimTercihleri(BildirimTuru.entries.associateWith { true })
+    var bildirimHatasi: Exception? = null
+    val bildirimIstekleri = mutableListOf<String>()
+
+    override suspend fun bildirimler(): BildirimListesi {
+        bildirimHatasi?.let { throw it }
+        return bildirimListesi
+    }
+
+    override suspend fun bildirimleriOkunduSay() {
+        bildirimHatasi?.let { throw it }
+        bildirimIstekleri += "okundu"
+    }
+
+    override suspend fun okunmamisBildirimSayisi(): Int {
+        bildirimHatasi?.let { throw it }
+        return bildirimListesi.okunmamisSayisi
+    }
+
+    override suspend fun bildirimTercihleri(): BildirimTercihleri {
+        bildirimHatasi?.let { throw it }
+        return bildirimTercihleri
+    }
+
+    override suspend fun bildirimTercihleriniKaydet(tercihler: BildirimTercihleri): BildirimTercihleri {
+        bildirimHatasi?.let { throw it }
+        bildirimIstekleri += "tercih:${tercihler.push}"
+        bildirimTercihleri = BildirimTercihleri(bildirimTercihleri.push + tercihler.push)
+        return bildirimTercihleri
     }
 
     var kesifYaniti: Kesif? = null

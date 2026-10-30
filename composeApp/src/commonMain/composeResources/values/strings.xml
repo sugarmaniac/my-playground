@@ -225,4 +225,23 @@
     <string name="kesif_trend">Trending</string>
     <string name="kesif_turler">Genres</string>
     <string name="kesif_platformlar">Platforms</string>
+    <string name="bildirimler">Notifications</string>
+    <string name="bildirimler_bos">No notifications yet.</string>
+    <string name="bildirim_yeni_takipci">%1$s started following you.</string>
+    <string name="bildirim_arkadaslik_istegi">%1$s sent you a friend request.</string>
+    <string name="bildirim_arkadaslik_kabulu">%1$s accepted your friend request.</string>
+    <string name="bildirim_begeni">%1$s liked your journal entry.</string>
+    <string name="bildirim_begeni_grup">%1$s and %2$d others liked your journal entry.</string>
+    <string name="bildirim_davet">%1$s joined with your invite code.</string>
+    <string name="bildirim_tercihleri">Push notifications</string>
+    <string name="tercih_yeni_takipci">New followers</string>
+    <string name="tercih_arkadaslik_istegi">Friend requests</string>
+    <string name="tercih_arkadaslik_kabulu">Accepted friend requests</string>
+    <string name="tercih_begeni">Likes</string>
+    <string name="tercih_davet">Invite code used</string>
+    <string name="onboarding_bildirim_baslik">Stay in the loop</string>
+    <string name="onboarding_bildirim_aciklama">We notify you when someone follows you, sends or accepts a friend request, likes your journal entry or joins with your invite code. At most a few per day, never at night; you can turn each type off in settings.</string>
+    <string name="onboarding_bildirim_izin_ver">Allow notifications</string>
+    <string name="onboarding_bildirim_simdi_degil">Not now</string>
+    <string name="akis_bildirimler">🔔 %1$d</string>
 </resources>

@@ -5,6 +5,7 @@ import com.sosyaloyun.server.DavetKodlari
 import com.sosyaloyun.server.Katalog
 import com.sosyaloyun.server.KatalogIceAktarici
 import com.sosyaloyun.server.Kutuphane
+import com.sosyaloyun.server.PushDagitici
 import com.sosyaloyun.server.Steam
 import com.sosyaloyun.server.Bagimliliklar
 import com.sosyaloyun.server.modul
@@ -44,6 +45,9 @@ class ApiTestOrtami(
     val steamKaynagi: SahteSteamKaynagi,
     /** Steam sürelerinin günlük güncellemesi gerçekte zamanlanmış çalışır; testte [Steam.hepsiniGuncelle] elle çağrılır. */
     val steam: Steam,
+    val pushGonderici: SahtePushGonderici,
+    /** Push'lar gerçekte arka planda gönderilir; testte [PushDagitici.bekleyenleriGonder] elle çağrılır. */
+    val pushDagitici: PushDagitici,
 ) {
     private var kurucuKoduSayaci = 0
 
@@ -109,6 +113,7 @@ fun apiTesti(blok: suspend ApiTestOrtami.() -> Unit) = testApplication {
     val kimlikDogrulayici = SahteKimlikDogrulayici()
     val katalogKaynagi = SahteKatalogKaynagi()
     val steamKaynagi = SahteSteamKaynagi()
+    val pushGonderici = SahtePushGonderici()
     val bagimliliklar = Bagimliliklar(
         veriKaynagi = TestVeritabani.kaynak,
         saat = saat,
@@ -129,5 +134,7 @@ fun apiTesti(blok: suspend ApiTestOrtami.() -> Unit) = testApplication {
         katalogIceAktarici = KatalogIceAktarici(katalogKaynagi, Katalog(veritabani)),
         steamKaynagi = steamKaynagi,
         steam = Steam(veritabani, Katalog(veritabani), Kutuphane(veritabani, saat), steamKaynagi, saat),
+        pushGonderici = pushGonderici,
+        pushDagitici = PushDagitici(veritabani, Ayarlar(veritabani), pushGonderici, saat),
     ).blok()
 }
