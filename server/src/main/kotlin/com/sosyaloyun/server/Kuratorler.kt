@@ -85,12 +85,15 @@ class Kuratorler(
         return satirlar.map { (id, ad, zamanVeKisi) -> BekleyenKuratorBasvurusu(id, ad, zamanVeKisi.first, sartlar(zamanVeKisi.second)) }
     }
 
-    /** Bekleyen başvuruya karar verir; onayda kullanıcı küratör olur. Şartlar yeniden denetlenmez: ekip panelde güncel şartları görerek karar verir. Başvuru yoksa false. */
-    suspend fun karar(basvuruId: UUID, onay: Boolean): Boolean = withContext(Dispatchers.IO) {
+    /**
+     * Bekleyen başvuruya karar verir; onayda kullanıcı küratör olur. Şartlar yeniden denetlenmez: ekip panelde güncel
+     * şartları görerek karar verir. Başvuru yoksa null; varsa başvuranın kullanıcı adı (denetim kaydı için).
+     */
+    suspend fun karar(basvuruId: UUID, onay: Boolean): String? = withContext(Dispatchers.IO) {
         transaction(veritabani) {
             val satir = KuratorBasvurusuTablosu.selectAll()
                 .where { (KuratorBasvurusuTablosu.id eq basvuruId) and (KuratorBasvurusuTablosu.durum eq BEKLIYOR) }
-                .singleOrNull() ?: return@transaction false
+                .singleOrNull() ?: return@transaction null
             val kullanici = satir[KuratorBasvurusuTablosu.kullaniciId]
             val simdi = simdi()
             KuratorBasvurusuTablosu.update({ KuratorBasvurusuTablosu.id eq basvuruId }) {
@@ -99,7 +102,7 @@ class Kuratorler(
             }
             if (onay) KullaniciTablosu.update({ KullaniciTablosu.id eq kullanici }) { it[kurator] = true }
             with(BildirimOlaylari) { kalipMesaj(kullanici, if (onay) BildirimTuru.KURATOR_ONAYLANDI else BildirimTuru.KURATOR_REDDEDILDI, simdi) }
-            true
+            KullaniciTablosu.select(KullaniciTablosu.kullaniciAdi).where { KullaniciTablosu.id eq kullanici }.single()[KullaniciTablosu.kullaniciAdi].orEmpty()
         }
     }
 

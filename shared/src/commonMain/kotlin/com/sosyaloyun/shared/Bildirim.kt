@@ -31,6 +31,12 @@ enum class BildirimTuru(
     /** Kalıp mesaj: küratör başvurusu sonuçlandı (#50). */
     @SerialName("kurator_onaylandi") KURATOR_ONAYLANDI(Faz.FAZ_2),
     @SerialName("kurator_reddedildi") KURATOR_REDDEDILDI(Faz.FAZ_2),
+
+    /** Kalıp mesajlar (#53): uyarı, yorum yasağı ve itiraz sonucu. */
+    @SerialName("uyari") UYARI(Faz.FAZ_2),
+    @SerialName("yorum_yasagi") YORUM_YASAGI(Faz.FAZ_2),
+    @SerialName("itiraz_kabul_edildi") ITIRAZ_KABUL_EDILDI(Faz.FAZ_2),
+    @SerialName("itiraz_reddedildi") ITIRAZ_REDDEDILDI(Faz.FAZ_2),
 }
 
 /**

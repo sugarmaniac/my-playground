@@ -5,17 +5,36 @@ import androidx.lifecycle.viewModelScope
 import com.sosyaloyun.app.api.ApiHatasiIstisnasi
 import com.sosyaloyun.app.api.ApiIstemcisi
 import com.sosyaloyun.shared.HataKodu
+import com.sosyaloyun.shared.ItirazKurallari
 import com.sosyaloyun.shared.KimlikSaglayici
 import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 enum class GirisHatasi { SAGLAYICI, REDDEDILDI, BAGLANTI, HESAP_ASKIDA, HESAP_BANLI }
 
+/** Giriş ekranından itirazın durumu (Faz 2, #53). */
+enum class GirisItirazi { YAZILIYOR, GONDERILIYOR, GONDERILDI, HATA }
+
 sealed interface OturumEkrani {
-    /** [askiBitisi]: askıdaki hesapta askının bittiği gün (YYYY-AA-GG). */
-    data class Giris(val yukleniyor: Boolean = false, val hata: GirisHatasi? = null, val askiBitisi: String? = null) : OturumEkrani
+    /**
+     * [askiBitisi]: askıdaki hesapta askının bittiği gün (YYYY-AA-GG). [itirazAnahtari]: Faz 2'de askıdaki ya da banlı
+     * hesabın reddedilen girişinden; varsa giriş ekranında itiraz alanı gösterilir.
+     */
+    data class Giris(
+        val yukleniyor: Boolean = false,
+        val hata: GirisHatasi? = null,
+        val askiBitisi: String? = null,
+        val itirazAnahtari: String? = null,
+        val itirazMetni: String = "",
+        val itiraz: GirisItirazi = GirisItirazi.YAZILIYOR,
+    ) : OturumEkrani {
+        val itirazGonderilebilir: Boolean
+            get() = itirazAnahtari != null && itiraz != GirisItirazi.GONDERILIYOR && itiraz != GirisItirazi.GONDERILDI &&
+                itirazMetni.isNotBlank() && itirazMetni.trim().length <= ItirazKurallari.EN_FAZLA
+    }
     data object Acik : OturumEkrani
 }
 
@@ -38,14 +57,35 @@ class OturumViewModel(private val api: ApiIstemcisi, private val depo: OturumDep
                     throw e
                 } catch (e: ApiHatasiIstisnasi) {
                     when (e.kod) {
-                        HataKodu.HESAP_ASKIDA -> OturumEkrani.Giris(hata = GirisHatasi.HESAP_ASKIDA, askiBitisi = e.ayrinti?.take(10))
-                        HataKodu.HESAP_BANLI -> OturumEkrani.Giris(hata = GirisHatasi.HESAP_BANLI)
+                        HataKodu.HESAP_ASKIDA -> OturumEkrani.Giris(hata = GirisHatasi.HESAP_ASKIDA, askiBitisi = e.ayrinti?.take(10), itirazAnahtari = e.itirazAnahtari)
+                        HataKodu.HESAP_BANLI -> OturumEkrani.Giris(hata = GirisHatasi.HESAP_BANLI, itirazAnahtari = e.itirazAnahtari)
                         else -> OturumEkrani.Giris(hata = GirisHatasi.REDDEDILDI)
                     }
                 } catch (e: Exception) {
                     OturumEkrani.Giris(hata = GirisHatasi.BAGLANTI)
                 }
             }
+        }
+    }
+
+    fun itirazMetniDegisti(metin: String) {
+        _ekran.update { if (it is OturumEkrani.Giris && it.itiraz != GirisItirazi.GONDERILDI) it.copy(itirazMetni = metin, itiraz = GirisItirazi.YAZILIYOR) else it }
+    }
+
+    fun itirazGonder() {
+        val ekran = _ekran.value as? OturumEkrani.Giris ?: return
+        if (!ekran.itirazGonderilebilir) return
+        _ekran.value = ekran.copy(itiraz = GirisItirazi.GONDERILIYOR)
+        viewModelScope.launch {
+            val sonuc = try {
+                api.girisItirazi(ekran.itirazAnahtari!!, ekran.itirazMetni.trim())
+                GirisItirazi.GONDERILDI
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                GirisItirazi.HATA
+            }
+            _ekran.update { if (it is OturumEkrani.Giris) it.copy(itiraz = sonuc) else it }
         }
     }
 

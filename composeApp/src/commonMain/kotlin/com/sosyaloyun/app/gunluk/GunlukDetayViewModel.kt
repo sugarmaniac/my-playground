@@ -32,6 +32,8 @@ sealed interface GunlukDetayEkrani {
         val yorumMetni: String = "",
         val yorumGonderiliyor: Boolean = false,
         val yorumHatasi: Boolean = false,
+        /** Yorum yasağı sürüyor (#53); genel hatadan ayrı bir mesajla gösterilir. */
+        val yorumYasagi: Boolean = false,
         val yorumSilmeHatasi: Boolean = false,
     ) : GunlukDetayEkrani {
         val yorumGonderilebilir: Boolean
@@ -92,7 +94,7 @@ class GunlukDetayViewModel(
     }
 
     fun yorumMetniDegisti(metin: String) =
-        _ekran.update { if (it is GunlukDetayEkrani.Hazir) it.copy(yorumMetni = metin, yorumHatasi = false) else it }
+        _ekran.update { if (it is GunlukDetayEkrani.Hazir) it.copy(yorumMetni = metin, yorumHatasi = false, yorumYasagi = false) else it }
 
     fun yorumGonder() {
         val durum = _ekran.value as? GunlukDetayEkrani.Hazir ?: return
@@ -105,7 +107,8 @@ class GunlukDetayViewModel(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                _ekran.update { if (it is GunlukDetayEkrani.Hazir) it.copy(yorumGonderiliyor = false, yorumHatasi = true) else it }
+                val yasak = e is ApiHatasiIstisnasi && e.kod == HataKodu.YORUM_YASAGI
+                _ekran.update { if (it is GunlukDetayEkrani.Hazir) it.copy(yorumGonderiliyor = false, yorumHatasi = !yasak, yorumYasagi = yasak) else it }
             }
         }
     }

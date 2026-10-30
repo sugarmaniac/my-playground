@@ -4,6 +4,7 @@ import com.sosyaloyun.shared.KuratorDurumu
 import com.sosyaloyun.shared.ListeSayfasi
 import com.sosyaloyun.shared.PuanGecmisi
 import com.sosyaloyun.shared.HaftalikPuanDegisimi
+import com.sosyaloyun.shared.ItirazDurumu
 import com.sosyaloyun.shared.ListeIstegi
 import com.sosyaloyun.shared.Liste
 import com.sosyaloyun.shared.YorumListesi
@@ -217,6 +218,14 @@ interface ApiIstemcisi {
     /** Faz 2 (#51): Keşif'teki haftalık puan değişimi kartı. */
     suspend fun puanDegisimi(): HaftalikPuanDegisimi
 
+    /** Faz 2 (#53): son yaptırım ve itirazı; itiraz bir kez yapılır. */
+    suspend fun itirazDurumu(): ItirazDurumu
+
+    suspend fun itirazEt(metin: String): ItirazDurumu
+
+    /** Askıdaki ya da banlı hesabın giriş ekranından itirazı; [anahtar] reddedilen girişin hatasından gelir. */
+    suspend fun girisItirazi(anahtar: String, metin: String)
+
     suspend fun kullaniciAra(sorgu: String, imlec: String? = null): KullaniciListesi
 
     suspend fun vitrinKaydet(oyunIdleri: List<String>): ProfilSayfasi
@@ -228,4 +237,4 @@ enum class KisiListesiTuru { TAKIPCILER, TAKIP_EDILENLER, ARKADASLAR }
 enum class EngelListesiTuru { ENGELLENENLER, SESSIZE_ALINANLAR }
 
 /** Backend'in `ApiHatasi` gövdesiyle reddettiği istek. Bağlantı hataları bu değil, başka istisnalardır. */
-class ApiHatasiIstisnasi(val kod: HataKodu, val ayrinti: String? = null) : Exception(kod.name)
+class ApiHatasiIstisnasi(val kod: HataKodu, val ayrinti: String? = null, val itirazAnahtari: String? = null) : Exception(kod.name)

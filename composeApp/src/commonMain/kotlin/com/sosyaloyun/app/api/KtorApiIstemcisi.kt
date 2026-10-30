@@ -5,6 +5,9 @@ import com.sosyaloyun.shared.KuratorDurumu
 import com.sosyaloyun.shared.ListeSayfasi
 import com.sosyaloyun.shared.PuanGecmisi
 import com.sosyaloyun.shared.HaftalikPuanDegisimi
+import com.sosyaloyun.shared.ItirazDurumu
+import com.sosyaloyun.shared.ItirazIstegi
+import com.sosyaloyun.shared.GirisItirazIstegi
 import com.sosyaloyun.shared.ListeIstegi
 import com.sosyaloyun.shared.Liste
 import com.sosyaloyun.shared.GizlilikIstegi
@@ -480,6 +483,24 @@ class KtorApiIstemcisi(
 
     override suspend fun puanDegisimi(): HaftalikPuanDegisimi = istek { http.get(ApiYollari.PUAN_DEGISIMI).body() }
 
+    override suspend fun itirazDurumu(): ItirazDurumu = istek { http.get(ApiYollari.ITIRAZ).body() }
+
+    override suspend fun itirazEt(metin: String): ItirazDurumu = istek {
+        http.post(ApiYollari.ITIRAZ) {
+            contentType(ContentType.Application.Json)
+            setBody(ItirazIstegi(metin))
+        }.body()
+    }
+
+    override suspend fun girisItirazi(anahtar: String, metin: String) {
+        istek {
+            http.post(ApiYollari.ITIRAZ_GIRIS) {
+                contentType(ContentType.Application.Json)
+                setBody(GirisItirazIstegi(anahtar, metin))
+            }
+        }
+    }
+
     private fun AkisSekmesi.parametre() = if (this == AkisSekmesi.ARKADASLAR) "arkadaslar" else "takip"
 
     /** Backend'in `ApiHatasi` gövdesiyle döndüğü 4xx yanıtları [ApiHatasiIstisnasi]'na çevirir. */
@@ -487,7 +508,7 @@ class KtorApiIstemcisi(
         blok()
     } catch (e: ClientRequestException) {
         val hata = runCatching { ApiJson.decodeFromString(ApiHatasi.serializer(), e.response.bodyAsText()) }.getOrNull()
-        throw if (hata != null) ApiHatasiIstisnasi(hata.kod, hata.ayrinti) else e
+        throw if (hata != null) ApiHatasiIstisnasi(hata.kod, hata.ayrinti, hata.itirazAnahtari) else e
     }
 }
 

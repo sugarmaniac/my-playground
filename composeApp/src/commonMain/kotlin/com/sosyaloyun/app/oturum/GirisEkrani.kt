@@ -13,7 +13,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.sosyaloyun.app.itiraz.ItirazFormu
 import com.sosyaloyun.app.resources.Res
+import com.sosyaloyun.app.resources.itiraz_bekliyor
 import com.sosyaloyun.app.resources.app_name
 import com.sosyaloyun.app.resources.giris_apple
 import com.sosyaloyun.app.resources.giris_google
@@ -31,6 +33,8 @@ fun GirisEkraniGorunumu(
     ekran: OturumEkrani.Giris,
     saglayicilar: List<KimlikSaglayici>,
     girisYap: (KimlikSaglayici) -> Unit,
+    itirazMetniDegisti: (String) -> Unit = {},
+    itirazGonder: () -> Unit = {},
 ) {
     Column(
         modifier = Modifier.fillMaxSize().padding(24.dp),
@@ -66,6 +70,13 @@ fun GirisEkraniGorunumu(
                 },
                 color = MaterialTheme.colorScheme.error,
             )
+        }
+        if (ekran.itirazAnahtari != null) {
+            if (ekran.itiraz == GirisItirazi.GONDERILDI) {
+                Text(stringResource(Res.string.itiraz_bekliyor))
+            } else {
+                ItirazFormu(ekran.itirazMetni, ekran.itiraz == GirisItirazi.HATA, ekran.itirazGonderilebilir, itirazMetniDegisti, itirazGonder)
+            }
         }
     }
 }

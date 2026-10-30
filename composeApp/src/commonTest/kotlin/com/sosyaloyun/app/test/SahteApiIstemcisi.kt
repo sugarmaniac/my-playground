@@ -10,6 +10,8 @@ import com.sosyaloyun.shared.OyunTuru
 import com.sosyaloyun.shared.ListeSayfasi
 import com.sosyaloyun.shared.PuanGecmisi
 import com.sosyaloyun.shared.HaftalikPuanDegisimi
+import com.sosyaloyun.shared.ItirazDurumu
+import com.sosyaloyun.shared.ItirazSonucu
 import com.sosyaloyun.shared.ListeIstegi
 import com.sosyaloyun.shared.Liste
 import com.sosyaloyun.shared.YorumListesi
@@ -601,6 +603,27 @@ class SahteApiIstemcisi : ApiIstemcisi {
     override suspend fun puanDegisimi(): HaftalikPuanDegisimi {
         hata?.let { throw it }
         return puanDegisimi
+    }
+
+    var itirazDurumu = ItirazDurumu()
+    var itirazHatasi: Exception? = null
+    val itirazlar = mutableListOf<String>()
+
+    override suspend fun itirazDurumu(): ItirazDurumu {
+        hata?.let { throw it }
+        return itirazDurumu
+    }
+
+    override suspend fun itirazEt(metin: String): ItirazDurumu {
+        itirazHatasi?.let { throw it }
+        itirazlar += metin
+        itirazDurumu = itirazDurumu.copy(itiraz = ItirazSonucu.BEKLIYOR)
+        return itirazDurumu
+    }
+
+    override suspend fun girisItirazi(anahtar: String, metin: String) {
+        itirazHatasi?.let { throw it }
+        itirazlar += "$anahtar:$metin"
     }
 
     fun ornekListe(id: String, istek: ListeIstegi, begeniSayisi: Int = 0, begendim: Boolean = false, benim: Boolean = true) = Liste(

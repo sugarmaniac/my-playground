@@ -39,6 +39,9 @@ sealed class Ayar<T>(
     /** Moderatörün "askıya al" kararının süresi (gün). */
     data object AskiSuresiGun : Ayar<Int>("aski_suresi_gun", 7, Int::toString, String::toInt)
 
+    /** Faz 2 yorum yasağının süresi (#53). */
+    data object YorumYasagiGun : Ayar<Int>("yorum_yasagi_gun", 7, Int::toString, String::toInt)
+
     /** Küratör başvurusu şartları (#50): en az inceleme, takipçi ve hesap yaşı (davetle katılıştan beri gün). */
     data object KuratorEnAzInceleme : Ayar<Int>("kurator_en_az_inceleme", 20, Int::toString, String::toInt)
     data object KuratorEnAzTakipci : Ayar<Int>("kurator_en_az_takipci", 50, Int::toString, String::toInt)

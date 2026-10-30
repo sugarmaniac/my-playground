@@ -31,6 +31,14 @@ import com.sosyaloyun.app.resources.bildirim_kurator_onaylandi
 import com.sosyaloyun.app.resources.bildirim_kurator_reddedildi
 import com.sosyaloyun.app.resources.tercih_kurator_onaylandi
 import com.sosyaloyun.app.resources.tercih_kurator_reddedildi
+import com.sosyaloyun.app.resources.bildirim_uyari
+import com.sosyaloyun.app.resources.bildirim_yorum_yasagi
+import com.sosyaloyun.app.resources.bildirim_itiraz_kabul
+import com.sosyaloyun.app.resources.bildirim_itiraz_red
+import com.sosyaloyun.app.resources.tercih_uyari
+import com.sosyaloyun.app.resources.tercih_yorum_yasagi
+import com.sosyaloyun.app.resources.tercih_itiraz_kabul
+import com.sosyaloyun.app.resources.tercih_itiraz_red
 import com.sosyaloyun.app.resources.tercih_yorum
 import com.sosyaloyun.app.resources.bildirim_yorum
 import com.sosyaloyun.app.resources.bildirim_arkadaslik_istegi
@@ -120,6 +128,10 @@ private fun BildirimSatiri(bildirim: Bildirim, tikla: () -> Unit) {
                 BildirimTuru.TAKIP_ISTEGI_KABULU -> stringResource(Res.string.bildirim_takip_istegi_kabulu, ad)
                 BildirimTuru.KURATOR_ONAYLANDI -> stringResource(Res.string.bildirim_kurator_onaylandi)
                 BildirimTuru.KURATOR_REDDEDILDI -> stringResource(Res.string.bildirim_kurator_reddedildi)
+                BildirimTuru.UYARI -> stringResource(Res.string.bildirim_uyari)
+                BildirimTuru.YORUM_YASAGI -> stringResource(Res.string.bildirim_yorum_yasagi)
+                BildirimTuru.ITIRAZ_KABUL_EDILDI -> stringResource(Res.string.bildirim_itiraz_kabul)
+                BildirimTuru.ITIRAZ_REDDEDILDI -> stringResource(Res.string.bildirim_itiraz_red)
             },
             style = MaterialTheme.typography.bodyMedium,
         )
@@ -151,6 +163,10 @@ fun BildirimTercihleriBolumu(viewModel: BildirimTercihleriViewModel) {
                             BildirimTuru.TAKIP_ISTEGI_KABULU -> Res.string.tercih_takip_istegi_kabulu
                             BildirimTuru.KURATOR_ONAYLANDI -> Res.string.tercih_kurator_onaylandi
                             BildirimTuru.KURATOR_REDDEDILDI -> Res.string.tercih_kurator_reddedildi
+                            BildirimTuru.UYARI -> Res.string.tercih_uyari
+                            BildirimTuru.YORUM_YASAGI -> Res.string.tercih_yorum_yasagi
+                            BildirimTuru.ITIRAZ_KABUL_EDILDI -> Res.string.tercih_itiraz_kabul
+                            BildirimTuru.ITIRAZ_REDDEDILDI -> Res.string.tercih_itiraz_red
                         },
                     ),
                     modifier = Modifier.weight(1f),

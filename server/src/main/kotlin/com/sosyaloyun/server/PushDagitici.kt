@@ -228,6 +228,10 @@ class PushDagitici(
                 BildirimTuru.TAKIP_ISTEGI_KABULU -> "$kim takip isteğini kabul etti."
                 BildirimTuru.KURATOR_ONAYLANDI -> "Küratör başvurun onaylandı. Listelerin artık keşifte."
                 BildirimTuru.KURATOR_REDDEDILDI -> "Küratör başvurun bu sefer onaylanmadı."
+                BildirimTuru.UYARI -> "Bir içeriğin topluluk kurallarına aykırı bulundu; bu bir uyarıdır."
+                BildirimTuru.YORUM_YASAGI -> "Topluluk kuralları nedeniyle bir süre yorum yazamayacaksın."
+                BildirimTuru.ITIRAZ_KABUL_EDILDI -> "İtirazın kabul edildi; yaptırım kaldırıldı."
+                BildirimTuru.ITIRAZ_REDDEDILDI -> "İtirazın incelendi ve reddedildi."
             }
         }
     }

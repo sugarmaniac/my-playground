@@ -90,6 +90,28 @@ class OturumViewModelTest {
     }
 
     @Test
+    fun faz2deAskidakiHesapGirisEkranindanBirKezItirazEder() = runTest(dispatcher) {
+        api.hata = ApiHatasiIstisnasi(HataKodu.HESAP_ASKIDA, "2026-01-12T09:00:00Z", itirazAnahtari = "anahtar")
+        val viewModel = OturumViewModel(api, depo)
+        viewModel.girisYap(KimlikSaglayici.APPLE) { KimlikTokeniSonucu.Token("t") }
+        advanceUntilIdle()
+        assertEquals("anahtar", (viewModel.ekran.value as OturumEkrani.Giris).itirazAnahtari)
+
+        api.itirazHatasi = IllegalStateException("bağlantı yok")
+        viewModel.itirazMetniDegisti("Haksızlık")
+        viewModel.itirazGonder()
+        advanceUntilIdle()
+        assertEquals(GirisItirazi.HATA, (viewModel.ekran.value as OturumEkrani.Giris).itiraz)
+
+        api.itirazHatasi = null
+        viewModel.itirazGonder()
+        viewModel.itirazGonder()
+        advanceUntilIdle()
+        assertEquals(GirisItirazi.GONDERILDI, (viewModel.ekran.value as OturumEkrani.Giris).itiraz)
+        assertEquals(listOf("anahtar:Haksızlık"), api.itirazlar)
+    }
+
+    @Test
     fun backendTokeniReddederseHataGosterilirVeOturumAcilmaz() = runTest(dispatcher) {
         api.hata = ApiHatasiIstisnasi(HataKodu.KIMLIK_TOKENI_GECERSIZ)
         val viewModel = OturumViewModel(api, depo)

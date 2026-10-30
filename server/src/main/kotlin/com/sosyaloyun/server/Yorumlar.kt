@@ -23,6 +23,7 @@ import org.jetbrains.exposed.v1.javatime.timestampWithTimeZone
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.insert
+import org.jetbrains.exposed.v1.jdbc.select
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 
@@ -34,6 +35,9 @@ class Yorumlar(private val veritabani: Database, private val saat: Clock) {
     sealed interface YazmaSonucu {
         data class Yazildi(val yorum: Yorum) : YazmaSonucu
         data object Gecersiz : YazmaSonucu
+
+        /** Yorum yasağı [bitis]'e kadar sürüyor (#53). */
+        data class Yasakli(val bitis: Instant) : YazmaSonucu
     }
 
     suspend fun yaz(yazar: UUID, kayitId: UUID, hamMetin: String): YazmaSonucu {
@@ -42,6 +46,9 @@ class Yorumlar(private val veritabani: Database, private val saat: Clock) {
         return withContext(Dispatchers.IO) {
             transaction(veritabani) {
                 val simdi = simdi()
+                val yasak = KullaniciTablosu.select(KullaniciTablosu.yorumYasagiBitisi).where { KullaniciTablosu.id eq yazar }
+                    .single()[KullaniciTablosu.yorumYasagiBitisi]
+                if (yasak != null && yasak.isAfter(simdi)) return@transaction YazmaSonucu.Yasakli(yasak.anlik())
                 val id = UUID.randomUUID()
                 YorumTablosu.insert {
                     it[YorumTablosu.id] = id
