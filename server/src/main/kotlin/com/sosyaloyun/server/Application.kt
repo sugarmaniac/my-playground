@@ -42,7 +42,9 @@ fun Application.modul(bagimliliklar: Bagimliliklar) {
         json(ApiJson)
     }
     routing {
-        kimlikRotalari(bagimliliklar.kimlikDogrulayici, kullanicilar, oturumlar, moderasyon)
+        val itirazlar = Itirazlar(veritabani, bagimliliklar.saat)
+        kimlikRotalari(bagimliliklar.kimlikDogrulayici, kullanicilar, oturumlar, moderasyon, itirazlar, fazlar)
+        itirazRotalari(itirazlar, fazlar)
         sikayetRotalari(moderasyon)
         profilRotalari(kullanicilar, davetKodlari, ayarlar, fazlar)
         val gunluk = Gunluk(veritabani, bagimliliklar.saat)
@@ -68,7 +70,7 @@ fun Application.modul(bagimliliklar: Bagimliliklar) {
         listeRotalari(listeler, kullanicilar, fazlar)
         val kuratorler = Kuratorler(veritabani, ayarlar, listeler, bagimliliklar.saat)
         kuratorRotalari(kuratorler, fazlar)
-        yonetimRotalari(moderasyon, fazlar, kuratorler, bagimliliklar.moderasyonSifresi)
+        yonetimRotalari(moderasyon, fazlar, kuratorler, itirazlar, Denetim(veritabani, bagimliliklar.saat), bagimliliklar.moderasyonSifresi)
         paylasimRotalari(Paylasim(veritabani, katalog, profiller, begeniler, bagimliliklar.saat, sosyalGraf), kullanicilar, bagimliliklar.webDizini)
         get(ApiYollari.SAGLIK) {
             val durum = if (ayarlar.oku(Ayar.BakimModu)) SunucuDurumu.BAKIMDA else SunucuDurumu.AYAKTA

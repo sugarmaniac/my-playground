@@ -329,4 +329,25 @@
     <string name="puan_degisimi_baslik">Biggest score changes this week</string>
     <string name="puan_artanlar">Rising</string>
     <string name="puan_azalanlar">Falling</string>
+    <string name="yorum_yasagi_hata">You can't comment for a while due to community guidelines.</string>
+    <string name="itiraz_baslik">Appeal</string>
+    <string name="itiraz_metni">Why should this be reviewed again?</string>
+    <string name="itiraz_et">Send appeal</string>
+    <string name="itiraz_hata">Couldn't send the appeal. Try again.</string>
+    <string name="itiraz_bekliyor">Your appeal was sent. The team will review it.</string>
+    <string name="itiraz_kabul">Your appeal was accepted and the action was lifted.</string>
+    <string name="itiraz_red">Your appeal was reviewed and declined.</string>
+    <string name="yaptirim_icerik">One of your posts was removed.</string>
+    <string name="yaptirim_aski">Your account is suspended.</string>
+    <string name="yaptirim_ban">Your account is banned.</string>
+    <string name="yaptirim_uyari">You received a warning.</string>
+    <string name="yaptirim_yorum_yasagi">You can't comment for a while.</string>
+    <string name="bildirim_uyari">One of your posts broke the community guidelines. This is a warning.</string>
+    <string name="bildirim_yorum_yasagi">You can't comment for a while due to community guidelines.</string>
+    <string name="bildirim_itiraz_kabul">Your appeal was accepted; the action was lifted.</string>
+    <string name="bildirim_itiraz_red">Your appeal was reviewed and declined.</string>
+    <string name="tercih_uyari">Warnings</string>
+    <string name="tercih_yorum_yasagi">Comment bans</string>
+    <string name="tercih_itiraz_kabul">Accepted appeals</string>
+    <string name="tercih_itiraz_red">Declined appeals</string>
 </resources>

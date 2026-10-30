@@ -72,6 +72,7 @@ import com.sosyaloyun.app.gunluk.GunlukDetayViewModel
 import com.sosyaloyun.app.gizlilik.GizlilikViewModel
 import com.sosyaloyun.app.kurator.KuratorListeleriBolumu
 import com.sosyaloyun.app.kurator.KuratorListeleriViewModel
+import com.sosyaloyun.app.itiraz.ItirazViewModel
 import com.sosyaloyun.app.kurator.KuratorViewModel
 import com.sosyaloyun.app.puan.PuanDegisimiBolumu
 import com.sosyaloyun.app.puan.PuanDegisimiViewModel
@@ -143,6 +144,8 @@ fun App() {
                     ekran = durum,
                     saglayicilar = saglayiciIstemcisi.desteklenenler,
                     girisYap = { saglayici -> oturum.girisYap(saglayici) { saglayiciIstemcisi.kimlikTokeniAl(saglayici) } },
+                    itirazMetniDegisti = oturum::itirazMetniDegisti,
+                    itirazGonder = oturum::itirazGonder,
                 )
                 OturumEkrani.Acik -> HesapAkisi(api, cikisYap = oturum::cikisYap, hesapSilindi = oturum::hesapSilindi)
             }
@@ -378,6 +381,7 @@ private fun UygulamaGezintisi(api: ApiIstemcisi, profil: KullaniciOzeti, cikisYa
                     hesapSilme = { viewModel { HesapSilmeViewModel(api, profil.kullaniciAdi, hesapSilindi) } },
                     gizlilik = if (aktifFaz.kapsar(Faz.FAZ_2)) ({ viewModel { GizlilikViewModel(api) } }) else null,
                     kurator = if (aktifFaz.kapsar(Faz.FAZ_2)) ({ viewModel { KuratorViewModel(api) } }) else null,
+                    itiraz = if (aktifFaz.kapsar(Faz.FAZ_2)) ({ viewModel { ItirazViewModel(api) } }) else null,
                 )
             }
             composable<EngelListesiRota> { listeGirdisi ->

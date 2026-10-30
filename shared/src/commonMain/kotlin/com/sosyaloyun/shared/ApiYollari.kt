@@ -144,6 +144,10 @@ object ApiYollari {
     /** Faz 2 (#51): oyunun son 12 haftalık puan geçmişi ve Keşif'teki haftalık puan değişimi. */
     fun puanGecmisi(oyunId: String) = "$OYUNLAR/$oyunId/puan-gecmisi"
     const val PUAN_DEGISIMI = "/kesif/puan-degisimi"
+
+    /** Faz 2 (#53): son yaptırım ve itirazı; giriş ekranından itiraz oturumsuzdur. */
+    const val ITIRAZ = "/itiraz"
+    const val ITIRAZ_GIRIS = "/itiraz/giris"
     fun paylasilanListe(listeId: String) = "$PAYLASIM/liste/$listeId"
 
     /** `GET` / `PUT` / `DELETE /gunluk/{id}`: günlük kaydı detayı, düzenleme ve silme. */

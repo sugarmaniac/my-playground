@@ -1,5 +1,6 @@
 package com.sosyaloyun.server
 
+import com.sosyaloyun.shared.ApiHatasi
 import com.sosyaloyun.shared.ApiYollari
 import com.sosyaloyun.shared.GunlukKaydiDetayi
 import com.sosyaloyun.shared.GunlukKaydiIstegi
@@ -39,6 +40,7 @@ fun Route.gunlukRotalari(
                 when (val sonuc = yorumlar.yaz(call.oturumSahibi.kullaniciId, UUID.fromString(erisim.kayit.id), call.receive<YorumIstegi>().metin)) {
                     is Yorumlar.YazmaSonucu.Yazildi -> call.respond(HttpStatusCode.Created, sonuc.yorum)
                     Yorumlar.YazmaSonucu.Gecersiz -> call.hata(HttpStatusCode.BadRequest, HataKodu.YORUM_GECERSIZ)
+                    is Yorumlar.YazmaSonucu.Yasakli -> call.respond(HttpStatusCode.Forbidden, ApiHatasi(HataKodu.YORUM_YASAGI, sonuc.bitis.toString()))
                 }
             }
             delete("${ApiYollari.YORUMLAR}/{id}") {

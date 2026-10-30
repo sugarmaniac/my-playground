@@ -2,6 +2,7 @@ package com.sosyaloyun.server
 
 import com.sosyaloyun.shared.ApiHatasi
 import com.sosyaloyun.shared.ApiYollari
+import com.sosyaloyun.shared.Faz
 import com.sosyaloyun.shared.GirisIstegi
 import com.sosyaloyun.shared.GirisYaniti
 import com.sosyaloyun.shared.HataKodu
@@ -68,6 +69,8 @@ fun Route.kimlikRotalari(
     kullanicilar: Kullanicilar,
     oturumlar: Oturumlar,
     moderasyon: Moderasyon,
+    itirazlar: Itirazlar,
+    fazlar: Fazlar,
 ) {
     post(ApiYollari.OTURUM) {
         val istek = call.receive<GirisIstegi>()
@@ -77,11 +80,15 @@ fun Route.kimlikRotalari(
             return@post
         }
         val kullanici = kullanicilar.bulVeyaOlustur(istek.saglayici, kimlik.haricKimlik)
-        // Askıdaki ya da banlı hesap nedeniyle birlikte reddedilir.
-        when (val yaptirim = moderasyon.yaptirim(kullanici.kullaniciId)) {
-            is Yaptirim.Askida -> return@post call.respond(HttpStatusCode.Forbidden, ApiHatasi(HataKodu.HESAP_ASKIDA, yaptirim.bitis.toInstant().toString()))
-            Yaptirim.Banli -> return@post call.respond(HttpStatusCode.Forbidden, ApiHatasi(HataKodu.HESAP_BANLI))
-            null -> Unit
+        // Askıdaki ya da banlı hesap nedeniyle birlikte reddedilir; Faz 2'de giriş ekranından itiraz anahtarı da verilir (#53).
+        val yaptirim = moderasyon.yaptirim(kullanici.kullaniciId)
+        if (yaptirim != null) {
+            val anahtar = if (fazlar.acik(Faz.FAZ_2)) itirazlar.girisAnahtari(kullanici.kullaniciId) else null
+            val hata = when (yaptirim) {
+                is Yaptirim.Askida -> ApiHatasi(HataKodu.HESAP_ASKIDA, yaptirim.bitis.toInstant().toString(), anahtar)
+                Yaptirim.Banli -> ApiHatasi(HataKodu.HESAP_BANLI, itirazAnahtari = anahtar)
+            }
+            return@post call.respond(HttpStatusCode.Forbidden, hata)
         }
         call.respond(
             GirisYaniti(

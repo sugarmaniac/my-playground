@@ -5,6 +5,7 @@ import com.sosyaloyun.shared.HataKodu
 import com.sosyaloyun.shared.SikayetIstegi
 import com.sosyaloyun.shared.SikayetKurallari
 import com.sosyaloyun.shared.SikayetSebebi
+import com.sosyaloyun.shared.YaptirimTuru
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.UUID
@@ -33,7 +34,8 @@ import org.slf4j.LoggerFactory
 enum class SikayetHedefi { KAYIT, PROFIL, YORUM }
 
 /** Şikayetin moderatör kararı; [ACIK] karar bekleyen. */
-enum class SikayetDurumu { ACIK, REDDEDILDI, ICERIK_KALDIRILDI, ASKIYA_ALINDI, BANLANDI }
+/** UYARILDI ve YORUM_YASAKLANDI Faz 2 hafif yaptırımları (#53); panel yalnızca faz açıkken sunar. */
+enum class SikayetDurumu { ACIK, REDDEDILDI, ICERIK_KALDIRILDI, ASKIYA_ALINDI, BANLANDI, UYARILDI, YORUM_YASAKLANDI }
 
 /** Moderasyon listesindeki bir şikayet; şikayet eden yalnızca burada, moderatöre görünür. */
 data class AcikSikayet(
@@ -152,17 +154,21 @@ class Moderasyon(
     /**
      * Kararı uygular ve kalıp mesajları yazar. İçerik kaldırma: günlük kaydı silinir (beğenileri, akış olayı ve
      * bildirimleriyle); profil şikayetinde biyografi silinir, görünen ad kullanıcı adına döner. Askı ve ban bütün
-     * oturumları kapatır. Aynı hedefe ait diğer açık şikayetler de aynı kararla kapanır. Açık şikayet yoksa false.
+     * oturumları kapatır. Uyarı yalnızca kalıp mesajdır; yorum yasağı süre boyunca yorum yazdırmaz. Reddetme dışındaki
+     * her karar itiraz edilebilir bir yaptırım kaydı bırakır (#53). Askı ve ban hedefin bütün açık şikayetlerini, diğer
+     * kararlar yalnızca o içeriğinkileri kapatır. Açık şikayet yoksa null; varsa hedefin kullanıcı adı (denetim kaydı için).
      */
-    suspend fun karar(sikayetId: UUID, karar: SikayetDurumu): Boolean {
+    suspend fun karar(sikayetId: UUID, karar: SikayetDurumu): String? {
         require(karar != SikayetDurumu.ACIK)
         val askiGun = ayarlar.oku(Ayar.AskiSuresiGun)
+        val yorumYasagiGun = ayarlar.oku(Ayar.YorumYasagiGun)
         return withContext(Dispatchers.IO) {
             transaction(veritabani) {
                 val sikayet = SikayetTablosu.selectAll()
                     .where { (SikayetTablosu.id eq sikayetId) and (SikayetTablosu.durum eq SikayetDurumu.ACIK.name) }
-                    .singleOrNull() ?: return@transaction false
+                    .singleOrNull() ?: return@transaction null
                 val hedef = sikayet[SikayetTablosu.hedefKullanici]
+                val hedefAdi = KullaniciTablosu.selectAll().where { KullaniciTablosu.id eq hedef }.single()[KullaniciTablosu.kullaniciAdi].orEmpty()
                 val tur = SikayetHedefi.valueOf(sikayet[SikayetTablosu.hedefTuru])
                 val kayit = sikayet[SikayetTablosu.gunlukKaydiId]
                 val yorum = sikayet[SikayetTablosu.yorumId]
@@ -175,7 +181,7 @@ class Moderasyon(
                         karar == SikayetDurumu.ICERIK_KALDIRILDI && tur == SikayetHedefi.YORUM && yorum != null -> acik and (SikayetTablosu.yorumId eq yorum)
                         karar == SikayetDurumu.ICERIK_KALDIRILDI && tur == SikayetHedefi.KAYIT && kayit != null ->
                             acik and (SikayetTablosu.hedefTuru eq SikayetHedefi.KAYIT.name) and (SikayetTablosu.gunlukKaydiId eq kayit)
-                        karar == SikayetDurumu.ICERIK_KALDIRILDI || karar == SikayetDurumu.REDDEDILDI -> acik and (SikayetTablosu.id eq sikayetId)
+                        karar != SikayetDurumu.ASKIYA_ALINDI && karar != SikayetDurumu.BANLANDI -> acik and (SikayetTablosu.id eq sikayetId)
                         else -> acik
                     }
                 }.toList()
@@ -192,14 +198,26 @@ class Moderasyon(
                         with(BildirimOlaylari) { kalipMesaj(hedef, BildirimTuru.ICERIK_KALDIRILDI, simdi) }
                     }
                     SikayetDurumu.ASKIYA_ALINDI, SikayetDurumu.BANLANDI -> {
+                        val bitis = (saat.now() + askiGun.days).toJavaInstant().atOffset(ZoneOffset.UTC)
                         KullaniciTablosu.update({ KullaniciTablosu.id eq hedef }) {
-                            if (karar == SikayetDurumu.BANLANDI) it[banli] = true
-                            else it[askininBitisi] = (saat.now() + askiGun.days).toJavaInstant().atOffset(ZoneOffset.UTC)
+                            if (karar == SikayetDurumu.BANLANDI) it[banli] = true else it[askininBitisi] = bitis
                         }
                         oturumlariKapat(hedef)
+                        yaptirimYaz(hedef, if (karar == SikayetDurumu.BANLANDI) YaptirimTuru.BAN else YaptirimTuru.ASKI, simdi, bitis.takeIf { karar == SikayetDurumu.ASKIYA_ALINDI })
+                    }
+                    SikayetDurumu.UYARILDI -> {
+                        with(BildirimOlaylari) { kalipMesaj(hedef, BildirimTuru.UYARI, simdi) }
+                        yaptirimYaz(hedef, YaptirimTuru.UYARI, simdi)
+                    }
+                    SikayetDurumu.YORUM_YASAKLANDI -> {
+                        val bitis = (saat.now() + yorumYasagiGun.days).toJavaInstant().atOffset(ZoneOffset.UTC)
+                        KullaniciTablosu.update({ KullaniciTablosu.id eq hedef }) { it[yorumYasagiBitisi] = bitis }
+                        with(BildirimOlaylari) { kalipMesaj(hedef, BildirimTuru.YORUM_YASAGI, simdi) }
+                        yaptirimYaz(hedef, YaptirimTuru.YORUM_YASAGI, simdi, bitis)
                     }
                     else -> Unit
                 }
+                if (karar == SikayetDurumu.ICERIK_KALDIRILDI) yaptirimYaz(hedef, YaptirimTuru.ICERIK_KALDIRMA, simdi)
                 ilgili.forEach { satir ->
                     SikayetTablosu.update({ SikayetTablosu.id eq satir[SikayetTablosu.id] }) {
                         it[durum] = karar.name
@@ -207,7 +225,7 @@ class Moderasyon(
                     }
                     with(BildirimOlaylari) { kalipMesaj(satir[SikayetTablosu.sikayetEden], BildirimTuru.SIKAYET_SONUCLANDI, simdi) }
                 }
-                true
+                hedefAdi
             }
         }
     }
@@ -220,6 +238,16 @@ class Moderasyon(
                 satir[KullaniciTablosu.banli] -> Yaptirim.Banli
                 else -> satir[KullaniciTablosu.askininBitisi]?.takeIf { it.isAfter(simdi()) }?.let { Yaptirim.Askida(it) }
             }
+        }
+    }
+
+    private fun JdbcTransaction.yaptirimYaz(kullanici: UUID, tur: YaptirimTuru, zaman: OffsetDateTime, bitis: OffsetDateTime? = null) {
+        YaptirimTablosu.insert {
+            it[id] = UUID.randomUUID()
+            it[kullaniciId] = kullanici
+            it[YaptirimTablosu.tur] = tur.name
+            it[olusturulma] = zaman
+            it[YaptirimTablosu.bitis] = bitis
         }
     }
 

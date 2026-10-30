@@ -2,9 +2,11 @@ package com.sosyaloyun.app.gunluk
 
 import com.sosyaloyun.app.api.sunucuAdresi
 import com.sosyaloyun.app.test.SahteApiIstemcisi
+import com.sosyaloyun.app.api.ApiHatasiIstisnasi
 import com.sosyaloyun.app.test.viewModelTesti
 import com.sosyaloyun.shared.Avatar
 import com.sosyaloyun.shared.Faz
+import com.sosyaloyun.shared.HataKodu
 import com.sosyaloyun.shared.Gorunurluk
 import com.sosyaloyun.shared.GunlukKaydi
 import com.sosyaloyun.shared.GunlukKaydiDetayi
@@ -148,6 +150,21 @@ class GunlukDetayViewModelTest {
         assertEquals("Merhaba", hazir.yorumMetni)
         assertTrue(hazir.yorumHatasi)
         assertEquals(emptyList(), hazir.yorumlar)
+    }
+
+    @Test
+    fun yorumYasagiAyriMesajlaGosterilir() = viewModelTesti {
+        api.gunlukDetaylari = mapOf("g1" to detay)
+        val vm = GunlukDetayViewModel(api, "g1", aktifFaz = Faz.FAZ_2)
+        advanceUntilIdle()
+        api.yorumHatasi = ApiHatasiIstisnasi(HataKodu.YORUM_YASAGI, "2026-01-12T09:00:00Z")
+        vm.yorumMetniDegisti("Merhaba")
+        vm.yorumGonder()
+        advanceUntilIdle()
+
+        val hazir = vm.ekran.value as GunlukDetayEkrani.Hazir
+        assertTrue(hazir.yorumYasagi)
+        assertFalse(hazir.yorumHatasi)
     }
 
     @Test

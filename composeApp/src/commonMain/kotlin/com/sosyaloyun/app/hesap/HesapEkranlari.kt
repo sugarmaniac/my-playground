@@ -72,6 +72,8 @@ import com.sosyaloyun.app.api.EngelListesiTuru
 import com.sosyaloyun.app.bildirim.BildirimTercihleriBolumu
 import com.sosyaloyun.app.gizlilik.GizlilikBolumu
 import com.sosyaloyun.app.gizlilik.GizlilikViewModel
+import com.sosyaloyun.app.itiraz.ItirazBolumu
+import com.sosyaloyun.app.itiraz.ItirazViewModel
 import com.sosyaloyun.app.kurator.KuratorBolumu
 import com.sosyaloyun.app.kurator.KuratorViewModel
 import com.sosyaloyun.app.bildirim.BildirimTercihleriViewModel
@@ -215,6 +217,8 @@ fun AnaEkran(
     gizlilik: (@Composable () -> GizlilikViewModel)? = null,
     /** Faz 2 açıksa küratörlük bölümü (#50); kapalıyken null. */
     kurator: (@Composable () -> KuratorViewModel)? = null,
+    /** Faz 2 açıksa itiraz bölümü (#53); kapalıyken null. */
+    itiraz: (@Composable () -> ItirazViewModel)? = null,
 ) {
     val ekran by davetKodlari.ekran.collectAsStateWithLifecycle()
     var silmeAcik by remember { mutableStateOf(false) }
@@ -253,6 +257,10 @@ fun AnaEkran(
         }
         kurator?.let {
             KuratorBolumu(it())
+            HorizontalDivider()
+        }
+        itiraz?.let {
+            ItirazBolumu(it())
             HorizontalDivider()
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

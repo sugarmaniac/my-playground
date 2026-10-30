@@ -329,4 +329,25 @@
     <string name="puan_degisimi_baslik">Bu hafta puanı en çok değişen oyunlar</string>
     <string name="puan_artanlar">Yükselenler</string>
     <string name="puan_azalanlar">Düşenler</string>
+    <string name="yorum_yasagi_hata">Topluluk kuralları nedeniyle bir süre yorum yazamazsın.</string>
+    <string name="itiraz_baslik">İtiraz</string>
+    <string name="itiraz_metni">Neden yeniden incelenmeli?</string>
+    <string name="itiraz_et">İtiraz gönder</string>
+    <string name="itiraz_hata">İtiraz gönderilemedi. Tekrar dene.</string>
+    <string name="itiraz_bekliyor">İtirazın gönderildi. Ekip inceleyecek.</string>
+    <string name="itiraz_kabul">İtirazın kabul edildi, yaptırım kaldırıldı.</string>
+    <string name="itiraz_red">İtirazın incelendi ve reddedildi.</string>
+    <string name="yaptirim_icerik">Bir içeriğin kaldırıldı.</string>
+    <string name="yaptirim_aski">Hesabın askıya alındı.</string>
+    <string name="yaptirim_ban">Hesabın kalıcı olarak kapatıldı.</string>
+    <string name="yaptirim_uyari">Bir uyarı aldın.</string>
+    <string name="yaptirim_yorum_yasagi">Bir süre yorum yazamazsın.</string>
+    <string name="bildirim_uyari">Bir içeriğin topluluk kurallarına aykırı bulundu; bu bir uyarıdır.</string>
+    <string name="bildirim_yorum_yasagi">Topluluk kuralları nedeniyle bir süre yorum yazamayacaksın.</string>
+    <string name="bildirim_itiraz_kabul">İtirazın kabul edildi; yaptırım kaldırıldı.</string>
+    <string name="bildirim_itiraz_red">İtirazın incelendi ve reddedildi.</string>
+    <string name="tercih_uyari">Uyarılar</string>
+    <string name="tercih_yorum_yasagi">Yorum yasakları</string>
+    <string name="tercih_itiraz_kabul">Kabul edilen itirazlar</string>
+    <string name="tercih_itiraz_red">Reddedilen itirazlar</string>
 </resources>

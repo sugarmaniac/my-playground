@@ -3,9 +3,12 @@ package com.sosyaloyun.shared
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-/** Hata yanıtlarının gövdesi; istemci mesajı `kod`'a göre kendi dilinde seçer. */
+/**
+ * Hata yanıtlarının gövdesi; istemci mesajı `kod`'a göre kendi dilinde seçer. [itirazAnahtari]: Faz 2'de askıdaki ya da
+ * banlı hesabın reddedilen girişinde, giriş ekranından itiraz için (#53).
+ */
 @Serializable
-data class ApiHatasi(val kod: HataKodu, val ayrinti: String? = null)
+data class ApiHatasi(val kod: HataKodu, val ayrinti: String? = null, val itirazAnahtari: String? = null)
 
 @Serializable
 enum class HataKodu {
@@ -136,6 +139,14 @@ enum class HataKodu {
     /** Küratörlük şartları sağlanmıyor, zaten küratör ya da bekleyen başvuru var (#50). */
     @SerialName("kurator_basvurusu_gecersiz")
     KURATOR_BASVURUSU_GECERSIZ,
+
+    /** Yorum yasağı süresince yorum yazılamaz (#53); [ApiHatasi.ayrinti] yasağın bittiği an. */
+    @SerialName("yorum_yasagi")
+    YORUM_YASAGI,
+
+    /** İtiraz metni geçersiz, itiraz edilecek yaptırım yok ya da bu yaptırıma zaten itiraz edildi (#53). */
+    @SerialName("itiraz_gecersiz")
+    ITIRAZ_GECERSIZ,
 
     /** Hesap silme isteğindeki onay metni kullanıcı adıyla eşleşmiyor. */
     @SerialName("hesap_silme_onayi_gecersiz")
