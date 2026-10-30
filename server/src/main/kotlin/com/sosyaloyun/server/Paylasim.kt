@@ -23,7 +23,7 @@ import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 
 /**
  * Web sitesinin paylaşım sayfaları (ADR 0004): oturumsuz izleyen yalnızca Herkes görünürlüğündeki kayıtları görür.
- * Banlı ya da askıdaki hesabın içeriği, moderasyonla kaldırılan içerik gibi hiç yokmuş sayılır.
+ * Banlı ya da askıdaki hesabın içeriği hiç yokmuş sayılır; moderasyonun "içeriği kaldır" kararı kaydı zaten siler.
  */
 class Paylasim(
     private val veritabani: Database,

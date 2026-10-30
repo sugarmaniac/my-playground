@@ -48,7 +48,12 @@ function oyunVeKayit(oyun, kayit) {
     const metin = oge("p", { sinif: "inceleme" + (kayit.spoiler ? " spoiler" : ""), metin: kayit.inceleme });
     if (kayit.spoiler) {
       metin.title = "Spoiler içerir; görmek için dokun";
-      metin.addEventListener("click", () => metin.classList.add("acik"));
+      // Kart bir linkin içindeyse (profildeki son kayıtlar) ilk dokunuş sayfayı açmaz, yalnızca spoiler'ı gösterir.
+      metin.addEventListener("click", (olay) => {
+        if (metin.classList.contains("acik")) return;
+        olay.preventDefault();
+        metin.classList.add("acik");
+      });
     }
     bilgi.append(metin);
   }
