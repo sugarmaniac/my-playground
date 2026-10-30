@@ -1,12 +1,14 @@
 package com.sosyaloyun.app.profil
 
 import androidx.compose.ui.text.font.FontWeight
+import com.sosyaloyun.app.tema.Kart
 import com.sosyaloyun.app.tema.Renk
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -145,7 +147,7 @@ fun ProfilSayfasiEkrani(
             }
             PrimaryScrollableTabRow(selectedTabIndex = sekmeler.indexOf(durum.sekme).coerceAtLeast(0), edgePadding = 16.dp) {
                 sekmeler.forEach { sekme ->
-                    Tab(selected = durum.sekme == sekme, onClick = { viewModel.sekmeSecildi(sekme) }, text = { Text(sekmeAdi(sekme)) })
+                    Tab(selected = durum.sekme == sekme, onClick = { viewModel.sekmeSecildi(sekme) }, text = { Text(sekmeAdi(sekme)) }, unselectedContentColor = Renk.Soluk)
                 }
             }
         }
@@ -195,10 +197,10 @@ private fun Baslik(
     val kullanici = sayfa.kullanici
     Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            AvatarGorunumu(kullanici.avatar, boyut = 64.dp)
+            AvatarGorunumu(kullanici.avatar, boyut = 72.dp)
             Column(Modifier.weight(1f)) {
-                Text(kullanici.gorunenAd, style = MaterialTheme.typography.titleLarge)
-                Text("@${kullanici.kullaniciAdi}", style = MaterialTheme.typography.bodyMedium)
+                Text(kullanici.gorunenAd, style = MaterialTheme.typography.headlineMedium)
+                Text("@${kullanici.kullaniciAdi}", style = MaterialTheme.typography.bodyMedium, color = Renk.Soluk)
                 if (sayfa.kurator) Text(stringResource(Res.string.kurator_rozet), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
             }
             val durum by viewModel.ekran.collectAsStateWithLifecycle()
@@ -208,24 +210,15 @@ private fun Baslik(
             }
         }
         sayfa.biyografi?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
-        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            Text(
-                stringResource(Res.string.profil_takipci, sayfa.takipciSayisi),
-                style = MaterialTheme.typography.labelLarge,
-                modifier = Modifier.clickable { kisiListesi(kullanici.kullaniciAdi, KisiListesiTuru.TAKIPCILER) },
-            )
-            Text(
-                stringResource(Res.string.profil_takip_edilen, sayfa.takipEdilenSayisi),
-                style = MaterialTheme.typography.labelLarge,
-                modifier = Modifier.clickable { kisiListesi(kullanici.kullaniciAdi, KisiListesiTuru.TAKIP_EDILENLER) },
-            )
-            Text(
-                stringResource(Res.string.profil_arkadas, sayfa.arkadasSayisi),
-                style = MaterialTheme.typography.labelLarge,
-                modifier = Modifier.clickable { kisiListesi(kullanici.kullaniciAdi, KisiListesiTuru.ARKADASLAR) },
-            )
+        Kart {
+            Row(Modifier.fillMaxWidth()) {
+                val ad = kullanici.kullaniciAdi
+                Istatistik(sayfa.buYilBitirilen, stringResource(Res.string.profil_bu_yil), Modifier.weight(1f), vurgulu = true)
+                Istatistik(sayfa.arkadasSayisi, stringResource(Res.string.profil_arkadas), Modifier.weight(1f)) { kisiListesi(ad, KisiListesiTuru.ARKADASLAR) }
+                Istatistik(sayfa.takipciSayisi, stringResource(Res.string.profil_takipci), Modifier.weight(1f)) { kisiListesi(ad, KisiListesiTuru.TAKIPCILER) }
+                Istatistik(sayfa.takipEdilenSayisi, stringResource(Res.string.profil_takip_edilen), Modifier.weight(1f)) { kisiListesi(ad, KisiListesiTuru.TAKIP_EDILENLER) }
+            }
         }
-        Text(stringResource(Res.string.profil_bu_yil, sayfa.buYilBitirilen), style = MaterialTheme.typography.labelLarge)
         when (val takipEdiyorum = sayfa.takipEdiyorum) {
             null -> Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedButton(onClick = { profiliDuzenle(sayfa) }) { Text(stringResource(Res.string.profil_duzenle)) }
@@ -264,6 +257,17 @@ private fun Baslik(
                 Kapak(oyun, Modifier.weight(1f).clickable(enabled = oyun != null) { oyun?.let { oyunaGit(it.id) } })
             }
         }
+    }
+}
+
+@Composable
+private fun Istatistik(sayi: Int, etiket: String, modifier: Modifier, vurgulu: Boolean = false, tikla: (() -> Unit)? = null) {
+    Column(
+        modifier.then(if (tikla != null) Modifier.clickable(onClick = tikla) else Modifier),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text(sayi.toString(), style = MaterialTheme.typography.titleLarge, color = if (vurgulu) Renk.Vurgu else Renk.Yazi)
+        Text(etiket, style = MaterialTheme.typography.labelSmall, color = Renk.Soluk, maxLines = 1)
     }
 }
 
@@ -312,9 +316,11 @@ private fun EngelVeSessiz(sayfa: ProfilSayfasi, viewModel: ProfilSayfasiViewMode
     }
 }
 
+private val KAPAK_AD_GENISLIGI = 64.dp
+
 @Composable
 fun Kapak(oyun: OyunOzeti?, modifier: Modifier = Modifier) {
-    Box(
+    BoxWithConstraints(
         modifier
             .size(width = 72.dp, height = 96.dp)
             .clip(RoundedCornerShape(8.dp))
@@ -322,9 +328,13 @@ fun Kapak(oyun: OyunOzeti?, modifier: Modifier = Modifier) {
         contentAlignment = Alignment.BottomStart,
     ) {
         if (oyun != null) {
-            // Görsel yoksa tasarımdaki gibi renkli zemin üstünde büyük harfli ad.
+            // Görsel yoksa tasarımdaki gibi renkli zemin üstünde büyük harfli ad; dar kapakta ad sığmaz, baş harf yazılır.
             if (oyun.kapakUrl == null) {
-                Text(oyun.ad.uppercase(), style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.ExtraBold, maxLines = 3, modifier = Modifier.padding(6.dp))
+                if (maxWidth < KAPAK_AD_GENISLIGI) {
+                    Text(oyun.ad.take(1).uppercase(), style = MaterialTheme.typography.titleLarge, modifier = Modifier.align(Alignment.Center))
+                } else {
+                    Text(oyun.ad.uppercase(), style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.ExtraBold, maxLines = 3, modifier = Modifier.padding(6.dp))
+                }
             }
             AsyncImage(model = oyun.kapakUrl, contentDescription = oyun.ad, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
         }

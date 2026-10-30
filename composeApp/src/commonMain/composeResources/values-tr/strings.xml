@@ -101,7 +101,7 @@
     <string name="sekme_profil">Profil</string>
     <string name="profil_duzenle">Profili düzenle</string>
     <string name="profil_biyografi">Biyografi</string>
-    <string name="profil_bu_yil">Bu yıl bitirilen: %1$d</string>
+    <string name="profil_bu_yil">bu yıl bitti</string>
     <string name="profil_vitrin">Vitrin</string>
     <string name="profil_vitrin_duzenle">Vitrini düzenle</string>
     <string name="profil_vitrin_aciklama">Profilinin en üstünde gösterilecek en fazla dört oyun seç.</string>
@@ -116,13 +116,13 @@
     <string name="durumsuz">Durumsuz</string>
     <string name="arama_oyunlar">Oyunlar</string>
     <string name="arama_kullanicilar">Kişiler</string>
-    <string name="profil_takipci">%1$d takipçi</string>
-    <string name="profil_takip_edilen">%1$d takip</string>
+    <string name="profil_takipci">Takipçi</string>
+    <string name="profil_takip_edilen">Takip</string>
     <string name="takip_et">Takip et</string>
     <string name="takibi_birak">Takibi bırak</string>
     <string name="takipciler">Takipçiler</string>
     <string name="takip_edilenler">Takip edilenler</string>
-    <string name="profil_arkadas">%1$d arkadaş</string>
+    <string name="profil_arkadas">Arkadaş</string>
     <string name="arkadaslar">Arkadaşlar</string>
     <string name="arkadaslik_istekleri">Arkadaşlık istekleri</string>
     <string name="arkadas_ekle">Arkadaş ekle</string>
@@ -393,4 +393,9 @@
     <string name="zaman_gun">%1$d g</string>
     <string name="begen">Beğen</string>
     <string name="begeni_sayisi_kisa">%1$d beğeni</string>
+    <string name="oyun_topluluk">Topluluk</string>
+    <string name="oyun_arkadaslar">Arkadaşlar</string>
+    <string name="oyun_oynayan">Oynayan</string>
+    <string name="oyun_puan_yok">Yetersiz</string>
+    <string name="oyun_senin_puanin">Senin puanın</string>
 </resources>

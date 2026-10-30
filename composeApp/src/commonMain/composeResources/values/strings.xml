@@ -101,7 +101,7 @@
     <string name="sekme_profil">Profile</string>
     <string name="profil_duzenle">Edit profile</string>
     <string name="profil_biyografi">Bio</string>
-    <string name="profil_bu_yil">Finished this year: %1$d</string>
+    <string name="profil_bu_yil">finished this year</string>
     <string name="profil_vitrin">Favorites</string>
     <string name="profil_vitrin_duzenle">Edit favorites</string>
     <string name="profil_vitrin_aciklama">Pick up to four games to show at the top of your profile.</string>
@@ -116,13 +116,13 @@
     <string name="durumsuz">No status</string>
     <string name="arama_oyunlar">Games</string>
     <string name="arama_kullanicilar">People</string>
-    <string name="profil_takipci">%1$d followers</string>
-    <string name="profil_takip_edilen">%1$d following</string>
+    <string name="profil_takipci">Followers</string>
+    <string name="profil_takip_edilen">Following</string>
     <string name="takip_et">Follow</string>
     <string name="takibi_birak">Unfollow</string>
     <string name="takipciler">Followers</string>
     <string name="takip_edilenler">Following</string>
-    <string name="profil_arkadas">%1$d friends</string>
+    <string name="profil_arkadas">Friends</string>
     <string name="arkadaslar">Friends</string>
     <string name="arkadaslik_istekleri">Friend requests</string>
     <string name="arkadas_ekle">Add friend</string>
@@ -393,4 +393,9 @@
     <string name="zaman_gun">%1$d d</string>
     <string name="begen">Like</string>
     <string name="begeni_sayisi_kisa">%1$d likes</string>
+    <string name="oyun_topluluk">Community</string>
+    <string name="oyun_arkadaslar">Friends</string>
+    <string name="oyun_oynayan">Played</string>
+    <string name="oyun_puan_yok">Not enough</string>
+    <string name="oyun_senin_puanin">Your rating</string>
 </resources>
