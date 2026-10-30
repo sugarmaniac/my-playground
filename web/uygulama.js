@@ -54,12 +54,19 @@ function secim(ad, secenekler, secili) {
   return s;
 }
 
+const yuklenenScriptler = new Map();
+
+/** Sağlayıcı kütüphanesini bir kez yükler; aynı adres için aynı söz döner. */
 function scriptYukle(adres) {
-  return new Promise((tamam, hata) => {
-    const s = document.createElement("script");
-    s.src = adres; s.async = true; s.onload = tamam; s.onerror = hata;
-    document.head.append(s);
-  });
+  if (!yuklenenScriptler.has(adres)) {
+    yuklenenScriptler.set(adres, new Promise((tamam, hata) => {
+      const s = document.createElement("script");
+      s.src = adres; s.async = true; s.onload = tamam;
+      s.onerror = (e) => { yuklenenScriptler.delete(adres); hata(e); };
+      document.head.append(s);
+    }));
+  }
+  return yuklenenScriptler.get(adres);
 }
 
 // ── Giriş ──────────────────────────────────────────────────────────────────
@@ -91,10 +98,14 @@ async function girisGorunumu(webGiris) {
   if (webGiris.appleServisKimligi) {
     const dugme = oge("button", { sinif: "dugme", type: "button", metin: "Apple ile giriş yap" });
     dugmeler.append(dugme);
+    let hazir = false;
     dugme.addEventListener("click", async () => {
       try {
         await scriptYukle("https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/tr_TR/appleid.auth.js");
-        AppleID.auth.init({ clientId: webGiris.appleServisKimligi, scope: "", redirectURI: location.origin + location.pathname, usePopup: true });
+        if (!hazir) {
+          AppleID.auth.init({ clientId: webGiris.appleServisKimligi, scope: "", redirectURI: location.origin + location.pathname, usePopup: true });
+          hazir = true;
+        }
         const sonuc = await AppleID.auth.signIn();
         await girisYap("apple", sonuc.authorization.id_token);
       } catch (e) { kutu.append(hataMetni("Apple ile giriş tamamlanmadı.")); }
@@ -177,9 +188,13 @@ function aramaGorunumu() {
   form.addEventListener("submit", async (olay) => {
     olay.preventDefault();
     if (!q.value.trim()) return;
-    const yanit = await api("GET", "/oyunlar/ara?q=" + encodeURIComponent(q.value.trim()));
-    sonuclar.replaceChildren(...yanit.oyunlar.map(oyunSatiri));
-    if (!yanit.oyunlar.length) sonuclar.append(oge("li", { sinif: "soluk", metin: "Sonuç yok." }));
+    try {
+      const yanit = await api("GET", "/oyunlar/ara?q=" + encodeURIComponent(q.value.trim()));
+      sonuclar.replaceChildren(...yanit.oyunlar.map(oyunSatiri));
+      if (!yanit.oyunlar.length) sonuclar.append(oge("li", { sinif: "soluk", metin: "Sonuç yok." }));
+    } catch (e) {
+      if (e.durum !== 401) sonuclar.replaceChildren(oge("li", {}, hataMetni("Arama yapılamadı. Tekrar dene.")));
+    }
   });
   goster(oge("h1", { metin: "Oyun ara" }), form, sonuclar);
   q.focus();
