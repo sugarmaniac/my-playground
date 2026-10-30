@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  linux:
+    name: Android ve server
+    runs-on: ubuntu-latest
+    steps:
+      - name: Kodu al
+        uses: actions/checkout@v4
+      - name: JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: 21
+      - name: Gradle
+        uses: gradle/actions/setup-gradle@v4
+      - name: Testler ve Android derlemesi
+        run: ./gradlew tumTestler :androidApp:assembleDebug --stacktrace
+
+  imaj:
+    name: Backend imajı
+    runs-on: ubuntu-latest
+    steps:
+      - name: Kodu al
+        uses: actions/checkout@v4
+      - name: Railway'in derlediği Dockerfile
+        run: docker build -t sosyaloyun-server .
+
+  ios:
+    name: iOS
+    runs-on: macos-latest
+    steps:
+      - name: Kodu al
+        uses: actions/checkout@v4
+      - name: JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: 21
+      - name: Gradle
+        uses: gradle/actions/setup-gradle@v4
+      - name: iOS simülatör derlemesi
+        run: cd iosApp && xcodebuild -scheme iosApp -configuration Debug -sdk iphonesimulator -arch arm64 CODE_SIGNING_ALLOWED='NO'

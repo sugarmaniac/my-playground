@@ -1,0 +1,125 @@
+package com.sosyaloyun.app.akis
+
+import com.sosyaloyun.app.test.SahteApiIstemcisi
+import com.sosyaloyun.app.test.viewModelTesti
+import com.sosyaloyun.shared.AkisOgesi
+import com.sosyaloyun.shared.AkisOlayTuru
+import com.sosyaloyun.shared.AkisSekmesi
+import com.sosyaloyun.shared.Avatar
+import com.sosyaloyun.shared.KullaniciOzeti
+import com.sosyaloyun.shared.OyunOzeti
+import com.sosyaloyun.shared.OyunTuru
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.time.Instant
+
+class AkisViewModelTest {
+    private val api = SahteApiIstemcisi()
+    private val ayse = KullaniciOzeti("k1", "ayse", "Ayşe", Avatar.TILKI)
+    private val oyun = OyunOzeti("o1", "Oyun", OyunTuru.ANA_OYUN, null, null, emptyList(), null)
+    private fun oge(id: String, oyunu: OyunOzeti? = oyun) =
+        AkisOgesi(id, AkisOlayTuru.OYNAMAYA_BASLADI, ayse, Instant.parse("2026-01-05T09:00:00Z"), oyun = oyunu)
+
+    private fun ogeler(vm: AkisViewModel) = (vm.ekran.value.icerik as AkisIcerigi.Ogeler).ogeler
+
+    @Test
+    fun takipSekmesiYuklenir() = viewModelTesti {
+        api.akisOgeleri = listOf(oge("1"), oge("2"))
+        val vm = AkisViewModel(api)
+        advanceUntilIdle()
+
+        assertEquals(AkisSekmesi.TAKIP, vm.ekran.value.sekme)
+        assertEquals(AkisIcerigi.Ogeler(api.akisOgeleri, dahaVar = false), vm.ekran.value.icerik)
+        assertEquals(listOf("akis:TAKIP:null"), api.akisIstekleri)
+    }
+
+    @Test
+    fun arkadaslarSekmesiSecilir() = viewModelTesti {
+        val vm = AkisViewModel(api)
+        advanceUntilIdle()
+        vm.sekmeSecildi(AkisSekmesi.ARKADASLAR)
+        advanceUntilIdle()
+        assertEquals("akis:ARKADASLAR:null", api.akisIstekleri.last())
+    }
+
+    @Test
+    fun bosAkistaTakipOnerileriGosterilirVeOneridenTakipEdilir() = viewModelTesti {
+        api.akisOnerileriListesi = listOf(ayse)
+        val vm = AkisViewModel(api)
+        advanceUntilIdle()
+        assertEquals(AkisIcerigi.Bos(listOf(ayse)), vm.ekran.value.icerik)
+
+        vm.onerilenKisiyiTakipEt("ayse")
+        advanceUntilIdle()
+
+        assertEquals(listOf("takip:ayse"), api.takipIstekleri)
+        assertEquals(AkisIcerigi.Bos(emptyList()), vm.ekran.value.icerik)
+    }
+
+    @Test
+    fun yeniOlaylarUyariylaGosterilirYenileyinceSifirlanir() = viewModelTesti {
+        api.akisOgeleri = listOf(oge("1"))
+        val vm = AkisViewModel(api)
+        advanceUntilIdle()
+
+        api.akisYeni = 3
+        vm.yeniOlaylariDenetle()
+        advanceUntilIdle()
+        assertEquals(3, vm.ekran.value.yeniOlaySayisi)
+        assertEquals("yeni:TAKIP:en-yeni", api.akisIstekleri.last())
+
+        api.akisOgeleri = listOf(oge("4"), oge("1"))
+        vm.yenile()
+        advanceUntilIdle()
+        assertEquals(0, vm.ekran.value.yeniOlaySayisi)
+        assertEquals(listOf("4", "1"), ogeler(vm).map { it.id })
+    }
+
+    @Test
+    fun kartlardanIstekListesineHemenEklenir() = viewModelTesti {
+        api.akisOgeleri = listOf(oge("1"), oge("2"), oge("3", oyunu = null))
+        val vm = AkisViewModel(api)
+        advanceUntilIdle()
+
+        vm.istekListesineEkle("o1")
+        assertEquals(listOf(true, true, false), ogeler(vm).map { it.istekListemde })
+        advanceUntilIdle()
+
+        assertEquals("istek-listesi:o1", api.akisIstekleri.last())
+    }
+
+    @Test
+    fun istekListesiEklenemezseGeriAlinir() = viewModelTesti {
+        api.akisOgeleri = listOf(oge("1"))
+        api.istekListesiHatasi = IllegalStateException("bağlantı yok")
+        val vm = AkisViewModel(api)
+        advanceUntilIdle()
+
+        vm.istekListesineEkle("o1")
+        advanceUntilIdle()
+
+        assertEquals(listOf(false), ogeler(vm).map { it.istekListemde })
+    }
+
+    @Test
+    fun dahaFazlaSonrakiSayfayiEkler() = viewModelTesti {
+        api.akisOgeleri = List(5) { oge("$it") }
+        api.profilSayfaBoyu = 3
+        val vm = AkisViewModel(api)
+        advanceUntilIdle()
+
+        vm.dahaFazlaYukle()
+        advanceUntilIdle()
+
+        assertEquals(AkisIcerigi.Ogeler(api.akisOgeleri, dahaVar = false), vm.ekran.value.icerik)
+    }
+
+    @Test
+    fun servereUlasilamazsaHataGosterilir() = viewModelTesti {
+        api.hata = IllegalStateException("bağlantı yok")
+        val vm = AkisViewModel(api)
+        advanceUntilIdle()
+        assertEquals(AkisIcerigi.Hata, vm.ekran.value.icerik)
+    }
+}

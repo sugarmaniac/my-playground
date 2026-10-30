@@ -1,0 +1,11 @@
+**/build/
+**/.gradle/
+.kotlin/
+local.properties
+iosApp/
+androidApp/
+composeApp/
+web/
+docs/
+.claude/
+.git/
