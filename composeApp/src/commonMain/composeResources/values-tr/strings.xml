@@ -308,4 +308,5 @@
     <string name="liste_kaydet">Listeyi kaydet</string>
     <string name="liste_kayit_hatasi">Liste kaydedilemedi. Tekrar dene.</string>
     <string name="oyun_listeleri">Bu oyunun geçtiği listeler</string>
+    <string name="liste_silme_hatasi">Liste silinemedi. Tekrar dene.</string>
 </resources>

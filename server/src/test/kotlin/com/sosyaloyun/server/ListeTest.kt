@@ -22,9 +22,12 @@ import io.ktor.client.request.put
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.HttpStatusCode
 import kotlin.test.Test
+import org.jetbrains.exposed.v1.core.eq
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.minutes
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
+import org.jetbrains.exposed.v1.jdbc.update
 
 class ListeTest {
     private val tokenler = mutableMapOf<String, String>()
@@ -111,6 +114,11 @@ class ListeTest {
         assertEquals(listOf("Herkese"), profilListeleri("mehmet", "ayse").map { it.baslik })
         assertEquals(setOf("Gizli plan", "Herkese"), profilListeleri("ayse", "ayse").map { it.baslik }.toSet())
         assertEquals("Herkese", client.get(ApiYollari.paylasilanListe(acik.id)).govde(Liste.serializer()).baslik)
+        // Banlı hesabın listesi paylaşılmaz.
+        transaction(veritabani) {
+            KullaniciTablosu.update({ KullaniciTablosu.kullaniciAdi eq "ayse" }) { it[KullaniciTablosu.banli] = true }
+        }
+        assertEquals(HttpStatusCode.NotFound, client.get(ApiYollari.paylasilanListe(acik.id)).status)
 
         // Oyun detayındaki listeler yalnızca herkese açık olanları gösterir.
         val oyunun = client.get(ApiYollari.oyunListeleri(oyunlar.getValue("Alfa"))) { bearerAuth(t("mehmet")) }.govde(ListeSayfasi.serializer())

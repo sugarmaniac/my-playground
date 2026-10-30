@@ -43,6 +43,7 @@ import com.sosyaloyun.app.resources.liste_oyun_ara
 import com.sosyaloyun.app.resources.liste_oyun_sayisi
 import com.sosyaloyun.app.resources.liste_sadece_ben
 import com.sosyaloyun.app.resources.liste_sil
+import com.sosyaloyun.app.resources.liste_silme_hatasi
 import com.sosyaloyun.app.resources.oyun_listeleri
 import com.sosyaloyun.app.resources.paylas
 import com.sosyaloyun.app.resources.yorum_sil
@@ -100,6 +101,7 @@ fun ListeDetayEkrani(viewModel: ListeDetayViewModel, oyunaGit: (String) -> Unit,
                         TextButton(onClick = viewModel::sil) { Text(stringResource(Res.string.liste_sil), color = MaterialTheme.colorScheme.error) }
                     }
                 }
+                if (durum.silmeHatasi) Text(stringResource(Res.string.liste_silme_hatasi), color = MaterialTheme.colorScheme.error)
                 LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     itemsIndexed(liste.oyunlar, key = { _, o -> o.id }) { i, oyun ->
                         Row(Modifier.fillMaxWidth().clickable { oyunaGit(oyun.id) }, horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {

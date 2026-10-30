@@ -109,6 +109,8 @@ class Listeler(
         } ?: return null
         val sahip = satir[ListeTablosu.kullaniciId]
         if (!gorebilir(izleyen, sahip, ListeGorunurlugu.valueOf(satir[ListeTablosu.gorunurluk]))) return null
+        // Oturumsuz paylaşımda banlı ya da askıdaki hesabın listesi de gösterilmez.
+        if (izleyen == null && !satir.paylasilabilir(simdi())) return null
         val sahipOzeti = satir.kullaniciOzeti() ?: return null
         val (oyunIdleri, begeni) = withContext(Dispatchers.IO) {
             transaction(veritabani) {

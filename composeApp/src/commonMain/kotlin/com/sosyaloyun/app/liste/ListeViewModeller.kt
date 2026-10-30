@@ -26,7 +26,7 @@ sealed interface ListeDetayEkrani {
     data object Yukleniyor : ListeDetayEkrani
 
     /** [paylasimLinki]: yalnızca herkese açık listenin web sitesindeki sayfası. */
-    data class Hazir(val liste: Liste, val paylasimLinki: String?, val silindi: Boolean = false) : ListeDetayEkrani
+    data class Hazir(val liste: Liste, val paylasimLinki: String?, val silindi: Boolean = false, val silmeHatasi: Boolean = false) : ListeDetayEkrani
     data object Bulunamadi : ListeDetayEkrani
     data object Hata : ListeDetayEkrani
 }
@@ -84,14 +84,15 @@ class ListeDetayViewModel(
     fun sil() {
         val durum = _ekran.value as? ListeDetayEkrani.Hazir ?: return
         if (!durum.liste.benim) return
+        _ekran.value = durum.copy(silmeHatasi = false)
         viewModelScope.launch {
             try {
                 api.listeSil(listeId)
-                _ekran.value = durum.copy(silindi = true)
+                _ekran.update { if (it is ListeDetayEkrani.Hazir) it.copy(silindi = true) else it }
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                // Silinemezse liste olduğu gibi kalır.
+                _ekran.update { if (it is ListeDetayEkrani.Hazir) it.copy(silmeHatasi = true) else it }
             }
         }
     }

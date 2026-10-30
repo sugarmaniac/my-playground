@@ -39,6 +39,8 @@ class ListeViewModelTest {
     @Test
     fun begeniBasarisizOlursaGeriAlinirBaskasininListesiSilinemez() = viewModelTesti {
         api.listeler["l1"] = api.ornekListe("l1", ListeIstegi("Liste"), benim = false)
+        api.listeler["l2"] = api.ornekListe("l2", ListeIstegi("Benim"))
+        val benim = ListeDetayViewModel(api, "l2")
         val vm = ListeDetayViewModel(api, "l1")
         advanceUntilIdle()
         api.listeHatasi = IllegalStateException("bağlantı yok")
@@ -50,6 +52,14 @@ class ListeViewModelTest {
         val hazir = vm.ekran.value as ListeDetayEkrani.Hazir
         assertEquals(0 to false, hazir.liste.begeniSayisi to hazir.liste.begendim)
         assertFalse(hazir.silindi)
+        assertFalse(hazir.silmeHatasi)
+
+        // Kendi listesi silinemezse hata gösterilir, ekran kapanmaz.
+        benim.sil()
+        advanceUntilIdle()
+        val benimki = benim.ekran.value as ListeDetayEkrani.Hazir
+        assertTrue(benimki.silmeHatasi)
+        assertFalse(benimki.silindi)
     }
 
     @Test

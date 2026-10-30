@@ -308,4 +308,5 @@
     <string name="liste_kaydet">Save list</string>
     <string name="liste_kayit_hatasi">Couldn't save the list. Try again.</string>
     <string name="oyun_listeleri">Lists with this game</string>
+    <string name="liste_silme_hatasi">Couldn't delete the list. Try again.</string>
 </resources>
