@@ -67,6 +67,7 @@ import com.sosyaloyun.app.hesap.DavetKoduViewModel
 import com.sosyaloyun.app.hesap.HataGorunumu
 import com.sosyaloyun.app.hesap.ProfilEkrani
 import com.sosyaloyun.app.hesap.HesapEkrani
+import com.sosyaloyun.app.hesap.HesapSilmeViewModel
 import com.sosyaloyun.app.hesap.HesapViewModel
 import com.sosyaloyun.app.hesap.ProfilEkrani
 import com.sosyaloyun.app.hesap.ProfilViewModel
@@ -126,7 +127,7 @@ fun App() {
                     saglayicilar = saglayiciIstemcisi.desteklenenler,
                     girisYap = { saglayici -> oturum.girisYap(saglayici) { saglayiciIstemcisi.kimlikTokeniAl(saglayici) } },
                 )
-                OturumEkrani.Acik -> HesapAkisi(api, cikisYap = oturum::cikisYap)
+                OturumEkrani.Acik -> HesapAkisi(api, cikisYap = oturum::cikisYap, hesapSilindi = oturum::hesapSilindi)
             }
         }
     }
@@ -134,7 +135,7 @@ fun App() {
 
 /** Girişten sonra onboarding adımları (davet kodu, kullanıcı adı) ve ardından ana ekran. */
 @Composable
-private fun HesapAkisi(api: ApiIstemcisi, cikisYap: () -> Unit) {
+private fun HesapAkisi(api: ApiIstemcisi, cikisYap: () -> Unit, hesapSilindi: () -> Unit) {
     val hesap = viewModel { HesapViewModel(api) }
     val ekran by hesap.ekran.collectAsStateWithLifecycle()
     when (val durum = ekran) {
@@ -144,7 +145,7 @@ private fun HesapAkisi(api: ApiIstemcisi, cikisYap: () -> Unit) {
         HesapEkrani.DavetKodu -> DavetKoduEkrani(viewModel { DavetKoduViewModel(api, hesabiYenile = hesap::yenile) })
         HesapEkrani.Profil -> ProfilEkrani(viewModel { ProfilViewModel(api, hesabiYenile = hesap::yenile) })
         HesapEkrani.Onboarding -> OnboardingEkrani(viewModel { OnboardingViewModel(api, hesabiYenile = hesap::yenile) })
-        is HesapEkrani.Hazir -> UygulamaGezintisi(api, durum.profil, cikisYap)
+        is HesapEkrani.Hazir -> UygulamaGezintisi(api, durum.profil, cikisYap, hesapSilindi)
     }
 }
 
@@ -208,7 +209,7 @@ private const val VITRIN_OYUNU = "vitrinOyunu"
 
 /** Onboarding bittikten sonraki ekranlar: alt gezinme çubuğu (Ana sayfa, ortada Kaydet, Profil). */
 @Composable
-private fun UygulamaGezintisi(api: ApiIstemcisi, profil: KullaniciOzeti, cikisYap: () -> Unit) {
+private fun UygulamaGezintisi(api: ApiIstemcisi, profil: KullaniciOzeti, cikisYap: () -> Unit, hesapSilindi: () -> Unit) {
     val gezinti = rememberNavController()
     val girdi by gezinti.currentBackStackEntryAsState()
     val hedef = girdi?.destination
@@ -308,6 +309,7 @@ private fun UygulamaGezintisi(api: ApiIstemcisi, profil: KullaniciOzeti, cikisYa
                     bildirimTercihleri = viewModel { BildirimTercihleriViewModel(api) },
                     engelListesi = { gezinti.navigate(EngelListesiRota(it)) },
                     cikisYap = cikisYap,
+                    hesapSilme = { viewModel { HesapSilmeViewModel(api, profil.kullaniciAdi, hesapSilindi) } },
                 )
             }
             composable<EngelListesiRota> { listeGirdisi ->

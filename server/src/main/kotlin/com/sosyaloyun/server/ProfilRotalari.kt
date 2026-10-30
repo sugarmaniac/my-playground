@@ -5,6 +5,7 @@ import com.sosyaloyun.shared.ApiYollari
 import com.sosyaloyun.shared.DavetKodlarimYaniti
 import com.sosyaloyun.shared.DavetKoduKullanIstegi
 import com.sosyaloyun.shared.HataKodu
+import com.sosyaloyun.shared.HesapSilmeIstegi
 import com.sosyaloyun.shared.KullaniciAdiMusaitlikYaniti
 import com.sosyaloyun.shared.ProfilIstegi
 import io.ktor.http.HttpStatusCode
@@ -12,6 +13,7 @@ import io.ktor.server.request.receive
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.RoutingCall
+import io.ktor.server.routing.delete
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.put
@@ -23,6 +25,14 @@ fun Route.profilRotalari(kullanicilar: Kullanicilar, davetKodlari: DavetKodlari,
     oturumGerekli {
         get(ApiYollari.BEN) {
             call.respond(kullanicilar.ben(call.oturumSahibi.kullaniciId))
+        }
+
+        delete(ApiYollari.BEN) {
+            if (kullanicilar.sil(call.oturumSahibi.kullaniciId, call.receive<HesapSilmeIstegi>().onay)) {
+                call.respond(HttpStatusCode.NoContent)
+            } else {
+                call.hata(HttpStatusCode.BadRequest, HataKodu.HESAP_SILME_ONAYI_GECERSIZ)
+            }
         }
 
         post(ApiYollari.DAVET_KULLAN) {

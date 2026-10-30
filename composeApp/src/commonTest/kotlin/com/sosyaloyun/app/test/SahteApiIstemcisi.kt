@@ -84,6 +84,14 @@ class SahteApiIstemcisi : ApiIstemcisi {
         hata?.let { throw it }
     }
 
+    val silmeOnaylari = mutableListOf<String>()
+    var silmeHatasi: Exception? = null
+
+    override suspend fun hesabiSil(onay: String) {
+        silmeHatasi?.let { throw it }
+        silmeOnaylari += onay
+    }
+
     override suspend fun ben(): BenYaniti {
         hata?.let { throw it }
         return benYaniti
