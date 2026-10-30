@@ -218,4 +218,46 @@ class BildirimTest {
         client.put(ApiYollari.kullaniciSekmesi("mehmet", ApiYollari.ENGEL)) { bearerAuth(t("ayse")) }
         assertEquals(emptyList(), bildirimler("ayse").bildirimler)
     }
+
+    @Test
+    fun faz2dePencereDisindakiAcilOlmayanlarPenceredeTekOzetOlarakGider() = apiTesti {
+        hazirla("ayse", "mehmet", "zeynep")
+        ayarlar.yaz(Ayar.AktifFaz, 2)
+        cihazKaydet("ayse")
+        // 09:00 Türkiye: sessiz saatler bitti, öğle penceresi (12–14) henüz açılmadı.
+        saat.simdi = Instant.parse("2026-01-05T06:00:00Z")
+        val kayit = kayitGir("ayse")
+        takipEt("mehmet", "ayse")
+        takipEt("zeynep", "ayse")
+        begen("mehmet", kayit)
+        pushDagitici.bekleyenleriGonder()
+        assertEquals(emptyList(), pushGonderici.gonderilenler)
+        // Uygulama içinde hemen görünür.
+        assertEquals(3, bildirimler("ayse").bildirimler.size)
+
+        saat.simdi = Instant.parse("2026-01-05T09:05:00Z")
+        pushDagitici.bekleyenleriGonder()
+        pushDagitici.bekleyenleriGonder()
+        assertEquals(listOf("token-ayse" to "Yeni bildirimlerin var: 1 beğeni, 2 yeni takipçi."), pushGonderici.gonderilenler)
+    }
+
+    @Test
+    fun faz2deAcilTurlerPencereyiBeklemezPencereSaatleriAyardanGelir() = apiTesti {
+        hazirla("ayse", "mehmet", "zeynep")
+        ayarlar.yaz(Ayar.AktifFaz, 2)
+        cihazKaydet("ayse")
+        saat.simdi = Instant.parse("2026-01-05T06:30:00Z")
+        client.post(ApiYollari.kullaniciSekmesi("ayse", ApiYollari.ARKADASLIK)) { bearerAuth(t("zeynep")) }
+        pushDagitici.bekleyenleriGonder()
+        assertEquals(listOf("Zeynep sana arkadaşlık isteği gönderdi."), pushGonderici.gonderilenler.map { it.second })
+
+        // Öğle penceresi 10'a çekilince 09:30'daki takip 10:00'da, tek bildirimse kendi metniyle gider.
+        ayarlar.yaz(Ayar.OglePushPenceresi, 10)
+        takipEt("mehmet", "ayse")
+        pushDagitici.bekleyenleriGonder()
+        assertEquals(1, pushGonderici.gonderilenler.size)
+        saat.simdi = Instant.parse("2026-01-05T07:00:00Z")
+        pushDagitici.bekleyenleriGonder()
+        assertEquals("Mehmet seni takip etmeye başladı.", pushGonderici.gonderilenler.last().second)
+    }
 }

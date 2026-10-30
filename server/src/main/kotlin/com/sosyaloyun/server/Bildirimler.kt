@@ -185,10 +185,14 @@ internal object BildirimTablosu : Table("bildirim") {
     val okundu = bool("okundu").default(false)
     val pushDurumu = text("push_durumu").default(PushDurumu.BEKLIYOR.name)
     val pushZamani = timestampWithTimeZone("push_zamani").nullable()
+
+    /** Faz 2'de pencere bekleyen push'un en erken gönderim zamanı (#52). */
+    val pushSonra = timestampWithTimeZone("push_sonra").nullable()
     override val primaryKey = PrimaryKey(id)
 }
 
-internal enum class PushDurumu { BEKLIYOR, GONDERILDI, ATLANDI }
+/** OZETLENDI: pencerede başka bir bildirimle tek özet push'ta gitti (#52). */
+internal enum class PushDurumu { BEKLIYOR, GONDERILDI, ATLANDI, OZETLENDI }
 
 internal object BildirimTercihiTablosu : Table("bildirim_tercihi") {
     val kullaniciId = javaUUID("kullanici_id")

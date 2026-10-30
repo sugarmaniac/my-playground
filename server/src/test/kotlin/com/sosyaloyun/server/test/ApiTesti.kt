@@ -5,6 +5,7 @@ import com.sosyaloyun.server.DavetKodlari
 import com.sosyaloyun.server.Katalog
 import com.sosyaloyun.server.KatalogIceAktarici
 import com.sosyaloyun.server.Kutuphane
+import com.sosyaloyun.server.Fazlar
 import com.sosyaloyun.server.Metrikler
 import com.sosyaloyun.server.PuanGecmisleri
 import com.sosyaloyun.server.PushDagitici
@@ -158,7 +159,7 @@ fun apiTesti(ekRotalar: Route.() -> Unit = {}, blok: suspend ApiTestOrtami.() ->
         steamKaynagi = steamKaynagi,
         steam = Steam(veritabani, Katalog(veritabani), Kutuphane(veritabani, saat), steamKaynagi, saat),
         pushGonderici = pushGonderici,
-        pushDagitici = PushDagitici(veritabani, Ayarlar(veritabani), pushGonderici, saat),
+        pushDagitici = PushDagitici(veritabani, Ayarlar(veritabani), pushGonderici, saat, Fazlar(Ayarlar(veritabani))),
         eposta = eposta,
         metrikler = Metrikler(veritabani, eposta, saat),
         puanGecmisleri = PuanGecmisleri(veritabani, Ayarlar(veritabani), Katalog(veritabani), saat),
