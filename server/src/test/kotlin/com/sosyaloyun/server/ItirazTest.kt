@@ -165,8 +165,12 @@ class ItirazTest {
         assertEquals(listOf(BildirimTuru.UYARI), bildirimler("mehmet"))
         assertEquals(YaptirimTuru.UYARI, itirazDurumu("mehmet").yaptirim?.tur)
 
+        val eskiKayit = kayitGir("zeynep")
         sikayetEt("ayse", kayitGir("zeynep"))
         panelKarari("sikayetler", SikayetDurumu.ASKIYA_ALINDI.name)
+        // Askıdayken eski bir kayda gelen uyarı, girişi engelleyen askının itirazını engellemez.
+        sikayetEt("ayse", eskiKayit)
+        panelKarari("sikayetler", SikayetDurumu.UYARILDI.name)
         val anahtar = girisDene("zeynep").govde(ApiHatasi.serializer()).itirazAnahtari!!
         client.post(ApiYollari.ITIRAZ_GIRIS) { json(GirisItirazIstegi.serializer(), GirisItirazIstegi(anahtar, "Lütfen")) }
         panelKarari("itirazlar", "KABUL")

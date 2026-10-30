@@ -59,11 +59,13 @@ class Itirazlar(private val veritabani: Database, private val saat: Clock) {
         }
     }
 
-    /** Askıdaki ya da banlı hesabın etkin yaptırımı için yeni bir giriş ekranı anahtarı üretir; önceki anahtar geçersizleşir. */
+    /**
+     * Askıdaki ya da banlı hesabın girişi engelleyen en son yaptırımı için yeni bir giriş ekranı anahtarı üretir; önceki
+     * anahtar geçersizleşir. Sonradan gelen bir uyarı ya da içerik kaldırma bu yaptırımın itirazını engellemez.
+     */
     suspend fun girisAnahtari(kullanici: UUID): String? = withContext(Dispatchers.IO) {
         transaction(veritabani) {
-            val yaptirim = sonYaptirim(kullanici)
-                ?.takeIf { YaptirimTuru.valueOf(it[YaptirimTablosu.tur]) in GIRIS_ENGELLEYEN }
+            val yaptirim = etkinYaptirimlar(kullanici).firstOrNull { YaptirimTuru.valueOf(it[YaptirimTablosu.tur]) in GIRIS_ENGELLEYEN }
                 ?: return@transaction null
             val anahtar = UUID.randomUUID().toString()
             YaptirimTablosu.update({ YaptirimTablosu.id eq yaptirim[YaptirimTablosu.id] }) { it[itirazAnahtari] = ozet(anahtar) }
@@ -113,10 +115,16 @@ class Itirazlar(private val veritabani: Database, private val saat: Clock) {
             }
             if (kabul) {
                 YaptirimTablosu.update({ YaptirimTablosu.id eq satir[YaptirimTablosu.id] }) { it[kaldirildi] = true }
+                // Yalnızca bu yaptırım kalkar: aynı türden başka etkin yaptırım varsa hesap onun sonuna göre kalır.
+                val kalanlar = etkinYaptirimlar(kullanici)
+                fun enGecBitis(tur: YaptirimTuru) = kalanlar.filter { YaptirimTuru.valueOf(it[YaptirimTablosu.tur]) == tur }
+                    .mapNotNull { it[YaptirimTablosu.bitis] }.maxOrNull()
                 when (YaptirimTuru.valueOf(satir[YaptirimTablosu.tur])) {
-                    YaptirimTuru.ASKI -> KullaniciTablosu.update({ KullaniciTablosu.id eq kullanici }) { it[askininBitisi] = null }
-                    YaptirimTuru.BAN -> KullaniciTablosu.update({ KullaniciTablosu.id eq kullanici }) { it[banli] = false }
-                    YaptirimTuru.YORUM_YASAGI -> KullaniciTablosu.update({ KullaniciTablosu.id eq kullanici }) { it[yorumYasagiBitisi] = null }
+                    YaptirimTuru.ASKI -> KullaniciTablosu.update({ KullaniciTablosu.id eq kullanici }) { it[askininBitisi] = enGecBitis(YaptirimTuru.ASKI) }
+                    YaptirimTuru.BAN -> KullaniciTablosu.update({ KullaniciTablosu.id eq kullanici }) {
+                        it[banli] = kalanlar.any { k -> YaptirimTuru.valueOf(k[YaptirimTablosu.tur]) == YaptirimTuru.BAN }
+                    }
+                    YaptirimTuru.YORUM_YASAGI -> KullaniciTablosu.update({ KullaniciTablosu.id eq kullanici }) { it[yorumYasagiBitisi] = enGecBitis(YaptirimTuru.YORUM_YASAGI) }
                     YaptirimTuru.ICERIK_KALDIRMA, YaptirimTuru.UYARI -> Unit
                 }
             }
@@ -138,21 +146,29 @@ class Itirazlar(private val veritabani: Database, private val saat: Clock) {
         return if (yazildi) Sonuc.Tamam else Sonuc.Gecersiz
     }
 
-    /** Kalkmamış en son yaptırım; süresi dolmuş askı ve yorum yasağı itiraz edilmez, uyarı ve içerik kaldırma 30 gün. */
-    private fun JdbcTransaction.sonYaptirim(kullanici: UUID): ResultRow? {
-        val simdi = simdi()
-        return YaptirimTablosu.selectAll()
+    /** Kalkmamış en son yaptırım, hâlâ etkinse. */
+    private fun JdbcTransaction.sonYaptirim(kullanici: UUID): ResultRow? =
+        YaptirimTablosu.selectAll()
             .where { (YaptirimTablosu.kullaniciId eq kullanici) and (YaptirimTablosu.kaldirildi eq false) }
             .orderBy(YaptirimTablosu.olusturulma to SortOrder.DESC)
             .limit(1).singleOrNull()
-            ?.takeIf { satir ->
-                val bitis = satir[YaptirimTablosu.bitis]
-                when (YaptirimTuru.valueOf(satir[YaptirimTablosu.tur])) {
-                    YaptirimTuru.BAN -> true
-                    YaptirimTuru.ASKI, YaptirimTuru.YORUM_YASAGI -> bitis != null && bitis.isAfter(simdi)
-                    YaptirimTuru.UYARI, YaptirimTuru.ICERIK_KALDIRMA -> satir[YaptirimTablosu.olusturulma].plusDays(ITIRAZ_SURESI_GUN).isAfter(simdi)
-                }
-            }
+            ?.takeIf { etkinMi(it) }
+
+    /** Kalkmamış ve hâlâ etkin yaptırımlar, yeniden eskiye. */
+    private fun JdbcTransaction.etkinYaptirimlar(kullanici: UUID): List<ResultRow> =
+        YaptirimTablosu.selectAll()
+            .where { (YaptirimTablosu.kullaniciId eq kullanici) and (YaptirimTablosu.kaldirildi eq false) }
+            .orderBy(YaptirimTablosu.olusturulma to SortOrder.DESC)
+            .filter { etkinMi(it) }
+
+    /** Süresi dolmuş askı ve yorum yasağı etkin değildir; uyarı ve içerik kaldırma 30 gün itiraz edilebilir. */
+    private fun etkinMi(satir: ResultRow): Boolean {
+        val bitis = satir[YaptirimTablosu.bitis]
+        return when (YaptirimTuru.valueOf(satir[YaptirimTablosu.tur])) {
+            YaptirimTuru.BAN -> true
+            YaptirimTuru.ASKI, YaptirimTuru.YORUM_YASAGI -> bitis != null && bitis.isAfter(simdi())
+            YaptirimTuru.UYARI, YaptirimTuru.ICERIK_KALDIRMA -> satir[YaptirimTablosu.olusturulma].plusDays(ITIRAZ_SURESI_GUN).isAfter(simdi())
+        }
     }
 
     private fun ResultRow.ozet() = YaptirimOzeti(
