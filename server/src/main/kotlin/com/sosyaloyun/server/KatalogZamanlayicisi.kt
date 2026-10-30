@@ -2,6 +2,7 @@ package com.sosyaloyun.server
 
 import io.ktor.server.application.Application
 import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
@@ -32,6 +33,16 @@ fun Application.steamZamanlayicisiniBaslat(steam: Steam) {
         while (true) {
             delay(24.hours)
             runCatching { steam.hepsiniGuncelle() }.onFailure { log.error("Steam süreleri güncellenemedi", it) }
+        }
+    }
+}
+
+/** Bekleyen push'lar her 30 saniyede bir gönderilir; bildirim kendisi kaynak olayla birlikte yazılmıştır. */
+fun Application.pushZamanlayicisiniBaslat(dagitici: PushDagitici) {
+    launch {
+        while (true) {
+            runCatching { dagitici.bekleyenleriGonder() }.onFailure { log.error("Push'lar gönderilemedi", it) }
+            delay(30.seconds)
         }
     }
 }

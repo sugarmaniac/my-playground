@@ -225,4 +225,23 @@
     <string name="kesif_trend">Trend</string>
     <string name="kesif_turler">Türler</string>
     <string name="kesif_platformlar">Platformlar</string>
+    <string name="bildirimler">Bildirimler</string>
+    <string name="bildirimler_bos">Henüz bildirim yok.</string>
+    <string name="bildirim_yeni_takipci">%1$s seni takip etmeye başladı.</string>
+    <string name="bildirim_arkadaslik_istegi">%1$s sana arkadaşlık isteği gönderdi.</string>
+    <string name="bildirim_arkadaslik_kabulu">%1$s arkadaşlık isteğini kabul etti.</string>
+    <string name="bildirim_begeni">%1$s günlük kaydını beğendi.</string>
+    <string name="bildirim_begeni_grup">%1$s ve %2$d kişi günlük kaydını beğendi.</string>
+    <string name="bildirim_davet">%1$s davet kodunla aramıza katıldı.</string>
+    <string name="bildirim_tercihleri">Push bildirimleri</string>
+    <string name="tercih_yeni_takipci">Yeni takipçiler</string>
+    <string name="tercih_arkadaslik_istegi">Arkadaşlık istekleri</string>
+    <string name="tercih_arkadaslik_kabulu">Kabul edilen arkadaşlık istekleri</string>
+    <string name="tercih_begeni">Beğeniler</string>
+    <string name="tercih_davet">Davet kodunun kullanılması</string>
+    <string name="onboarding_bildirim_baslik">Haberdar ol</string>
+    <string name="onboarding_bildirim_aciklama">Biri seni takip ettiğinde, arkadaşlık isteği gönderdiğinde ya da kabul ettiğinde, günlük kaydını beğendiğinde ve davet kodunla katıldığında haber veririz. Günde en fazla birkaç tane, gece hiç; her türü ayarlardan kapatabilirsin.</string>
+    <string name="onboarding_bildirim_izin_ver">Bildirimlere izin ver</string>
+    <string name="onboarding_bildirim_simdi_degil">Şimdi değil</string>
+    <string name="akis_bildirimler">🔔 %1$d</string>
 </resources>

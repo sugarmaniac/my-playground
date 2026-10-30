@@ -28,7 +28,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sosyaloyun.app.kutuphane.durumAdi
 import com.sosyaloyun.app.profil.Kapak
 import com.sosyaloyun.app.resources.Res
-import com.sosyaloyun.app.resources.onboarding_bitir
 import com.sosyaloyun.app.resources.onboarding_durumlar_baslik
 import com.sosyaloyun.app.resources.onboarding_durumlar_steamli
 import com.sosyaloyun.app.resources.onboarding_durumlar_steamsiz
@@ -72,6 +71,10 @@ import com.sosyaloyun.app.resources.takip_ediliyor
 import com.sosyaloyun.app.resources.takip_et
 import com.sosyaloyun.shared.TelefonNumarasi
 import kotlinx.coroutines.launch
+import com.sosyaloyun.app.resources.onboarding_bildirim_baslik
+import com.sosyaloyun.app.resources.onboarding_bildirim_aciklama
+import com.sosyaloyun.app.resources.onboarding_bildirim_izin_ver
+import com.sosyaloyun.app.resources.onboarding_bildirim_simdi_degil
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -81,6 +84,7 @@ fun OnboardingEkrani(viewModel: OnboardingViewModel) {
         is OnboardingAdimi.Steam -> SteamAdimi(adim, viewModel)
         is OnboardingAdimi.Durumlar -> DurumlarAdimi(adim, viewModel)
         is OnboardingAdimi.Arkadaslar -> ArkadaslarAdimi(adim, viewModel)
+        is OnboardingAdimi.BildirimIzni -> BildirimIzniAdimi(adim, viewModel)
     }
 }
 
@@ -238,12 +242,28 @@ private fun ArkadaslarAdimi(adim: OnboardingAdimi.Arkadaslar, viewModel: Onboard
         }
         item {
             Column(Modifier.padding(vertical = 16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                if (adim.hata) Text(stringResource(Res.string.onboarding_hata), color = MaterialTheme.colorScheme.error)
-                Button(onClick = viewModel::bitir, enabled = !adim.bitiriliyor, modifier = Modifier.fillMaxWidth()) {
-                    Text(stringResource(if (adim.kisiler.any { it.takipEdiyorum }) Res.string.onboarding_bitir else Res.string.onboarding_atla))
+                Button(onClick = viewModel::arkadaslariBitir, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(if (adim.kisiler.any { it.takipEdiyorum }) Res.string.onboarding_devam else Res.string.onboarding_atla))
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun BildirimIzniAdimi(adim: OnboardingAdimi.BildirimIzni, viewModel: OnboardingViewModel) {
+    val izinIste = bildirimIzniIsteyici()
+    val kapsam = rememberCoroutineScope()
+    Column(Modifier.fillMaxSize().padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically)) {
+        Text(stringResource(Res.string.onboarding_bildirim_baslik), style = MaterialTheme.typography.headlineSmall)
+        Text(stringResource(Res.string.onboarding_bildirim_aciklama), style = MaterialTheme.typography.bodyMedium)
+        if (adim.hata) Text(stringResource(Res.string.onboarding_hata), color = MaterialTheme.colorScheme.error)
+        Button(
+            onClick = { kapsam.launch { izinIste(); viewModel.bitir() } },
+            enabled = !adim.bitiriliyor,
+            modifier = Modifier.fillMaxWidth(),
+        ) { Text(stringResource(Res.string.onboarding_bildirim_izin_ver)) }
+        TextButton(onClick = viewModel::bitir, enabled = !adim.bitiriliyor) { Text(stringResource(Res.string.onboarding_bildirim_simdi_degil)) }
     }
 }
 

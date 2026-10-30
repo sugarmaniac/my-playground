@@ -48,6 +48,8 @@ fun Application.modul(bagimliliklar: Bagimliliklar) {
         val steam = Steam(veritabani, katalog, kutuphane, bagimliliklar.steamKaynagi, bagimliliklar.saat)
         if (bagimliliklar.steamZamanlayici) steamZamanlayicisiniBaslat(steam)
         steamRotalari(steam, katalog, kutuphane, kullanicilar)
+        bildirimRotalari(Bildirimler(veritabani, bagimliliklar.saat))
+        if (bagimliliklar.pushZamanlayici) pushZamanlayicisiniBaslat(PushDagitici(veritabani, ayarlar, bagimliliklar.pushGonderici, bagimliliklar.saat))
         kesifRotalari(KesifServisi(veritabani, katalog, bagimliliklar.saat), katalog)
         arkadasBulmaRotalari(ArkadasBulma(veritabani, bagimliliklar.steamKaynagi), kullanicilar, sosyalGraf)
         katalogRotalari(katalog, kutuphane, gunluk, begeniler, Topluluk(veritabani, ayarlar), katalogIceAktarici, bagimliliklar.igdbWebhookSirri)

@@ -1,6 +1,7 @@
 package com.sosyaloyun.server
 
 import com.sosyaloyun.shared.ArkadaslikDurumu
+import com.sosyaloyun.shared.BildirimTuru
 import com.sosyaloyun.shared.Gorunurluk
 import com.sosyaloyun.shared.KullaniciListesi
 import java.time.ZoneOffset
@@ -31,8 +32,13 @@ import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 
 /** Kullanıcılar arasındaki ilişkiler ve bunlardan çıkan görme yetkisi (CONTEXT.md: Takip, Görünürlük). */
 class SosyalGraf(private val veritabani: Database, private val saat: Clock) {
+    /** Yeni takip, takip edilene bildirim düşürür. */
     suspend fun takipEt(eden: UUID, edilen: UUID) {
-        withContext(Dispatchers.IO) { transaction(veritabani) { takipEtIcinde(eden, edilen, saat) } }
+        withContext(Dispatchers.IO) {
+            transaction(veritabani) {
+                if (takipEtIcinde(eden, edilen, saat)) with(BildirimOlaylari) { bildir(edilen, BildirimTuru.YENI_TAKIPCI, eden, simdi()) }
+            }
+        }
     }
 
     /** Arkadaşlık sürerken takipten çıkılamaz; bu durumda false döner. */
@@ -40,6 +46,7 @@ class SosyalGraf(private val veritabani: Database, private val saat: Clock) {
         transaction(veritabani) {
             if (arkadasMiIcinde(eden, edilen)) return@transaction false
             TakipTablosu.deleteWhere { (takipEden eq eden) and (takipEdilen eq edilen) }
+            with(BildirimOlaylari) { bildirimiSil(edilen, BildirimTuru.YENI_TAKIPCI, eden) }
             true
         }
     }
@@ -50,11 +57,17 @@ class SosyalGraf(private val veritabani: Database, private val saat: Clock) {
             transaction(veritabani) {
                 when {
                     arkadasMiIcinde(gonderen, alan) -> Unit
-                    istekVarMi(alan, gonderen) -> arkadasYap(alan, gonderen)
-                    else -> ArkadaslikIstegiTablosu.insertIgnore {
-                        it[ArkadaslikIstegiTablosu.gonderen] = gonderen
-                        it[ArkadaslikIstegiTablosu.alan] = alan
-                        it[olusturulma] = simdi()
+                    istekVarMi(alan, gonderen) -> {
+                        arkadasYap(alan, gonderen)
+                        with(BildirimOlaylari) { bildir(alan, BildirimTuru.ARKADASLIK_KABULU, gonderen, simdi()) }
+                    }
+                    else -> {
+                        val eklendi = ArkadaslikIstegiTablosu.insertIgnore {
+                            it[ArkadaslikIstegiTablosu.gonderen] = gonderen
+                            it[ArkadaslikIstegiTablosu.alan] = alan
+                            it[olusturulma] = simdi()
+                        }.insertedCount
+                        if (eklendi == 1) with(BildirimOlaylari) { bildir(alan, BildirimTuru.ARKADASLIK_ISTEGI, gonderen, simdi()) }
                     }
                 }
             }
@@ -66,13 +79,16 @@ class SosyalGraf(private val veritabani: Database, private val saat: Clock) {
         transaction(veritabani) {
             if (!istekVarMi(gonderen, alan)) return@transaction false
             arkadasYap(gonderen, alan)
+            with(BildirimOlaylari) { bildir(gonderen, BildirimTuru.ARKADASLIK_KABULU, alan, simdi()) }
             true
         }
     }
 
     suspend fun reddet(alan: UUID, gonderen: UUID): Boolean = withContext(Dispatchers.IO) {
         transaction(veritabani) {
-            ArkadaslikIstegiTablosu.deleteWhere { (ArkadaslikIstegiTablosu.gonderen eq gonderen) and (ArkadaslikIstegiTablosu.alan eq alan) } > 0
+            val silindi = ArkadaslikIstegiTablosu.deleteWhere { (ArkadaslikIstegiTablosu.gonderen eq gonderen) and (ArkadaslikIstegiTablosu.alan eq alan) } > 0
+            if (silindi) with(BildirimOlaylari) { bildirimiSil(alan, BildirimTuru.ARKADASLIK_ISTEGI, gonderen) }
+            silindi
         }
     }
 
@@ -83,7 +99,9 @@ class SosyalGraf(private val veritabani: Database, private val saat: Clock) {
                 val (a, b) = sirali(kullanici, diger)
                 val silindi = ArkadaslikTablosu.deleteWhere { (kullaniciA eq a) and (kullaniciB eq b) }
                 if (silindi > 0) with(AkisOlaylari) { arkadaslikBitti(a, b) }
-                ArkadaslikIstegiTablosu.deleteWhere { (gonderen eq kullanici) and (alan eq diger) }
+                if (ArkadaslikIstegiTablosu.deleteWhere { (gonderen eq kullanici) and (alan eq diger) } > 0) {
+                    with(BildirimOlaylari) { bildirimiSil(diger, BildirimTuru.ARKADASLIK_ISTEGI, kullanici) }
+                }
             }
         }
     }
@@ -179,6 +197,7 @@ class SosyalGraf(private val veritabani: Database, private val saat: Clock) {
                 ArkadaslikIstegiTablosu.deleteWhere { ((gonderen eq kullanici) and (alan eq hedef)) or ((gonderen eq hedef) and (alan eq kullanici)) }
                 begenileriSil(begenen = hedef, sahip = kullanici)
                 begenileriSil(begenen = kullanici, sahip = hedef)
+                with(BildirimOlaylari) { aradakiBildirimleriSil(kullanici, hedef) }
             }
         }
     }
@@ -308,13 +327,14 @@ class SosyalGraf(private val veritabani: Database, private val saat: Clock) {
     }
 }
 
-internal fun JdbcTransaction.takipEtIcinde(eden: UUID, edilen: UUID, saat: Clock) {
-    if (eden == edilen) return
-    TakipTablosu.insertIgnore {
+/** Yeni takip oluştuysa true. Bildirimi çağıran yazar: arkadaşlık ve davet koduyla gelen takipler bildirim düşürmez. */
+internal fun JdbcTransaction.takipEtIcinde(eden: UUID, edilen: UUID, saat: Clock): Boolean {
+    if (eden == edilen) return false
+    return TakipTablosu.insertIgnore {
         it[takipEden] = eden
         it[takipEdilen] = edilen
         it[olusturulma] = saat.now().toJavaInstant().atOffset(ZoneOffset.UTC)
-    }
+    }.insertedCount == 1
 }
 
 internal fun JdbcTransaction.takipEdiyorMuIcinde(eden: UUID, edilen: UUID): Boolean =

@@ -194,7 +194,7 @@ cd "$(dirname "$0")/.."
 
 RAILWAY_PROJE="https://railway.com/project/211ca30f-570f-489b-9a5f-7f42afd64bc4"
 
-TOTAL_STAGES=12
+TOTAL_STAGES=13
 
 # gradle_ayari_yaz AD DEGER: gradle.properties'teki bir derleme ayarını günceller (gizli olmayan değerler).
 gradle_ayari_yaz() {
@@ -334,6 +334,20 @@ open_url "$RAILWAY_PROJE"
 step "Backend servisi → Variables → STEAM_WEB_API_KEY ekle (değer .env'de) ve Deploy'a bas."
 note "Anahtar yokken uygulama Steam'siz çalışır; Steam bağlama 'şu an ulaşılamıyor' der."
 pause "Değişken eklenince Enter'a bas"
+
+# ── Push bildirimleri (#21) ────────────────────────────────────────────────
+stage "Firebase: push bildirimleri"
+say "Push bildirimleri Firebase Cloud Messaging ile gider; iOS'a Firebase üzerinden APNs ile ulaşır."
+open_url "https://console.firebase.google.com/"
+step "'Add project' → ad: Sosyal Oyun (Analytics kapalı) → Create."
+step "Project settings → General → Android uygulaması ekle: paket adı com.sosyaloyun.app → google-services.json'ı indir, androidApp/ klasörüne koy."
+step "Aynı yerden iOS uygulaması ekle: bundle id com.sosyaloyun.app → GoogleService-Info.plist'i indir, iosApp/iosApp/ klasörüne koy."
+step "Project settings → Cloud Messaging → Apple app configuration: APNs Authentication Key (.p8) yükle (Apple Developer → Keys → '+' → Apple Push Notifications service)."
+step "Project settings → Service accounts → 'Generate new private key' → JSON dosyası iner."
+open_url "$RAILWAY_PROJE"
+step "Backend servisi → Variables → FCM_HIZMET_HESABI ekle: değer, indirilen JSON dosyasının içeriğinin tamamı. Deploy'a bas."
+note "JSON dosyasını repoya koyma. google-services.json ve GoogleService-Info.plist gizli değil ama commit'lenince istemcide token kaydı bağlanabilir."
+pause "Hepsi bitince Enter'a bas"
 
 # ── Apple ile giriş (#5) ───────────────────────────────────────────────────
 stage "Apple: Sign in with Apple"

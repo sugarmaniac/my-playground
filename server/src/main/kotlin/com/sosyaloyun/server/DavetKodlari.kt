@@ -1,5 +1,6 @@
 package com.sosyaloyun.server
 
+import com.sosyaloyun.shared.BildirimTuru
 import com.sosyaloyun.shared.DavetKodu
 import com.sosyaloyun.shared.DavetKoduKurallari
 import java.security.SecureRandom
@@ -61,7 +62,10 @@ class DavetKodlari(private val veritabani: Database, private val saat: Clock = C
             }
             KullaniciTablosu.update({ KullaniciTablosu.id eq kullaniciId }) { it[davetKabulZamani] = simdi }
             // Kodu kullanan, kodu vereni otomatik olarak takip eder (CONTEXT.md: Davet kodu).
-            sahibi?.let { takipEtIcinde(kullaniciId, it, saat) }
+            sahibi?.let {
+                takipEtIcinde(kullaniciId, it, saat)
+                with(BildirimOlaylari) { bildir(it, BildirimTuru.DAVET_KODU_KULLANILDI, kullaniciId, simdi) }
+            }
             KullanmaSonucu.KATILDI
         }
     }

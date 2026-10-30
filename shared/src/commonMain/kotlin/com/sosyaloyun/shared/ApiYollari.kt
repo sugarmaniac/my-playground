@@ -69,6 +69,19 @@ object ApiYollari {
 
     const val KESIF = "/kesif"
 
+    /** `GET` liste (son 200 bildirim, beğeniler gruplanmış). */
+    const val BILDIRIMLER = "/bildirimler"
+
+    /** `POST`: bütün bildirimleri okundu say. */
+    const val BILDIRIMLER_OKUNDU = "/bildirimler/okundu"
+    const val OKUNMAMIS_BILDIRIM_SAYISI = "/bildirimler/okunmamis-sayisi"
+
+    /** `GET`/`PUT` tür başına push tercihleri. */
+    const val BILDIRIM_TERCIHLERI = "/bildirim-tercihleri"
+
+    /** `PUT` push token'ı kaydeder. */
+    const val CIHAZ = "/cihaz"
+
     /** `GET ?tur=<Tur>` ya da `?platform=<IGDB platform adı>`, `&imlec=`: o türdeki ya da platformdaki oyunlar, popüler önce. */
     const val OYUN_LISTESI = "/oyunlar/liste"
 

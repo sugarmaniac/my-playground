@@ -19,6 +19,8 @@ import com.sosyaloyun.shared.KutuphaneSayfasi
 import com.sosyaloyun.shared.OrtakOyunlar
 import com.sosyaloyun.shared.OyunAramaYaniti
 import com.sosyaloyun.shared.BulunanKisi
+import com.sosyaloyun.shared.BildirimListesi
+import com.sosyaloyun.shared.BildirimTercihleri
 import com.sosyaloyun.shared.IncelemeListesi
 import com.sosyaloyun.shared.Kesif
 import com.sosyaloyun.shared.Tur
@@ -73,6 +75,16 @@ interface ApiIstemcisi {
     suspend fun oyunDetayi(oyunId: String): OyunDetayi
 
     suspend fun kesif(): Kesif
+
+    suspend fun bildirimler(): BildirimListesi
+
+    suspend fun bildirimleriOkunduSay()
+
+    suspend fun okunmamisBildirimSayisi(): Int
+
+    suspend fun bildirimTercihleri(): BildirimTercihleri
+
+    suspend fun bildirimTercihleriniKaydet(tercihler: BildirimTercihleri): BildirimTercihleri
 
     /** Bir türdeki ya da platformdaki oyunlar, popüler önce. */
     suspend fun oyunListesi(tur: Tur?, platform: String?, imlec: String? = null): OyunAramaYaniti
