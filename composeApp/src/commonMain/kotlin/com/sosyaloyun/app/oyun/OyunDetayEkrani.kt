@@ -1,5 +1,6 @@
 package com.sosyaloyun.app.oyun
 
+import com.sosyaloyun.app.tema.GeriDugmesi
 import com.sosyaloyun.app.tema.SigdirilanYazi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
@@ -292,13 +293,6 @@ private fun PuanKutusu(baslik: String, deger: String, modifier: Modifier, yildiz
     ) {
         SigdirilanYazi(deger, MaterialTheme.typography.titleMedium, renk = if (yildiz) Renk.Yildiz else Renk.Yazi)
         SigdirilanYazi(baslik, MaterialTheme.typography.labelSmall, renk = Renk.Soluk)
-    }
-}
-
-@Composable
-private fun GeriDugmesi(geri: () -> Unit, modifier: Modifier = Modifier) {
-    Surface(onClick = geri, shape = MaterialTheme.shapes.medium, color = Renk.Zemin, modifier = modifier.size(44.dp)) {
-        Box(contentAlignment = Alignment.Center) { Icon(Ikonlar.Geri, contentDescription = stringResource(Res.string.geri), tint = Renk.Yazi, modifier = Modifier.size(22.dp)) }
     }
 }
 

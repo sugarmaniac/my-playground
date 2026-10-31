@@ -27,6 +27,7 @@ import java.io.File
 import kotlin.test.Test
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.minutes
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -133,6 +134,25 @@ class EkranGoruntuleri {
                     kurator = { com.sosyaloyun.app.kurator.KuratorViewModel(api) },
                     itiraz = { com.sosyaloyun.app.itiraz.ItirazViewModel(api) },
                     konsol = { com.sosyaloyun.app.konsol.KonsolViewModel(api) },
+                )
+            }
+            // Telefondan gelen ekran görüntüsündeki gibi: başkasının günlük kaydı, kendi yorumların (#65).
+            api.gunlukDetaylari = mapOf(
+                "g1" to com.sosyaloyun.shared.GunlukKaydiDetayi(
+                    kayit("g1", "o1", puan = 10, zaman = Clock.System.now() - 3.hours).copy(inceleme = "Yıllardır oynadığım en iyi açık dünya."),
+                    eldenRing,
+                    mert,
+                ),
+            )
+            api.yorumListesi = mutableListOf(
+                com.sosyaloyun.shared.Yorum("y1", ayse, "Yav he he", Clock.System.now() - 2.hours, silebilirim = true, benim = true),
+                com.sosyaloyun.shared.Yorum("y2", can, "Kesin oynadın kesin", Clock.System.now() - 90.minutes, silebilirim = true),
+                com.sosyaloyun.shared.Yorum("y3", ayse, "Sen git resim çiz", Clock.System.now() - 10.minutes, silebilirim = true, benim = true),
+            )
+            api.begenenListesi = listOf(can, ayse)
+            ciz("10-gunluk-detay") {
+                com.sosyaloyun.app.gunluk.GunlukDetayGorunumu(
+                    com.sosyaloyun.app.gunluk.GunlukDetayViewModel(api, "g1", webAdresi = "https://ornek.app", aktifFaz = Faz.FAZ_3), api, oyunaGit = {}, kullaniciyaGit = {}, geri = {},
                 )
             }
             // Büyük yazı boyutu ayarlı telefonlar (Honor varsayılanı gibi) ve uzun adlar: taşma denetimi (#61).

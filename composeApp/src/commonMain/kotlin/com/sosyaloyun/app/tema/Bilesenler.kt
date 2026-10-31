@@ -1,5 +1,18 @@
 package com.sosyaloyun.app.tema
 
+import com.sosyaloyun.app.resources.daha_fazla_secenek
+import com.sosyaloyun.app.resources.geri
+import com.sosyaloyun.app.resources.Res
+import org.jetbrains.compose.resources.stringResource
+import androidx.compose.ui.unit.Dp
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.getValue
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Icon
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.TextUnit
@@ -39,9 +52,9 @@ import kotlinx.coroutines.delay
 fun Kart(modifier: Modifier = Modifier, tikla: (() -> Unit)? = null, icerik: @Composable ColumnScope.() -> Unit) {
     val ic: @Composable () -> Unit = { Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(12.dp), content = icerik) }
     if (tikla != null) {
-        Surface(onClick = tikla, modifier = modifier, shape = MaterialTheme.shapes.large, color = Renk.Yuzey, border = BorderStroke(1.dp, Renk.Cizgi), content = ic)
+        Surface(onClick = tikla, modifier = modifier, shape = MaterialTheme.shapes.large, color = Renk.Yuzey, contentColor = Renk.Yazi, border = BorderStroke(1.dp, Renk.Cizgi), content = ic)
     } else {
-        Surface(modifier = modifier, shape = MaterialTheme.shapes.large, color = Renk.Yuzey, border = BorderStroke(1.dp, Renk.Cizgi), content = ic)
+        Surface(modifier = modifier, shape = MaterialTheme.shapes.large, color = Renk.Yuzey, contentColor = Renk.Yazi, border = BorderStroke(1.dp, Renk.Cizgi), content = ic)
     }
 }
 
@@ -112,4 +125,29 @@ fun SigdirilanYazi(
         overflow = TextOverflow.Clip,
         autoSize = TextAutoSize.StepBased(minFontSize = enKucuk, maxFontSize = stil.fontSize, stepSize = 0.5.sp),
     )
+}
+
+/** Ekranların sol üstündeki geri düğmesi: köşeli kare, içinde ok. */
+@Composable
+fun GeriDugmesi(geri: () -> Unit, modifier: Modifier = Modifier, zemin: Color = Renk.Zemin) {
+    Surface(onClick = geri, shape = MaterialTheme.shapes.medium, color = zemin, modifier = modifier.size(44.dp)) {
+        Box(contentAlignment = Alignment.Center) { Icon(Ikonlar.Geri, contentDescription = stringResource(Res.string.geri), tint = Renk.Yazi, modifier = Modifier.size(22.dp)) }
+    }
+}
+
+/** Satır ya da ekran için ⋯ düğmesi; dokununca [secenekler] açılır menüde gösterilir. */
+@Composable
+fun DahaMenusu(secenekler: List<Pair<String, () -> Unit>>, modifier: Modifier = Modifier, boyut: Dp = 40.dp) {
+    if (secenekler.isEmpty()) return
+    var acik by remember { mutableStateOf(false) }
+    Box(modifier) {
+        IconButton(onClick = { acik = true }, modifier = Modifier.size(boyut)) {
+            Icon(Ikonlar.Daha, contentDescription = stringResource(Res.string.daha_fazla_secenek), tint = Renk.Soluk, modifier = Modifier.size(20.dp))
+        }
+        DropdownMenu(expanded = acik, onDismissRequest = { acik = false }, containerColor = Renk.YuzeyYuksek) {
+            secenekler.forEach { (etiket, tikla) ->
+                DropdownMenuItem(text = { Text(etiket) }, onClick = { acik = false; tikla() })
+            }
+        }
+    }
 }

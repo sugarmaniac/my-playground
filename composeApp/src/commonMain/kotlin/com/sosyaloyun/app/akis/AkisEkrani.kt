@@ -208,7 +208,7 @@ private fun AkisKarti(oge: AkisOgesi, viewModel: AkisViewModel, oyunaGit: (Strin
 
 /** "şimdi", "12 dk", "2 sa", "3 g"; bir haftadan eskiyse tarih. */
 @Composable
-private fun goreliZaman(zaman: Instant): String {
+internal fun goreliZaman(zaman: Instant): String {
     val fark = Clock.System.now() - zaman
     return when {
         fark.inWholeMinutes < 1 -> stringResource(Res.string.zaman_simdi)

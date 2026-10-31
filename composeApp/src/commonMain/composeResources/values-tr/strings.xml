@@ -391,4 +391,5 @@
     <string name="oyun_puan_yok">Yetersiz</string>
     <string name="oyun_senin_puanin">Senin puanın</string>
     <string name="onboarding_davet_paylas">Davet kodunu paylaş</string>
+    <string name="daha_fazla_secenek">Diğer seçenekler</string>
 </resources>
